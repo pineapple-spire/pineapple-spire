@@ -4,6 +4,7 @@
 
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { BoxArrowRight, Lock, PersonFill, PersonPlusFill } from 'react-bootstrap-icons';
 
@@ -14,12 +15,45 @@ const NavBar: React.FC = () => {
   const role = userWithRole?.randomKey;
   const pathName = usePathname();
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar className="navbar" expand="lg">
       <Container>
-        <Navbar.Brand href="/">Next.js Application Template</Navbar.Brand>
+      <Navbar.Brand href="/" className="d-flex align-items-center">
+  <Image
+    src="/logo.png"
+    alt="Spire Hawaii"
+    width={120}
+    height={50}
+    style={{ objectFit: 'contain' }}
+  />
+      </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto justify-content-start">
+            {/* We may want to require auth later on. */}
+            <Nav.Link
+              id="about-nav"
+              href="/about"
+              key="about"
+              active={pathName === '/about'}
+            >
+About
+            </Nav.Link>
+            <Nav.Link
+              id="browse-nav"
+              href="/browse"
+              key="browse"
+              active={pathName === '/browse'}
+            >
+Browse
+            </Nav.Link>
+            <Nav.Link
+              id="tools-nav"
+              href="/tools"
+              key="tools"
+              active={pathName === '/tools'}
+            >
+Tools
+            </Nav.Link>
             {currentUser
               ? [
                   <Nav.Link id="add-stuff-nav" href="/add" key="add" active={pathName === '/add'}>

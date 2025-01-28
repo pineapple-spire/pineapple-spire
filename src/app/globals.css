@@ -12,3 +12,11 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+.navbar {
+  background-color: #FFF24B;
+}
+
+.footer {
+  background-color: #FFF24B;
+}
