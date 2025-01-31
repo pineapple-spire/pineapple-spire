@@ -46,14 +46,11 @@ About
             >
 Browse
             </Nav.Link>
-            <Nav.Link
-              id="tools-nav"
-              href="/tools"
-              key="tools"
-              active={pathName === '/tools'}
-            >
-Tools
-            </Nav.Link>
+            <NavDropdown id="tools-dropdown" title="Tools">
+                <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
+                  Stress Test Tool
+                </NavDropdown.Item>
+            </NavDropdown>
             {currentUser
               ? [
                   <Nav.Link id="add-stuff-nav" href="/add" key="add" active={pathName === '/add'}>
