@@ -47,6 +47,9 @@ About
 Browse
             </Nav.Link>
             <NavDropdown id="tools-dropdown" title="Tools">
+              <NavDropdown.Item id="tools-dropdown-financial-compilation" href="/financial-compilation">
+                  Financial Compilation
+              </NavDropdown.Item>
                 <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
                   Stress Test Tool
                 </NavDropdown.Item>
