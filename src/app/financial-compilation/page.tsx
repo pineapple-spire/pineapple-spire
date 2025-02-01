@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Container, Row } from 'react-bootstrap';
 import FCNavbar from '@/components/fc-components/FCNavbar';
 
 /** The Stress Test Tool page. */
