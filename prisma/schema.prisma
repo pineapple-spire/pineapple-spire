@@ -43,3 +43,9 @@ model Stuff {
   condition Condition
   owner     String
 }
+
+model StressScenario {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String
+}

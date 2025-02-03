@@ -45,6 +45,16 @@ async function main() {
       },
     });
   });
+
+  console.log('Adding base stress scenarios');
+  await prisma.stressScenario.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      title: 'Stress Scenario #1',
+      description: 'This is the first base stress scenario.',
+    },
+  });
 }
 main()
   .then(() => prisma.$disconnect())
