@@ -12,16 +12,22 @@ interface StressTestToolClientProps {
 const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScenarios }) => {
   const [scenarios, setScenarios] = useState(initialScenarios);
   const [showModal, setShowModal] = useState(false);
-  const [newScenario, setNewScenario] = useState({ title: '', description: '' });
+  const [newScenario, setNewScenario] = useState({
+    title: '',
+    description: '',
+    excelWorkbookUrl: '',
+  });
 
   const handleModalClose = () => {
     setShowModal(false);
-    setNewScenario({ title: '', description: '' });
+    setNewScenario({ title: '', description: '', excelWorkbookUrl: '' });
   };
 
   const handleModalShow = () => setShowModal(true);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setNewScenario({ ...newScenario, [e.target.name]: e.target.value });
   };
 
@@ -39,7 +45,7 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
       setScenarios([...scenarios, savedScenario]);
       handleModalClose();
     } else {
-      console.error('Failed to add new test!');
+      console.error('Failed to add new scenario!');
     }
   };
 
@@ -48,7 +54,13 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
       <h2>Stress Test Tool</h2>
       <section className="my-3">
         {scenarios.map((s) => (
-          <StressScenarioCard key={s.id} id={s.id} title={s.title} description={s.description} />
+          <StressScenarioCard
+            key={s.id}
+            id={s.id}
+            title={s.title}
+            description={s.description}
+            excelWorkbookUrl={s.excelWorkbookUrl}
+          />
         ))}
         <Button variant="primary" className="mt-3" aria-label="Add Scenario" onClick={handleModalShow}>
           +
@@ -78,6 +90,17 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
                 name="description"
                 value={newScenario.description}
                 onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="scenarioExcelLink" className="mt-2">
+              <Form.Label>Excel Workbook URL</Form.Label>
+              <Form.Control
+                type="url"
+                name="excelWorkbookUrl"
+                value={newScenario.excelWorkbookUrl}
+                onChange={handleInputChange}
+                placeholder="https://example.com/workbook.xlsx"
                 required
               />
             </Form.Group>

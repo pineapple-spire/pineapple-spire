@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Card } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 
@@ -8,9 +9,10 @@ interface StressScenarioProps {
   id: number;
   title: string;
   description: string;
+  excelWorkbookUrl: string;
 }
 
-const StressScenarioCard: React.FC<StressScenarioProps> = ({ id, title, description }) => {
+const StressScenarioCard: React.FC<StressScenarioProps> = ({ id, title, description, excelWorkbookUrl }) => {
   const router = useRouter();
 
   const handleCardClick = () => {
@@ -23,6 +25,13 @@ const StressScenarioCard: React.FC<StressScenarioProps> = ({ id, title, descript
         <section>
           <h5>{title}</h5>
           <p>{description}</p>
+          <Link
+            href={excelWorkbookUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open Excel Workbook
+          </Link>
         </section>
         <span>&gt;</span>
       </Card.Body>

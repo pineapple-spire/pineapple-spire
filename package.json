@@ -18,11 +18,13 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@handsontable/react": "^15.0.0",
     "@hookform/resolvers": "^3.6.0",
     "@ngneat/falso": "^7.2.0",
     "@prisma/client": "^5.22.0",
     "bcrypt": "^5.1.1",
     "bootstrap": "^5.3.3",
+    "handsontable": "^15.0.0",
     "multiselect-react-dropdown": "^2.0.25",
     "next": "14.2.23",
     "next-auth": "^4.24.7",

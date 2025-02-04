@@ -4,10 +4,10 @@ import { prisma } from '@/lib/prisma';
 // eslint-disable-next-line import/prefer-default-export
 export async function POST(request: Request) {
   try {
-    const { title, description } = await request.json();
+    const { title, description, excelWorkbookUrl } = await request.json();
 
     const newScenario = await prisma.stressScenario.create({
-      data: { title, description },
+      data: { title, description, excelWorkbookUrl },
     });
 
     return NextResponse.json(newScenario);

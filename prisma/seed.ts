@@ -53,6 +53,7 @@ async function main() {
     create: {
       title: 'Stress Scenario #1',
       description: 'This is the first base stress scenario.',
+      excelWorkbookUrl: 'https://example.com/file.xlsx',
     },
   });
 }
