@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { Card } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 
@@ -9,10 +8,9 @@ interface StressScenarioProps {
   id: number;
   title: string;
   description: string;
-  excelWorkbookUrl: string;
 }
 
-const StressScenarioCard: React.FC<StressScenarioProps> = ({ id, title, description, excelWorkbookUrl }) => {
+const StressScenarioCard: React.FC<StressScenarioProps> = ({ id, title, description }) => {
   const router = useRouter();
 
   const handleCardClick = () => {
@@ -20,20 +18,23 @@ const StressScenarioCard: React.FC<StressScenarioProps> = ({ id, title, descript
   };
 
   return (
-    <Card className="mb-3" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+    <Card
+      onClick={handleCardClick}
+      className="shadow-sm"
+      style={{
+        width: '200%',
+        cursor: 'pointer',
+        border: '1px solid #ddd',
+        backgroundColor: '#f8f9fa',
+        padding: '15px 20px',
+      }}
+    >
       <Card.Body className="d-flex justify-content-between align-items-center">
-        <section>
-          <h5>{title}</h5>
-          <p>{description}</p>
-          <Link
-            href={excelWorkbookUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Open Excel Workbook
-          </Link>
-        </section>
-        <span>&gt;</span>
+        <div>
+          <h5 className="mb-1">{title}</h5>
+          <p className="mb-0 text-muted">{description}</p>
+        </div>
+        <span style={{ fontSize: '1.5rem', color: '#6c757d' }}>&rarr;</span>
       </Card.Body>
     </Card>
   );
