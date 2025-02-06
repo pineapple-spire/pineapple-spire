@@ -1,16 +1,30 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.use({
   storageState: 'john-auth.json',
 });
 
-test('User Pages', async ({ page }) => {
-  await page.goto('http://localhost:3000/');
-  // await expect(page.getByRole('link', { name: 'Add Stuff' })).toBeVisible();
-  // await expect(page.getByRole('link', { name: 'List Stuff' })).toBeVisible();
-  // await expect(page.getByRole('button', { name: 'john@foo.com' })).toBeVisible();
-  // await page.getByRole('link', { name: 'Add Stuff' }).click();
-  // await expect(page.getByRole('heading', { name: 'Add Stuff' })).toBeVisible();
-  // await page.getByRole('link', { name: 'List Stuff' }).click();
-  // await expect(page.getByRole('heading', { name: 'Stuff' })).toBeVisible();
+test('Home Page Loading', async ({ page }) => {
+  const response = await page.goto('http://localhost:3000/');
+  expect(response?.status()).toBe(200);
+});
+
+test('About Page Loading', async ({ page }) => {
+  const response = await page.goto('http://localhost:3000/about');
+  expect(response?.status()).toBe(200);
+});
+
+test('Browse Page Loading', async ({ page }) => {
+  const response = await page.goto('http://localhost:3000/browse');
+  expect(response?.status()).toBe(200);
+});
+
+test('Stress Test Tool Page Loading', async ({ page }) => {
+  const response = await page.goto('http://localhost:3000/stress-test-tool');
+  expect(response?.status()).toBe(200);
+});
+
+test('Financial Compilation Page Loading', async ({ page }) => {
+  const response = await page.goto('http://localhost:3000/financial-compilation');
+  expect(response?.status()).toBe(200);
 });
