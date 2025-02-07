@@ -3,6 +3,7 @@
 import { Col, Container, Dropdown, DropdownButton, Row, Table } from 'react-bootstrap';
 import { useState } from 'react';
 
+/** Dropdown */
 const ForecastTypeDropdown = () => {
   const [selectedOption, setSelectedOption] = useState('Select');
   const handleSelect = (eventKey: string | null) => {
