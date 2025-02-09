@@ -36,15 +36,7 @@ const NavBar: React.FC = () => {
             >
               About
             </Nav.Link>
-            <Nav.Link
-              id="browse-nav"
-              href="/browse"
-              key="browse"
-              active={pathName === '/browse'}
-            >
-              Browse
-            </Nav.Link>
-            <NavDropdown id="tools-dropdown" title="Tools">
+            <NavDropdown id="tools-dropdown" title="Browse Tools">
               <NavDropdown.Item id="tools-dropdown-financial-compilation" href="/financial-compilation">
                 Financial Compilation
               </NavDropdown.Item>
