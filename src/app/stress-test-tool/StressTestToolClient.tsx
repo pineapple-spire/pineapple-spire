@@ -9,15 +9,22 @@ import {
   Form,
   Spinner,
   Alert,
+  Dropdown,
 } from 'react-bootstrap';
 import { FaInfoCircle } from 'react-icons/fa';
 import StressScenarioCard from '@/components/StressScenarioCard';
+import StressTest1 from '@/components/StressTest1';
 
 interface StressTestToolClientProps {
   initialScenarios: StressScenario[];
 }
+// TODO: Add other four stress tests.
+const stressTests = [
+  { id: 'stress1', label: 'Stress Test 1', component: <StressTest1 /> },
+];
 
 const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScenarios }) => {
+  const [selectedTest, setSelectedTest] = useState(stressTests[0]);
   const [scenarios, setScenarios] = useState(initialScenarios);
   const [showModal, setShowModal] = useState(false);
   const [newScenario, setNewScenario] = useState({
@@ -85,7 +92,22 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
       </h3>
       <hr />
 
-      <p>[TODO: Add Cards for Stress Tests 1-5 (pre-defined, with in browser experience).]</p>
+      {/* TODO: Add the other four stress tests here in dropdown menu. */}
+      <Dropdown className="mb-3">
+        <Dropdown.Toggle variant="primary" id="stress-test-dropdown">
+          {selectedTest.label}
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu>
+          {stressTests.map((test) => (
+            <Dropdown.Item key={test.id} onClick={() => setSelectedTest(test)}>
+              {test.label}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+
+      {selectedTest.component}
 
       {/* Custom Scenario Cards (Excel Workbooks) */}
       <h3>
