@@ -3,7 +3,7 @@
 import React from 'react';
 import { Nav } from 'react-bootstrap';
 
-/** The Stress Test Tool page. */
+/* The Financial Compilation Navigation bar */
 const FinancialCompilationNav = () => (
   <Nav justify style={{ backgroundColor: '#d9d9d9' }} className="justify-content-evenly m-3 bg-#e3f2fd" variant="tabs">
     <Nav.Link className="p-1" href="/financial-compilation/income-statement">Income Statement</Nav.Link>
