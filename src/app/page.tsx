@@ -9,32 +9,32 @@ const Home: React.FC = () => (
     <Row className="align-items-center text-center">
       <Col xs={4} className="position-relative">
         <Image src="home-page-img.png" width="560px" alt="" className="home-page-img" />
-        <Button className="transparent-button1">Spire Hawaii LLP</Button>
+        <div className="transparent-box1">Spire Hawaii LLP</div>
       </Col>
 
       <Col Col xs={8} className="d-flex flex-column align-items-end">
         {/* Navigation Buttons */}
         <div className="mt-4 w-100" style={{ maxWidth: '600px' }}>
           <Link href="/about" passHref>
-            <Button className="transparent-button2">
+            <Button className="transparent-button1">
               <span className="star">✦</span>
               Get Started &#x2192;
             </Button>
           </Link>
           <Link href="/fiscal-sustainability-model" passHref>
-            <Button className="transparent-button2">
+            <Button className="transparent-button1">
               <span className="star">✦</span>
               Fiscal Sustainability Model (FSM) &#x2192;
             </Button>
           </Link>
           <Link href="/financial-compilation" passHref>
-            <Button className="transparent-button2">
+            <Button className="transparent-button1">
               <span className="star">✦</span>
               Financial Compilations &#x2192;
             </Button>
           </Link>
           <Link href="/stress-test-tool" passHref>
-            <Button className="transparent-button2">
+            <Button className="transparent-button1">
               <span className="star">✦</span>
               Stress Test Tool &#x2192;
             </Button>
