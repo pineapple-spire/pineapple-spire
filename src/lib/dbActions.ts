@@ -1,6 +1,6 @@
 'use server';
 
-import { Stuff, Condition } from '@prisma/client';
+import { Stuff, Condition, Role } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { prisma } from './prisma';
@@ -89,6 +89,19 @@ export async function changePassword(credentials: { email: string; password: str
     where: { email: credentials.email },
     data: {
       password,
+    },
+  });
+}
+
+/**
+ * Changes the role of an existing user in the database.
+ * @param credentials, an object with the following properties: email, password.
+ */
+export async function changeRole(credentials: { email: string; role: Role }) {
+  await prisma.user.update({
+    where: { email: credentials.email },
+    data: {
+      role: credentials.role,
     },
   });
 }

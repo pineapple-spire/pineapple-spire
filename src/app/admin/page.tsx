@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { Col, Container, Row, Table } from 'react-bootstrap';
+import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { adminProtectedPage } from '@/lib/page-protection';
 import authOptions from '@/lib/authOptions';
@@ -24,6 +25,7 @@ const AdminPage = async () => {
                 <tr>
                   <th>Email</th>
                   <th>Role</th>
+                  <th aria-label="change" />
                 </tr>
               </thead>
               <tbody>
@@ -31,6 +33,7 @@ const AdminPage = async () => {
                   <tr key={user.id}>
                     <td>{user.email}</td>
                     <td>{user.role}</td>
+                    <td><Link href={`/change-role/user/${user.id}`}>Change Role</Link></td>
                   </tr>
                 ))}
               </tbody>
