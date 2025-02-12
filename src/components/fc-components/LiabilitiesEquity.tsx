@@ -4,6 +4,7 @@ import { Col, Container, Dropdown, DropdownButton, InputGroup, Form, Row, Table 
 import { useState } from 'react';
 import FCNavbar from '@/components/fc-components/FCNavbar';
 
+/* Dropdown button for the user to select forecast type (average or multiplier) */
 const ForecastTypeDropdown = () => {
   const [selectedOption, setSelectedOption] = useState('Select');
   const handleSelect = (eventKey: string | null) => {
@@ -19,6 +20,7 @@ const ForecastTypeDropdown = () => {
   );
 };
 
+/* Multiplier input form to calculate a fields multiplier */
 const MultiplierInput = () => {
   const [multiplier, setMultiplier] = useState('');
   const handleMultiplier = (event: { target: { value: any; }; }) => {
@@ -43,7 +45,7 @@ const MultiplierInput = () => {
   );
 };
 
-/* Renders a single row in the List Stuff table. See list/page.tsx. */
+/* Creates Liabilities and Equity table */
 const FCTable = () => (
   <Container>
     <Row>

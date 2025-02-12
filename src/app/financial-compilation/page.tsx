@@ -4,7 +4,7 @@ import React from 'react';
 import { Container, Row } from 'react-bootstrap';
 import FCNavbar from '@/components/fc-components/FCNavbar';
 
-/** The Stress Test Tool page. */
+/** The Financial Compilation page. */
 const FinancialCompilationPage = () => (
   <Container>
     <Row className="m-3 text-center">
