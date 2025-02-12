@@ -15,6 +15,13 @@ export const EditStuffSchema = Yup.object({
   owner: Yup.string().required(),
 });
 
+export const UserSchema = Yup.object({
+  id: Yup.number().required(),
+  email: Yup.string().required(),
+  password: Yup.string().required(),
+  role: Yup.string().oneOf(['USER', 'ADMIN']).required(),
+});
+
 export const SignInSchema = Yup.object({
   credentials: Yup.object({
     email: Yup.string().required(),

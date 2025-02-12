@@ -49,7 +49,7 @@ const NavBar: React.FC = () => {
             </NavDropdown>
             {currentUser && role === 'ADMIN' ? (
               <Nav.Link id="admin-stuff-nav" href="/admin" key="admin" active={pathName === '/admin'}>
-                Admin
+                Registered Users
               </Nav.Link>
             ) : (
               ''
