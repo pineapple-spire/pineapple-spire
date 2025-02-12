@@ -9,9 +9,10 @@ const Footer = () => (
       <Row>
         {/* TODO: Update this to have links to contact info, social media, disclaimer, and support sections. */}
         <Col className="text-center g-3">
-          Contact Us
+          {/* TODO: link to contact page */}
+          <a href="/" target="_blank" rel="noopener noreferrer">Contact Us</a>
           <br />
-          <a href="https://www.spirehawaii.com/">Visit Spire LLP</a>
+          <a href="https://www.spirehawaii.com/" target="_blank" rel="noopener noreferrer">Visit Spire LLP</a>
         </Col>
         <Col className="text-center g-3">
           <Row className="justify-content-center align-items-center">
@@ -42,9 +43,11 @@ const Footer = () => (
           Spire Hawaii LLP 2025
         </Col>
         <Col className="text-center g-3">
-          Disclaimer
+          {/* TODO: link to disclaimer */}
+          <a href="/" target="_blank" rel="noopener noreferrer">Disclaimer</a>
           <br />
-          Report A Problem
+          {/* TODO: link to report problem page */}
+          <a href="/" target="_blank" rel="noopener noreferrer">Report A Problem</a>
         </Col>
       </Row>
     </Container>

@@ -9,15 +9,25 @@ import {
   Form,
   Spinner,
   Alert,
+  Dropdown,
 } from 'react-bootstrap';
 import { FaInfoCircle } from 'react-icons/fa';
 import StressScenarioCard from '@/components/StressScenarioCard';
+import StressTest1 from '@/components/StressTest1';
+import StressTest2 from '@/components/StressTest2';
 
 interface StressTestToolClientProps {
   initialScenarios: StressScenario[];
 }
 
+// TODO: Add other four stress tests.
+const stressTests = [
+  { id: 'stress1', label: 'Stress Test 1', component: <StressTest1 /> },
+  { id: 'stress2', label: 'Stress Test 2', component: <StressTest2 /> },
+];
+
 const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScenarios }) => {
+  const [selectedTest, setSelectedTest] = useState(stressTests[0]);
   const [scenarios, setScenarios] = useState(initialScenarios);
   const [showModal, setShowModal] = useState(false);
   const [newScenario, setNewScenario] = useState({
@@ -40,6 +50,11 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setNewScenario({ ...newScenario, [e.target.name]: e.target.value });
+  };
+
+  const [showInfo, setShowInfo] = useState(false);
+  const handleInfoClick = () => {
+    setShowInfo((prev) => !prev);
   };
 
   const handleAddScenario = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -76,8 +91,19 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
       <h2 className="mb-4 d-flex align-items-center justify-content-center gap-2">
         Stress Test Tool
         {' '}
-        <FaInfoCircle style={{ cursor: 'pointer', color: '#6c757d' }} />
+        <FaInfoCircle
+          style={{ cursor: 'pointer', color: '#6c757d' }}
+          onClick={handleInfoClick}
+          title="Click for Info"
+        />
       </h2>
+      {showInfo && (
+        <div className="text-center alert alert-info">
+          <p>
+            This tool allows you to simulate different scenarios. It offers in-browser experience and custom scenarios.
+          </p>
+        </div>
+      )}
 
       {/* Pre-Defined Scenario Cards (Coded Pages) */}
       <h3 className="align-items-left">
@@ -85,7 +111,22 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
       </h3>
       <hr />
 
-      <p>[TODO: Add Cards for Stress Tests 1-5 (pre-defined, with in browser experience).]</p>
+      {/* TODO: Add the other four stress tests here in dropdown menu. */}
+      <Dropdown className="mb-3">
+        <Dropdown.Toggle variant="primary" id="stress-test-dropdown">
+          {selectedTest.label}
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu>
+          {stressTests.map((test) => (
+            <Dropdown.Item key={test.id} onClick={() => setSelectedTest(test)}>
+              {test.label}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+
+      {selectedTest.component}
 
       {/* Custom Scenario Cards (Excel Workbooks) */}
       <h3>
