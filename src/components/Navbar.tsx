@@ -1,5 +1,3 @@
-/* eslint-disable react/jsx-indent, @typescript-eslint/indent */
-
 'use client';
 
 import { useSession } from 'next-auth/react';
@@ -17,53 +15,35 @@ const NavBar: React.FC = () => {
   return (
     <Navbar className="navbar" expand="lg">
       <Container>
-      <Navbar.Brand href="/" className="d-flex align-items-center">
-  <Image
-    src="/logo.png"
-    alt="Spire Hawaii"
-    width={120}
-    height={50}
-    style={{ objectFit: 'contain' }}
-  />
-      </Navbar.Brand>
+        <Navbar.Brand href="/" className="d-flex align-items-center">
+          <Image
+            src="/logo.png"
+            alt="Spire Hawaii"
+            width={120}
+            height={50}
+            style={{ objectFit: 'contain' }}
+          />
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto justify-content-start">
-            {/* We may want to require auth later on. */}
+            {/* TODO: Add auth for navbar options depending on user. */}
             <Nav.Link
               id="about-nav"
               href="/about"
               key="about"
               active={pathName === '/about'}
             >
-About
+              About
             </Nav.Link>
-            <Nav.Link
-              id="browse-nav"
-              href="/browse"
-              key="browse"
-              active={pathName === '/browse'}
-            >
-Browse
-            </Nav.Link>
-            <NavDropdown id="tools-dropdown" title="Tools">
+            <NavDropdown id="tools-dropdown" title="Browse Tools">
               <NavDropdown.Item id="tools-dropdown-financial-compilation" href="/financial-compilation">
-                  Financial Compilation
+                Financial Compilation
               </NavDropdown.Item>
-                <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
-                  Stress Test Tool
-                </NavDropdown.Item>
+              <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
+                Stress Test Tool
+              </NavDropdown.Item>
             </NavDropdown>
-            {currentUser
-              ? [
-                  <Nav.Link id="add-stuff-nav" href="/add" key="add" active={pathName === '/add'}>
-                    Add Stuff
-                  </Nav.Link>,
-                  <Nav.Link id="list-stuff-nav" href="/list" key="list" active={pathName === '/list'}>
-                    List Stuff
-                  </Nav.Link>,
-                ]
-              : ''}
             {currentUser && role === 'ADMIN' ? (
               <Nav.Link id="admin-stuff-nav" href="/admin" key="admin" active={pathName === '/admin'}>
                 Registered Users

@@ -1,3 +1,4 @@
+/*
 import { getServerSession } from 'next-auth';
 import { notFound } from 'next/navigation';
 import { Stuff } from '@prisma/client';
@@ -16,11 +17,11 @@ export default async function EditStuffPage({ params }: { params: { id: string |
     } | null,
   );
   const id = Number(Array.isArray(params?.id) ? params?.id[0] : params?.id);
-  // console.log(id);
+
   const stuff: Stuff | null = await prisma.stuff.findUnique({
     where: { id },
   });
-  // console.log(stuff);
+
   if (!stuff) {
     return notFound();
   }
@@ -28,6 +29,15 @@ export default async function EditStuffPage({ params }: { params: { id: string |
   return (
     <main>
       <EditStuffForm stuff={stuff} />
+    </main>
+  );
+}
+*/
+
+export default function EditStuffPage() {
+  return (
+    <main>
+      Page Not Available
     </main>
   );
 }
