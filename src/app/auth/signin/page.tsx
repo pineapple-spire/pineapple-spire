@@ -2,7 +2,6 @@
 
 import { signIn } from 'next-auth/react';
 import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
-
 /** The sign in page. */
 const SignIn = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -18,12 +17,10 @@ const SignIn = () => {
       email,
       password,
     });
-
     if (result?.error) {
       console.error('Sign in failed: ', result.error);
     }
   };
-
   return (
     <main>
       <Container>
@@ -57,5 +54,4 @@ const SignIn = () => {
     </main>
   );
 };
-
 export default SignIn;
