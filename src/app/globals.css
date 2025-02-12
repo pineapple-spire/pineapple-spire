@@ -20,3 +20,51 @@ body {
 .footer {
   background-color: #FFF24B;
 }
+
+.home-page-img {
+  margin-left: 150px;
+  margin-top: 5px;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.transparent-box1 {
+  position: absolute;
+  bottom: -10px; /* Adjust the value as needed */
+  transform: translateX(-50%);
+  background-color: transparent;
+  border: 1px solid black; /* Add a thin black outline */
+  color: black; /* Adjust the color as needed */
+  margin-left: 445px;
+  width: 300px;
+  height: 30px;
+  border-radius: 20px;
+  font-size: 20px;
+}
+
+.transparent-button1 {
+  background-color: transparent;
+  border: 1px solid black; /* Add a thin black outline */
+  color: black; /* Adjust the color as needed */
+  cursor: pointer;
+  width: 300px; /* Adjust the width as needed */
+  height: 60px; /* Adjust the height as needed */
+  padding: 10px 20px; /* Adjust the padding as needed */
+  border-radius: 20px;
+  margin: 10px;
+}
+
+.transparent-button1 .star {
+  position: left;
+  color: #fca382;
+  left: 10px; /* Adjust the value as needed */
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.transparent-button1:hover {
+  background-color: #FFF24B; /* Optional: Add a slight hover effect */
+  color: black;
+}
