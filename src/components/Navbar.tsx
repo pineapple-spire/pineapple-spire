@@ -43,6 +43,9 @@ const NavBar: React.FC = () => {
               <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
                 Stress Test Tool
               </NavDropdown.Item>
+              <NavDropdown.Item id="tools-dropdown-audit-data" href="/audit-data">
+                Audit Data
+              </NavDropdown.Item>
             </NavDropdown>
             {currentUser && role === 'ADMIN' ? (
               <Nav.Link id="admin-stuff-nav" href="/admin" key="admin" active={pathName === '/admin'}>
