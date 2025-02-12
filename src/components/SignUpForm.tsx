@@ -1,27 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import type { SignUpFormData } from '@/app/auth/signup/page';
 
 const styles = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#FFFFFF',
-  },
-
-  navLink: {
-    color: 'black',
-    textDecoration: 'none',
-    marginLeft: '2rem',
-  },
-  main: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '3rem 1rem',
-  },
   formContainer: {
     backgroundColor: '#e8e8e8',
     padding: '2rem',
@@ -69,110 +56,135 @@ const styles = {
   },
 } as const;
 
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-  password: string;
+interface SignUpFormProps {
+  onSubmit: (data: SignUpFormData) => Promise<void>;
 }
 
-export default function SignUpForm() {
-  const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    username: '',
-    password: '',
+export default function SignUpForm({ onSubmit }: SignUpFormProps) {
+  const validationSchema = Yup.object().shape({
+    firstName: Yup.string().required('First name is required'),
+    lastName: Yup.string().required('Last name is required'),
+    email: Yup.string().required('Email is required').email('Email is invalid'),
+    username: Yup.string().required('Username is required'),
+    password: Yup.string()
+      .required('Password is required')
+      .min(6, 'Password must be at least 6 characters')
+      .max(40, 'Password must not exceed 40 characters'),
+    confirmPassword: Yup.string()
+      .required('Confirm Password is required')
+      .oneOf([Yup.ref('password'), ''], 'Confirm Password does not match'),
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<SignUpFormData>({
+    resolver: yupResolver(validationSchema),
+  });
 
   return (
-    <div style={styles.container}>
-      <main style={styles.main}>
-        <div style={styles.formContainer}>
-          <div style={styles.formHeader}>
-            <h1 style={styles.title}>Sign Up</h1>
-          </div>
-          <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md={6}>
-                <Form.Control
-                  type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                />
-                <Form.Control
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                />
-                <Form.Control
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                />
-              </Col>
-              <Col md={6}>
-                <Form.Control
-                  type="text"
-                  name="username"
-                  placeholder="Username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                />
-                <Form.Control
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                />
-              </Col>
-            </Row>
+    <div style={styles.formContainer}>
+      <div style={styles.formHeader}>
+        <h1 style={styles.title}>Sign Up</h1>
+      </div>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="text"
+                {...register('firstName')}
+                placeholder="First Name"
+                style={styles.input}
+                className={errors.firstName ? 'is-invalid' : ''}
+              />
+              <div className="invalid-feedback">{errors.firstName?.message}</div>
+            </Form.Group>
 
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="text"
+                {...register('lastName')}
+                placeholder="Last Name"
+                style={styles.input}
+                className={errors.lastName ? 'is-invalid' : ''}
+              />
+              <div className="invalid-feedback">{errors.lastName?.message}</div>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="email"
+                {...register('email')}
+                placeholder="Email"
+                style={styles.input}
+                className={errors.email ? 'is-invalid' : ''}
+              />
+              <div className="invalid-feedback">{errors.email?.message}</div>
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="text"
+                {...register('username')}
+                placeholder="Username"
+                style={styles.input}
+                className={errors.username ? 'is-invalid' : ''}
+              />
+              <div className="invalid-feedback">{errors.username?.message}</div>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="password"
+                {...register('password')}
+                placeholder="Password"
+                style={styles.input}
+                className={errors.password ? 'is-invalid' : ''}
+              />
+              <div className="invalid-feedback">{errors.password?.message}</div>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="password"
+                {...register('confirmPassword')}
+                placeholder="Confirm Password"
+                style={styles.input}
+                className={errors.confirmPassword ? 'is-invalid' : ''}
+              />
+              <div className="invalid-feedback">{errors.confirmPassword?.message}</div>
+            </Form.Group>
+          </Col>
+        </Row>
+
+        <Row className="mt-4">
+          <Col className="d-flex justify-content-center gap-3">
             <Button type="submit" style={styles.submitButton}>
               Sign Up
             </Button>
-          </Form>
-          {/* TODO: ADD SIGN UP LOGIC */}
-          <div style={styles.footer}>
-            Already have an account?
-            {' '}
-            <Link href="/signin" style={styles.signInLink}>
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </main>
+            <Button
+              type="button"
+              onClick={() => reset()}
+              variant="warning"
+              style={{ ...styles.submitButton, backgroundColor: '#ffd700' }}
+            >
+              Reset
+            </Button>
+          </Col>
+        </Row>
+      </Form>
+
+      <div style={styles.footer}>
+        Already have an account?
+        {' '}
+        <Link href="/auth/signin" style={styles.signInLink}>
+          Sign In
+        </Link>
+      </div>
     </div>
   );
 }
