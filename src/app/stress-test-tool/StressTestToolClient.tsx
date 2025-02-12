@@ -19,6 +19,7 @@ import StressTest2 from '@/components/StressTest2';
 interface StressTestToolClientProps {
   initialScenarios: StressScenario[];
 }
+
 // TODO: Add other four stress tests.
 const stressTests = [
   { id: 'stress1', label: 'Stress Test 1', component: <StressTest1 /> },
@@ -49,6 +50,11 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setNewScenario({ ...newScenario, [e.target.name]: e.target.value });
+  };
+
+  const [showInfo, setShowInfo] = useState(false);
+  const handleInfoClick = () => {
+    setShowInfo((prev) => !prev);
   };
 
   const handleAddScenario = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -85,8 +91,19 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
       <h2 className="mb-4 d-flex align-items-center justify-content-center gap-2">
         Stress Test Tool
         {' '}
-        <FaInfoCircle style={{ cursor: 'pointer', color: '#6c757d' }} />
+        <FaInfoCircle
+          style={{ cursor: 'pointer', color: '#6c757d' }}
+          onClick={handleInfoClick}
+          title="Click for Info"
+        />
       </h2>
+      {showInfo && (
+        <div className="text-center alert alert-info">
+          <p>
+            This tool allows you to simulate different scenarios. It offers in-browser experience and custom scenarios.
+          </p>
+        </div>
+      )}
 
       {/* Pre-Defined Scenario Cards (Coded Pages) */}
       <h3 className="align-items-left">
