@@ -8,8 +8,7 @@ const Home: React.FC = () => (
   <Container className="py-5 text-center d-flex flex-column align-items-center">
     <Row className="align-items-center text-center">
       <Col xs={4} className="position-relative">
-        <Image src="home-page-img.png" width="560px" alt="" className="home-page-img" />
-        <div className="transparent-box1">Spire Hawaii LLP</div>
+        <Image src="home-img.png" width="560px" alt="" className="home-page-img" />
       </Col>
 
       <Col Col xs={8} className="d-flex flex-column align-items-end">
