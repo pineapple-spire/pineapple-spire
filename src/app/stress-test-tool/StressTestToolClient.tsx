@@ -160,7 +160,7 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
           }}
           onClick={handleModalShow}
         >
-          +
+          Add Custom Scenario
         </Button>
       </div>
 

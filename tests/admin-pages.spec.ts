@@ -14,8 +14,8 @@ test('About Page Loading', async ({ page }) => {
   expect(response?.status()).toBe(200);
 });
 
-test('Browse Page Loading', async ({ page }) => {
-  const response = await page.goto('http://localhost:3000/browse');
+test('Stress Test Tool Page Loading', async ({ page }) => {
+  const response = await page.goto('http://localhost:3000/stress-test-tool');
   expect(response?.status()).toBe(200);
 });
 
