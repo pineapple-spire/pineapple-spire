@@ -9,6 +9,9 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     environment: Production
+    env:
+      POSTGRES_PRISMA_URL: ${{ vars.POSTGRES_PRISMA_URL }}
+      POSTGRES_URL_NON_POOLING: ${{ vars.POSTGRES_URL_NON_POOLING }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
