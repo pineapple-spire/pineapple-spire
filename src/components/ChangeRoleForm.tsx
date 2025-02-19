@@ -1,82 +1,122 @@
 'use client';
 
+import React from 'react';
 import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { User } from '@prisma/client';
-import { UserSchema } from '@/lib/validationSchemas';
+import { Role } from '@prisma/client';
+import { LoggedInUserSchema } from '@/lib/validationSchemas';
 import { changeRole } from '@/lib/dbActions';
 
-const onSubmit = async (data: User) => {
-  // console.log(`onSubmit data: ${JSON.stringify(data, null, 2)}`);
+interface UserRoleProps {
+  id: number;
+  email: string;
+  role: Role;
+}
+
+/**
+ * Handles form submission by updating the user's role.
+ * @param data - The user data from the form.
+ */
+const onSubmit = async (data: UserRoleProps) => {
   await changeRole(data);
-  swal('Success', 'Your item has been updated', 'success', {
-    timer: 2000,
-  });
+  swal('Success', 'Your role has been updated', 'success', { timer: 2000 });
 };
 
-const ChangeRoleForm = ({ user }: { user: User }) => {
+/**
+ * ChangeRoleForm component allows updating the user's role.
+ * @param user - The user object to edit.
+ */
+const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
-  } = useForm<User>({
-    resolver: yupResolver(UserSchema),
+    formState: { errors, dirtyFields },
+  } = useForm<UserRoleProps>({
+    resolver: yupResolver(LoggedInUserSchema),
+    defaultValues: { id: user.id, email: user.email, role: user.role },
   });
-  // console.log(stuff);
+
+  /**
+   * Checks if the role field has changed before submitting.
+   */
+  const handleFormSubmit = async (data: UserRoleProps) => {
+    if (dirtyFields.role) {
+      await onSubmit(data);
+      reset(data);
+    } else {
+      swal('No Changes Detected', 'You did not change the role.', 'info', {
+        timer: 2000,
+      });
+    }
+  };
 
   return (
     <Container className="py-3">
       <Row className="justify-content-center">
-        <Col xs={5}>
-          <Col className="text-center">
+        <Col xs={12} md={6} lg={5}>
+          <div className="text-center mb-3">
             <h2>Edit Role</h2>
-          </Col>
+          </div>
           <Card>
             <Card.Body>
-              <Form onSubmit={handleSubmit(onSubmit)}>
-                <input type="hidden" {...register('id')} value={user.id} />
-                <Form.Group>
+              <Form onSubmit={handleSubmit(handleFormSubmit)}>
+                <Form.Control type="hidden" {...register('id')} />
+
+                {/* Email field (read-only) */}
+                <Form.Group className="mb-3" controlId="formEmail">
                   <Form.Label>Email</Form.Label>
-                  <input
+                  <Form.Control
                     type="text"
-                    disabled
                     readOnly
+                    disabled
                     {...register('email')}
-                    defaultValue={user.email}
-                    required
-                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                    className={errors.email ? 'is-invalid' : ''}
                   />
-                  <div className="invalid-feedback">{errors.email?.message}</div>
+                  {errors.email && (
+                    <Form.Control.Feedback type="invalid">
+                      {errors.email.message}
+                    </Form.Control.Feedback>
+                  )}
                 </Form.Group>
-                <Form.Group>
+
+                {/* Role select field */}
+                <Form.Group className="mb-3" controlId="formRole">
                   <Form.Label>Role</Form.Label>
-                  <select
+                  <Form.Select
                     {...register('role')}
-                    className={`form-control ${errors.role ? 'is-invalid' : ''}`}
-                    defaultValue={user.role}
+                    className={errors.role ? 'is-invalid' : ''}
                   >
                     <option value="ADMIN">ADMIN</option>
                     <option value="USER">USER</option>
-                  </select>
-                  <div className="invalid-feedback">{errors.role?.message}</div>
+                  </Form.Select>
+                  {errors.role && (
+                    <Form.Control.Feedback type="invalid">
+                      {errors.role.message}
+                    </Form.Control.Feedback>
+                  )}
                 </Form.Group>
-                <Form.Group className="form-group">
-                  <Row className="pt-3">
-                    <Col>
-                      <Button type="submit" variant="primary">
-                        Submit
-                      </Button>
-                    </Col>
-                    <Col>
-                      <Button type="button" onClick={() => reset()} variant="warning" className="float-right">
-                        Reset
-                      </Button>
-                    </Col>
-                  </Row>
-                </Form.Group>
+
+                {/* Form buttons */}
+                <Row className="pt-3">
+                  <Col>
+                    <Button type="submit" variant="primary" className="w-100">
+                      Submit
+                    </Button>
+                  </Col>
+                  <Col>
+                    <Button
+                      type="button"
+                      onClick={() => reset()}
+                      variant="warning"
+                      className="w-100"
+                    >
+                      Reset
+                    </Button>
+                  </Col>
+                </Row>
               </Form>
             </Card.Body>
           </Card>
