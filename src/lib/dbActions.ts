@@ -105,3 +105,61 @@ export async function changeRole(credentials: { email: string; role: Role }) {
     },
   });
 }
+
+/**
+ * Upserts an audit data record. Audit data is the baseline for forecasting.
+ */
+export async function submitAuditData(data: {
+  revenueYear1: number;
+  revenueYear2: number;
+  revenueYear3: number;
+  netSalesYear1: number;
+  netSalesYear2: number;
+  netSalesYear3: number;
+  costContractingYear1: number;
+  costContractingYear2: number;
+  costContractingYear3: number;
+  overheadYear1: number;
+  overheadYear2: number;
+  overheadYear3: number;
+  costOfGoodsSoldYear1: number;
+  costOfGoodsSoldYear2: number;
+  costOfGoodsSoldYear3: number;
+  grossProfitYear1: number;
+  grossProfitYear2: number;
+  grossProfitYear3: number;
+  grossMarginYear1: number;
+  grossMarginYear2: number;
+  grossMarginYear3: number;
+  salariesAndBenefitsYear1: number;
+  salariesAndBenefitsYear2: number;
+  salariesAndBenefitsYear3: number;
+  rentAndOverheadYear1: number;
+  rentAndOverheadYear2: number;
+  rentAndOverheadYear3: number;
+  depreciationAndAmortizationYear1: number;
+  depreciationAndAmortizationYear2: number;
+  depreciationAndAmortizationYear3: number;
+  interestYear1: number;
+  interestYear2: number;
+  interestYear3: number;
+  totalOperatingExpensesYear1: number;
+  totalOperatingExpensesYear2: number;
+  totalOperatingExpensesYear3: number;
+  operatingExpensesPercentYear1: number;
+  operatingExpensesPercentYear2: number;
+  operatingExpensesPercentYear3: number;
+}) {
+  // TODO: Should AuditData be different per user, user group, etc?
+  await prisma.auditData.upsert({
+    where: { id: 1 },
+    update: {
+      ...data,
+    },
+    create: {
+      id: 1, // Force the primary key to 1 if no record exists.
+      ...data,
+    },
+  });
+  redirect('/audit-data');
+}
