@@ -15,6 +15,7 @@ import { FaInfoCircle } from 'react-icons/fa';
 import StressScenarioCard from '@/components/StressScenarioCard';
 import StressTest1 from '@/components/StressTest1';
 import StressTest2 from '@/components/StressTest2';
+import StressTest3 from '@/components/StressTest3';
 
 interface StressTestToolClientProps {
   initialScenarios: StressScenario[];
@@ -24,6 +25,7 @@ interface StressTestToolClientProps {
 const stressTests = [
   { id: 'stress1', label: 'Stress Test 1', component: <StressTest1 /> },
   { id: 'stress2', label: 'Stress Test 2', component: <StressTest2 /> },
+  { id: 'stress3', label: 'Stress Test 3', component: <StressTest3 /> },
 ];
 
 const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScenarios }) => {
