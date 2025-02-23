@@ -161,5 +161,59 @@ export async function submitAuditData(data: {
       ...data,
     },
   });
+
   redirect('/audit-data');
+}
+
+/**
+ * Retrieves the audit data record.
+ * If no record exists, returns 0 for every field.
+ */
+export async function getAuditData() {
+  const record = await prisma.auditData.findUnique({ where: { id: 1 } });
+  if (!record) {
+    return {
+      revenueYear1: 0,
+      revenueYear2: 0,
+      revenueYear3: 0,
+      netSalesYear1: 0,
+      netSalesYear2: 0,
+      netSalesYear3: 0,
+      costContractingYear1: 0,
+      costContractingYear2: 0,
+      costContractingYear3: 0,
+      overheadYear1: 0,
+      overheadYear2: 0,
+      overheadYear3: 0,
+      costOfGoodsSoldYear1: 0,
+      costOfGoodsSoldYear2: 0,
+      costOfGoodsSoldYear3: 0,
+      grossProfitYear1: 0,
+      grossProfitYear2: 0,
+      grossProfitYear3: 0,
+      grossMarginYear1: 0,
+      grossMarginYear2: 0,
+      grossMarginYear3: 0,
+      salariesAndBenefitsYear1: 0,
+      salariesAndBenefitsYear2: 0,
+      salariesAndBenefitsYear3: 0,
+      rentAndOverheadYear1: 0,
+      rentAndOverheadYear2: 0,
+      rentAndOverheadYear3: 0,
+      depreciationAndAmortizationYear1: 0,
+      depreciationAndAmortizationYear2: 0,
+      depreciationAndAmortizationYear3: 0,
+      interestYear1: 0,
+      interestYear2: 0,
+      interestYear3: 0,
+      totalOperatingExpensesYear1: 0,
+      totalOperatingExpensesYear2: 0,
+      totalOperatingExpensesYear3: 0,
+      operatingExpensesPercentYear1: 0,
+      operatingExpensesPercentYear2: 0,
+      operatingExpensesPercentYear3: 0,
+    };
+  }
+
+  return { ...record };
 }

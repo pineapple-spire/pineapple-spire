@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Col, Row, Table, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
-import { submitAuditData } from '@/lib/dbActions';
+import { submitAuditData, getAuditData } from '@/lib/dbActions';
 
 interface AuditDataFormValues {
   revenueYear1: number;
@@ -49,51 +49,58 @@ interface AuditDataFormValues {
 }
 
 const defaultValues: AuditDataFormValues = {
-  revenueYear1: 131345,
-  revenueYear2: 142341,
-  revenueYear3: 150772,
-  netSalesYear1: 131345,
-  netSalesYear2: 142341,
-  netSalesYear3: 150772,
-  costContractingYear1: 48456,
-  costContractingYear2: 52587,
-  costContractingYear3: 56643,
-  overheadYear1: 667,
-  overheadYear2: 667,
-  overheadYear3: 667,
-  costOfGoodsSoldYear1: 49123,
-  costOfGoodsSoldYear2: 53254,
-  costOfGoodsSoldYear3: 57310,
-  grossProfitYear1: 82222,
-  grossProfitYear2: 89087,
-  grossProfitYear3: 93462,
-  grossMarginYear1: 62.6,
-  grossMarginYear2: 62.6,
-  grossMarginYear3: 62.0,
-  salariesAndBenefitsYear1: 23872,
-  salariesAndBenefitsYear2: 23002,
-  salariesAndBenefitsYear3: 25245,
-  rentAndOverheadYear1: 10087,
-  rentAndOverheadYear2: 11020,
-  rentAndOverheadYear3: 11412,
-  depreciationAndAmortizationYear1: 17205,
-  depreciationAndAmortizationYear2: 16544,
-  depreciationAndAmortizationYear3: 16080,
-  interestYear1: 1500,
-  interestYear2: 900,
-  interestYear3: 900,
-  totalOperatingExpensesYear1: 52664,
-  totalOperatingExpensesYear2: 51466,
-  totalOperatingExpensesYear3: 53637,
-  operatingExpensesPercentYear1: 40.1,
-  operatingExpensesPercentYear2: 36.2,
-  operatingExpensesPercentYear3: 35.6,
+  revenueYear1: 0,
+  revenueYear2: 0,
+  revenueYear3: 0,
+  netSalesYear1: 0,
+  netSalesYear2: 0,
+  netSalesYear3: 0,
+  costContractingYear1: 0,
+  costContractingYear2: 0,
+  costContractingYear3: 0,
+  overheadYear1: 0,
+  overheadYear2: 0,
+  overheadYear3: 0,
+  costOfGoodsSoldYear1: 0,
+  costOfGoodsSoldYear2: 0,
+  costOfGoodsSoldYear3: 0,
+  grossProfitYear1: 0,
+  grossProfitYear2: 0,
+  grossProfitYear3: 0,
+  grossMarginYear1: 0,
+  grossMarginYear2: 0,
+  grossMarginYear3: 0,
+  salariesAndBenefitsYear1: 0,
+  salariesAndBenefitsYear2: 0,
+  salariesAndBenefitsYear3: 0,
+  rentAndOverheadYear1: 0,
+  rentAndOverheadYear2: 0,
+  rentAndOverheadYear3: 0,
+  depreciationAndAmortizationYear1: 0,
+  depreciationAndAmortizationYear2: 0,
+  depreciationAndAmortizationYear3: 0,
+  interestYear1: 0,
+  interestYear2: 0,
+  interestYear3: 0,
+  totalOperatingExpensesYear1: 0,
+  totalOperatingExpensesYear2: 0,
+  totalOperatingExpensesYear3: 0,
+  operatingExpensesPercentYear1: 0,
+  operatingExpensesPercentYear2: 0,
+  operatingExpensesPercentYear3: 0,
 };
 
 const AuditDataForm: React.FC = () => {
-  const { register, handleSubmit, reset } = useForm<AuditDataFormValues>({
-    defaultValues,
-  });
+  const { register, handleSubmit, reset } = useForm<AuditDataFormValues>({ defaultValues });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getAuditData();
+      reset(data);
+    };
+
+    fetchData();
+  }, [reset]);
 
   const onSubmit = async (data: AuditDataFormValues) => {
     try {
@@ -252,16 +259,14 @@ const AuditDataForm: React.FC = () => {
               <Form.Control
                 type="number"
                 step="0.01"
-                {
-                ...register('depreciationAndAmortizationYear1', { valueAsNumber: true })}
+                {...register('depreciationAndAmortizationYear1', { valueAsNumber: true })}
               />
             </td>
             <td>
               <Form.Control
                 type="number"
                 step="0.01"
-                {
-                ...register('depreciationAndAmortizationYear2', { valueAsNumber: true })}
+                {...register('depreciationAndAmortizationYear2', { valueAsNumber: true })}
               />
             </td>
             <td>
