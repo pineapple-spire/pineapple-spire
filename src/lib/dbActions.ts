@@ -1,74 +1,15 @@
 'use server';
 
-import { Stuff, Condition, Role } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { prisma } from './prisma';
-
-/**
- * Adds a new stuff to the database.
- * @param stuff, an object with the following properties: name, quantity, owner, condition.
- */
-export async function addStuff(stuff: { name: string; quantity: number; owner: string; condition: string }) {
-  // console.log(`addStuff data: ${JSON.stringify(stuff, null, 2)}`);
-  let condition: Condition = 'good';
-  if (stuff.condition === 'poor') {
-    condition = 'poor';
-  } else if (stuff.condition === 'excellent') {
-    condition = 'excellent';
-  } else {
-    condition = 'fair';
-  }
-  await prisma.stuff.create({
-    data: {
-      name: stuff.name,
-      quantity: stuff.quantity,
-      owner: stuff.owner,
-      condition,
-    },
-  });
-  // After adding, redirect to the list page
-  redirect('/list');
-}
-
-/**
- * Edits an existing stuff in the database.
- * @param stuff, an object with the following properties: id, name, quantity, owner, condition.
- */
-export async function editStuff(stuff: Stuff) {
-  // console.log(`editStuff data: ${JSON.stringify(stuff, null, 2)}`);
-  await prisma.stuff.update({
-    where: { id: stuff.id },
-    data: {
-      name: stuff.name,
-      quantity: stuff.quantity,
-      owner: stuff.owner,
-      condition: stuff.condition,
-    },
-  });
-  // After updating, redirect to the list page
-  redirect('/list');
-}
-
-/**
- * Deletes an existing stuff from the database.
- * @param id, the id of the stuff to delete.
- */
-export async function deleteStuff(id: number) {
-  // console.log(`deleteStuff id: ${id}`);
-  await prisma.stuff.delete({
-    where: { id },
-  });
-  // After deleting, redirect to the list page
-  redirect('/list');
-}
 
 /**
  * Creates a new user in the database.
  * @param credentials, an object with the following properties: email, password.
  */
 export async function createUser(credentials: { email: string; password: string }) {
-  // console.log(`createUser data: ${JSON.stringify(credentials, null, 2)}`);
   const password = await hash(credentials.password, 10);
   await prisma.user.create({
     data: {
@@ -83,7 +24,6 @@ export async function createUser(credentials: { email: string; password: string 
  * @param credentials, an object with the following properties: email, password.
  */
 export async function changePassword(credentials: { email: string; password: string }) {
-  // console.log(`changePassword data: ${JSON.stringify(credentials, null, 2)}`);
   const password = await hash(credentials.password, 10);
   await prisma.user.update({
     where: { email: credentials.email },
@@ -161,5 +101,59 @@ export async function submitAuditData(data: {
       ...data,
     },
   });
+
   redirect('/audit-data');
+}
+
+/**
+ * Retrieves the audit data record.
+ * If no record exists, returns 0 for every field.
+ */
+export async function getAuditData() {
+  const record = await prisma.auditData.findUnique({ where: { id: 1 } });
+  if (!record) {
+    return {
+      revenueYear1: 0,
+      revenueYear2: 0,
+      revenueYear3: 0,
+      netSalesYear1: 0,
+      netSalesYear2: 0,
+      netSalesYear3: 0,
+      costContractingYear1: 0,
+      costContractingYear2: 0,
+      costContractingYear3: 0,
+      overheadYear1: 0,
+      overheadYear2: 0,
+      overheadYear3: 0,
+      costOfGoodsSoldYear1: 0,
+      costOfGoodsSoldYear2: 0,
+      costOfGoodsSoldYear3: 0,
+      grossProfitYear1: 0,
+      grossProfitYear2: 0,
+      grossProfitYear3: 0,
+      grossMarginYear1: 0,
+      grossMarginYear2: 0,
+      grossMarginYear3: 0,
+      salariesAndBenefitsYear1: 0,
+      salariesAndBenefitsYear2: 0,
+      salariesAndBenefitsYear3: 0,
+      rentAndOverheadYear1: 0,
+      rentAndOverheadYear2: 0,
+      rentAndOverheadYear3: 0,
+      depreciationAndAmortizationYear1: 0,
+      depreciationAndAmortizationYear2: 0,
+      depreciationAndAmortizationYear3: 0,
+      interestYear1: 0,
+      interestYear2: 0,
+      interestYear3: 0,
+      totalOperatingExpensesYear1: 0,
+      totalOperatingExpensesYear2: 0,
+      totalOperatingExpensesYear3: 0,
+      operatingExpensesPercentYear1: 0,
+      operatingExpensesPercentYear2: 0,
+      operatingExpensesPercentYear3: 0,
+    };
+  }
+
+  return { ...record };
 }

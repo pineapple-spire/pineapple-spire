@@ -27,7 +27,6 @@ const NavBar: React.FC = () => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto justify-content-start">
-            {/* TODO: Add auth for navbar options depending on user. */}
             <Nav.Link
               id="about-nav"
               href="/about"
@@ -36,19 +35,23 @@ const NavBar: React.FC = () => {
             >
               About
             </Nav.Link>
-            <NavDropdown id="tools-dropdown" title="Browse Tools">
-              <NavDropdown.Item id="tools-dropdown-financial-compilation" href="/financial-compilation">
-                Financial Compilation
-              </NavDropdown.Item>
-              <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
-                Stress Test Tool
-              </NavDropdown.Item>
-              <NavDropdown.Item id="tools-dropdown-audit-data" href="/audit-data">
-                Audit Data
-              </NavDropdown.Item>
-            </NavDropdown>
+            {currentUser ? (
+              <NavDropdown id="tools-dropdown" title="Browse Tools">
+                <NavDropdown.Item id="tools-dropdown-financial-compilation" href="/financial-compilation">
+                  Financial Compilation
+                </NavDropdown.Item>
+                <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
+                  Stress Test Tool
+                </NavDropdown.Item>
+                <NavDropdown.Item id="tools-dropdown-audit-data" href="/audit-data">
+                  Audit Data
+                </NavDropdown.Item>
+              </NavDropdown>
+            ) : (
+              ''
+            )}
             {currentUser && role === 'ADMIN' ? (
-              <Nav.Link id="admin-stuff-nav" href="/admin" key="admin" active={pathName === '/admin'}>
+              <Nav.Link id="admin-nav" href="/admin" key="admin" active={pathName === '/admin'}>
                 Registered Users
               </Nav.Link>
             ) : (
@@ -71,11 +74,11 @@ const NavBar: React.FC = () => {
               <NavDropdown id="login-dropdown" title="Login">
                 <NavDropdown.Item id="login-dropdown-sign-in" href="/auth/signin">
                   <PersonFill />
-                  Sign in
+                  Sign In
                 </NavDropdown.Item>
                 <NavDropdown.Item id="login-dropdown-sign-up" href="/auth/signup">
                   <PersonPlusFill />
-                  Sign up
+                  Sign Up
                 </NavDropdown.Item>
               </NavDropdown>
             )}
