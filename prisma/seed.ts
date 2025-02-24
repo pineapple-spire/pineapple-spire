@@ -1,4 +1,4 @@
-import { PrismaClient, Role, Condition } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { hash } from 'bcrypt';
 import * as config from '../config/settings.development.json';
 
@@ -22,39 +22,19 @@ async function main() {
         role,
       },
     });
-    // console.log(`  Created user: ${user.email} with role: ${user.role}`);
-  });
-  config.defaultData.forEach(async (data, index) => {
-    let condition: Condition = 'good';
-    if (data.condition === 'poor') {
-      condition = 'poor';
-    } else if (data.condition === 'excellent') {
-      condition = 'excellent';
-    } else {
-      condition = 'fair';
-    }
-    console.log(`  Adding stuff: ${data.name} (${data.owner})`);
-    await prisma.stuff.upsert({
-      where: { id: index + 1 },
-      update: {},
-      create: {
-        name: data.name,
-        quantity: data.quantity,
-        owner: data.owner,
-        condition,
-      },
-    });
   });
 
-  console.log('Adding base stress scenarios');
-  await prisma.stressScenario.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      title: 'Stress Scenario #1',
-      description: 'This is the first base stress scenario.',
-      excelWorkbookUrl: 'https://example.com/file.xlsx',
-    },
+  config.defaultScenarios.forEach(async (scenario) => {
+    console.log('  Creating base stress test scenarios');
+    await prisma.stressScenario.upsert({
+      where: { id: scenario.id },
+      update: {},
+      create: {
+        title: scenario.title,
+        description: scenario.description,
+        excelWorkbookUrl: scenario.excelWorkbookUrl,
+      },
+    });
   });
 }
 main()
