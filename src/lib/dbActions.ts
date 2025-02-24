@@ -28,7 +28,7 @@ export async function addStuff(stuff: { name: string; quantity: number; owner: s
     },
   });
   // After adding, redirect to the list page
-  redirect('/list');
+  redirect('/');
 }
 
 /**
@@ -47,7 +47,7 @@ export async function editStuff(stuff: Stuff) {
     },
   });
   // After updating, redirect to the list page
-  redirect('/list');
+  redirect('/');
 }
 
 /**
@@ -60,7 +60,7 @@ export async function deleteStuff(id: number) {
     where: { id },
   });
   // After deleting, redirect to the list page
-  redirect('/list');
+  redirect('/');
 }
 
 /**

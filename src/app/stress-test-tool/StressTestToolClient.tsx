@@ -21,7 +21,7 @@ interface StressTestToolClientProps {
   initialScenarios: StressScenario[];
 }
 
-// TODO: Add other four stress tests.
+// TODO: Add other stress tests.
 const stressTests = [
   { id: 'stress1', label: 'Stress Test 1', component: <StressTest1 /> },
   { id: 'stress2', label: 'Stress Test 2', component: <StressTest2 /> },
@@ -150,19 +150,9 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScen
       <div className="position-relative">
         <Button
           variant="outline-primary"
-          className="rounded-circle"
-          style={{
-            width: '50px',
-            height: '50px',
-            fontSize: '1.5rem',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: '2rem',
-          }}
           onClick={handleModalShow}
         >
-          Add Custom Scenario
+          Add Scenario
         </Button>
       </div>
 
