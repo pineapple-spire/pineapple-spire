@@ -86,14 +86,14 @@ const PercentInput = () => {
 /* Table for stress test 5 */
 const StressTest5 = () => {
   const tableData = [
-    { year: 1, balance: '$10,000', contribution: '$1,000', interest: '$170', total: '$11,170' },
-    { year: 2, balance: '$11,170', contribution: '$1,000', interest: '$190.89', total: '$12,360.89' },
-    { year: 3, balance: '$12,360.89', contribution: '$1,000', interest: '$212.13', total: '$13,572.02' },
-    { year: 4, balance: '$13,572.02', contribution: '$1,000', interest: '$234.72', total: '$14,806.74' },
-    { year: 5, balance: '$14,806.74', contribution: '$1,000', interest: '$257.68', total: '$16,064.42' },
-    { year: 6, balance: '$16,064.42', contribution: '$1,000', interest: '$281.01', total: '$17,345.43' },
-    { year: 7, balance: '$17,345.43', contribution: '$1,000', interest: '$304.73', total: '$18,650.16' },
-    { year: 8, balance: '$18,650.16', contribution: '$1,000', interest: '$328.85', total: '$19,978.01' },
+    { year: 1, balance: '$50,000', contribution: '$-', interest: '$2,100', total: '$52,100' },
+    { year: 2, balance: '$52,100', contribution: '$-', interest: '$2,188', total: '$54,288' },
+    { year: 3, balance: '$54,288', contribution: '$-', interest: '$2,280', total: '$56,568' },
+    { year: 4, balance: '$56,568', contribution: '$-', interest: '$2,376', total: '$59,944' },
+    { year: 5, balance: '$58,944', contribution: '$-', interest: '$2,476', total: '$61,420' },
+    { year: 6, balance: '$61,420', contribution: '$-', interest: '$2,580', total: '$63,999' },
+    { year: 7, balance: '$63,999', contribution: '$-', interest: '$2,688', total: '$66,687' },
+    { year: 8, balance: '$66,687', contribution: '$-', interest: '$2,801', total: '$72,407' },
   ];
 
   return (
