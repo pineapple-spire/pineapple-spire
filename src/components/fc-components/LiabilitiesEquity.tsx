@@ -3,6 +3,26 @@
 import { Col, Container, Dropdown, DropdownButton, InputGroup, Form, Row, Table } from 'react-bootstrap';
 import { useState } from 'react';
 import FCNavbar from '@/components/fc-components/FCNavbar';
+import MultiplierInput from '@/components/fc-components/MultiplierInput';
+
+// Define the years for the table
+const years = Array.from({ length: 12 }, (_, i) => 2025 + i);
+
+// Define the financial categories for this page
+const financialCategories = [
+  'Accounts Payable',
+  'Debt Service',
+  'Taxes Payable',
+  'Total Current Liabilities',
+  'Debt Service',
+  'Loans Payable',
+  'Total Long Term Liabilities',
+  'Total Liabilities',
+  'Equity Capital',
+  'Retained Earnings',
+  'Total Stockholder Equity',
+  'Total Liabilities & Equity',
+];
 
 /* Dropdown button for the user to select forecast type (average or multiplier) */
 const ForecastTypeDropdown = () => {
@@ -20,115 +40,55 @@ const ForecastTypeDropdown = () => {
   );
 };
 
-/* Multiplier input form to calculate a fields multiplier */
-const MultiplierInput = () => {
-  const [multiplier, setMultiplier] = useState('');
-  const handleMultiplier = (event: { target: { value: any; }; }) => {
-    const inputNumber = event.target.value;
-    if (inputNumber === '') {
-      setMultiplier('');
-    } else {
-      setMultiplier(inputNumber);
-    }
+/* Creates Liabilities and Equity table */
+const FCTable = () => {
+  const [multiplier, setMultiplier] = useState<string>('');
+
+  // Function to handle multiplier change and update state in FCTable
+  const handleMultiplierChange = (value: string) => {
+    setMultiplier(value);
   };
   return (
-    <InputGroup className="mb-3">
-      <InputGroup.Text>
-        Enter % Multiplier
-      </InputGroup.Text>
-      <Form.Control
-        placeholder="Enter a number 0-100"
-        value={multiplier}
-        onChange={handleMultiplier}
-      />
-    </InputGroup>
+    <Container>
+      <Row>
+        <FCNavbar />
+      </Row>
+      <Row className="m-3">
+        <Col>
+          <h3 style={{ fontWeight: '600', color: '#4e73df' }}>Liabilities & Equity</h3>
+          <p className="text-muted" style={{ fontSize: '1rem' }}>
+            Analyze the different types of liabilities and their forecast.
+          </p>
+        </Col>
+        <Col>
+          <MultiplierInput onMultiplierChange={handleMultiplierChange} />
+        </Col>
+      </Row>
+      <Row>
+        <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
+          <Table striped bordered>
+            <thead>
+              <tr>
+                <th>Select Forecast Type</th>
+                <th>Name</th>
+                {years.map((year) => (
+                  <th key={year}>{year}</th> // Displays years 2025–2036
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {financialCategories.map((name) => (
+                <tr key={name}>
+                  <td>{!name.includes('Total') ? <ForecastTypeDropdown /> : null}</td>
+                  <td>{name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      </Row>
+    </Container>
   );
 };
-
-/* Creates Liabilities and Equity table */
-const FCTable = () => (
-  <Container>
-    <Row>
-      <FCNavbar />
-    </Row>
-    <Row className="m-3">
-      <Col>
-        <MultiplierInput />
-      </Col>
-    </Row>
-    <Row>
-      <Table striped bordered>
-        <thead>
-          <tr>
-            <th>Select Forecast Type</th>
-            <th>Name</th>
-            <th>Year 1</th>
-            <th>Year 2</th>
-            <th>Year 3</th>
-            <th>Year 4</th>
-            <th>Year 5</th>
-            <th>Year 6</th>
-            <th>Year 7</th>
-            <th>Year 8</th>
-            <th>Year 9</th>
-            <th>Year 10</th>
-            <th>Year 11</th>
-            <th>Year 12</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><ForecastTypeDropdown /></td>
-            <td>Accounts Payable</td>
-          </tr>
-          <tr>
-            <td><ForecastTypeDropdown /></td>
-            <td>Debt Service</td>
-          </tr>
-          <tr>
-            <td><ForecastTypeDropdown /></td>
-            <td>Taxes Payable</td>
-          </tr>
-          <tr>
-            <td>|</td>
-            <td>Total Current Liabilities</td>
-          </tr>
-          <tr>
-            <td><ForecastTypeDropdown /></td>
-            <td>Debt Service</td>
-          </tr>
-          <tr>
-            <td><ForecastTypeDropdown /></td>
-            <td>Loans Payable</td>
-          </tr>
-          <tr>
-            <td>|</td>
-            <td>Total Long Term Liabilities</td>
-          </tr>
-          <tr>
-            <td>|</td>
-            <td>Total Liabilities</td>
-          </tr>
-          <tr>
-            <td><ForecastTypeDropdown /></td>
-            <td>Equity Capital</td>
-          </tr>
-          <tr>
-            <td><ForecastTypeDropdown /></td>
-            <td>Retained Earnings</td>
-          </tr>
-          <tr>
-            <td>|</td>
-            <td>Total Stockholder&apos;s Equity</td>
-          </tr>
-          <tr>
-            <td>|</td>
-            <td>Total Liabilities and Equity</td>
-          </tr>
-        </tbody>
-      </Table>
-    </Row>
-  </Container>
-);
 
 export default FCTable;
