@@ -22,7 +22,7 @@ interface UserRoleProps {
  */
 const onSubmit = async (data: UserRoleProps) => {
   await changeRole(data);
-  swal('Success', 'Your role has been updated', 'success', { timer: 2000 });
+  swal('Success', 'Role has been updated', 'success', { timer: 2000 });
 };
 
 /**
