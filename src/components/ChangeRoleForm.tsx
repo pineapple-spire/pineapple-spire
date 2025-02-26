@@ -5,9 +5,10 @@ import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Role } from '@prisma/client';
-import { LoggedInUserSchema } from '@/lib/validationSchemas';
 import { changeRole } from '@/lib/dbActions';
+import { LoggedInUserSchema } from '@/lib/validationSchemas';
+
+type Role = 'USER' | 'ADMIN' | 'AUDITOR' | 'ANALYST';
 
 interface UserRoleProps {
   id: number;
@@ -91,6 +92,8 @@ const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
                   >
                     <option value="ADMIN">ADMIN</option>
                     <option value="USER">USER</option>
+                    <option value="AUDITOR">AUDITOR</option>
+                    <option value="ANALYST">ANALYST</option>
                   </Form.Select>
                   {errors.role && (
                     <Form.Control.Feedback type="invalid">
