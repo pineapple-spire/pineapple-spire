@@ -1,6 +1,6 @@
 'use client';
 
-import { Col, Container, Dropdown, DropdownButton, InputGroup, Form, Row, Table } from 'react-bootstrap';
+import { Col, Container, Dropdown, DropdownButton, Row, Table } from 'react-bootstrap';
 import { useState } from 'react';
 import FCNavbar from '@/components/fc-components/FCNavbar';
 import MultiplierInput from '@/components/fc-components/MultiplierInput';

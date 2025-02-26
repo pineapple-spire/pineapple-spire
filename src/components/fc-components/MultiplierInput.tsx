@@ -1,5 +1,5 @@
 // MultiplierInput.tsx
-import { Container, Row, Col, Form, Button, InputGroup } from 'react-bootstrap';
+import { Form, Button, InputGroup } from 'react-bootstrap';
 import { useState } from 'react';
 
 interface MultiplierInputProps {
