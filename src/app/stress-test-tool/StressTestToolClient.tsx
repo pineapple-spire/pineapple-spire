@@ -17,6 +17,7 @@ import StressTest1 from '@/components/StressTest1';
 import StressTest2 from '@/components/StressTest2';
 import StressTest3 from '@/components/StressTest3';
 import StressTest4 from '@/components/StressTest4';
+import StressTest5 from '@/components/StressTest5';
 
 interface StressTestToolClientProps {
   initialScenarios: StressScenario[];
@@ -28,6 +29,7 @@ const stressTests = [
   { id: 'stress2', label: 'Stress Test 2', component: <StressTest2 /> },
   { id: 'stress3', label: 'Stress Test 3', component: <StressTest3 /> },
   { id: 'stress4', label: 'Stress Test 4', component: <StressTest4 /> },
+  { id: 'stress5', label: 'Stress Test 5', component: <StressTest5 /> },
 ];
 
 const StressTestToolClient: React.FC<StressTestToolClientProps> = ({ initialScenarios }) => {
