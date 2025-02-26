@@ -39,17 +39,39 @@ export function calculateIPMT(
 }
 
 /**
- * TODO: Have a method for each stress test that returns a suitable
- * data type for the row, then we can populate table on the UI.
- * E.g.,
+ * Calculates the future value of an investment with monthly compounding, given:
  *
- * Function that returns Stress1DataRow[]
+ *  @param presentValue - Initial lump sum.
+ *  @param monthlyContribution - Amount contributed each month.
+ *  @param monthlyRate - Monthly interest rate (if 4.2% APR, monthlyRate = 0.042/12).
+ *  @param totalMonths - Total number of months in the investment period.
  *
- * Array.from({ length: years }, (_, i)) => {
- *  const row: Stress1DataRow = {
- *      ...
- *      year, balance, interestEarned, etc.
- *  };
- *  return row;
- * });
+ * Formula:
+ *   FV = PV * (1 + i)^n + C * [((1 + i)^n - 1) / i]
  */
+export function computeFutureValue(
+  presentValue: number,
+  monthlyContribution: number,
+  monthlyRate: number,
+  totalMonths: number,
+): number {
+  if (monthlyRate === 0) {
+    return presentValue + monthlyContribution * totalMonths;
+  }
+
+  const fvLumpSum = presentValue * (1 + monthlyRate) ** totalMonths;
+  const fvContributions = monthlyContribution * (((1 + monthlyRate) ** totalMonths - 1) / monthlyRate);
+
+  return fvLumpSum + fvContributions;
+}
+
+/**
+ * Format numbers as currency strings, e.g. 1234.56 -> "$1,234.56"
+ */
+export function formatCurrency(value: number): string {
+  return value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  });
+}
