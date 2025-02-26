@@ -38,7 +38,7 @@ const ForecastTypeDropdown = () => {
 
 /* Creates Operating Expenses table */
 const FCTable = () => {
-  const [multiplier, setMultiplier] = useState<string>('');
+  const [, setMultiplier] = useState<string>('');
 
   // Function to handle multiplier change and update state in FCTable
   const handleMultiplierChange = (value: string) => {

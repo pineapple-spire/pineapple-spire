@@ -1,4 +1,3 @@
-// MultiplierInput.tsx
 import { Form, Button, InputGroup } from 'react-bootstrap';
 import { useState } from 'react';
 
@@ -9,7 +8,6 @@ interface MultiplierInputProps {
 const MultiplierInput: React.FC<MultiplierInputProps> = ({ onMultiplierChange }) => {
   const [multiplier, setMultiplier] = useState('');
 
-  // Handle the multiplier input
   const handleMultiplier = (event: { target: { value: string } }) => {
     const inputNumber = event.target.value;
     setMultiplier(inputNumber);
@@ -22,8 +20,8 @@ const MultiplierInput: React.FC<MultiplierInputProps> = ({ onMultiplierChange })
   };
 
   const numericMultiplier = parseFloat(multiplier);
-  const isValidMultiplier =
-    multiplier !== '' && !isNaN(numericMultiplier) && numericMultiplier >= 0 && numericMultiplier <= 100;
+  const isValidMultiplier = multiplier !== ''
+    && !Number.isNaN(numericMultiplier) && numericMultiplier >= 0 && numericMultiplier <= 100;
 
   return (
     <Form.Group className="mb-3" style={{ maxWidth: '400px', width: '100%' }}>
