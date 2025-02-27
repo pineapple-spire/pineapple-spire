@@ -7,8 +7,7 @@ import swal from 'sweetalert';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { changeRole } from '@/lib/dbActions';
 import { LoggedInUserSchema } from '@/lib/validationSchemas';
-
-type Role = 'USER' | 'ADMIN' | 'AUDITOR' | 'ANALYST';
+import { Role } from '@prisma/client';
 
 interface UserRoleProps {
   id: number;
@@ -94,6 +93,7 @@ const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
                     <option value="USER">USER</option>
                     <option value="AUDITOR">AUDITOR</option>
                     <option value="ANALYST">ANALYST</option>
+                    <option value="VIEWER">VIEWER</option>
                   </Form.Select>
                   {errors.role && (
                     <Form.Control.Feedback type="invalid">

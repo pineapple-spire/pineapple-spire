@@ -15,6 +15,8 @@ async function main() {
       role = 'AUDITOR' as Role;
     } else if (account.role === 'ANALYST') {
       role = 'ANALYST' as Role;
+    } else if (account.role === 'VIEWER') {
+      role = 'VIEWER' as Role;
     }
     console.log(`  Creating user: ${account.email} with role: ${role}`);
     await prisma.user.upsert({

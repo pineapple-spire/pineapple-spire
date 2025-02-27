@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 export const LoggedInUserSchema = Yup.object({
   id: Yup.number().required(),
   email: Yup.string().required(),
-  role: Yup.string().oneOf(['USER', 'ADMIN', 'AUDITOR', 'ANALYST']).required(),
+  role: Yup.string().oneOf(['USER', 'ADMIN', 'AUDITOR', 'ANALYST', 'VIEWER']).required(),
 });
 
 export const SignInSchema = Yup.object({
