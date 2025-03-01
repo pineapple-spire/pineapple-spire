@@ -1,94 +1,70 @@
 'use client';
 
-import { Col, Container, Form, InputGroup, Row, Table } from 'react-bootstrap';
+import { Col, Container, Row, Table } from 'react-bootstrap';
 import { useState } from 'react';
+import { formatCurrency } from '@/lib/mathUtils';
+import PercentInput from '@/components/PercentInput';
 
-/* Input form to get percentage to calculate the decrease in revenue */
-const PercentInput = () => {
-  const [percent, setPercent] = useState('');
-  const handlePercent = (event: { target: { value: any; }; }) => {
-    const inputNumber = event.target.value;
-    if (inputNumber === '') {
-      setPercent('');
-    } else {
-      setPercent(inputNumber);
-    }
-  };
+/**
+ * StressTest2 calculates and displays a revenue drop scenario.
+ */
+const StressTest2 = () => {
+  // Default percent drop is 60%
+  const [percent, setPercent] = useState<string>('60');
+
+  // Convert user input to a number (or default to 0 if invalid)
+  const dropPercent = Number(percent) || 0;
+
+  const baseRevenue = 153034; // Revenue for 2025
+  const growthRate = 0.015; // 1.5% annual growth
+  const startYear = 2025;
+  const totalYears = 5; // 2025 to 2036
+
+  const rows = Array.from({ length: totalYears }, (_, i) => {
+    const year = startYear + i;
+    // Revenue in year = baseRevenue * (1 + growthRate)^(year - startYear)
+    const totalRevenue = baseRevenue * (1 + growthRate) ** i;
+    // Revenue drop in dollars = totalRevenue * (dropPercent / 100)
+    const revenueDrop = totalRevenue * (dropPercent / 100);
+    return {
+      year,
+      totalRevenue,
+      revenueDrop,
+    };
+  });
+
   return (
-    <InputGroup className="mb-3">
-      <InputGroup.Text>
-        % Decrease in Revenues
-      </InputGroup.Text>
-      <Form.Control
-        placeholder="Enter a number 0-100"
-        value={percent}
-        onChange={handlePercent}
-      />
-    </InputGroup>
+    <Container>
+      <Row className="m-3">
+        <Col className="mx-auto">
+          <h4>60% Sustained Drop in Return Rate of Investment</h4>
+        </Col>
+        <Col>
+          <PercentInput percent={percent} onChange={setPercent} />
+        </Col>
+      </Row>
+      <Row>
+        <Table striped bordered>
+          <thead>
+            <tr>
+              <th>Fiscal Year</th>
+              <th>Total Revenues</th>
+              <th>Decrease in Revenues</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.year}>
+                <td>{row.year}</td>
+                <td>{formatCurrency(row.totalRevenue)}</td>
+                <td>{formatCurrency(row.revenueDrop)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Row>
+    </Container>
   );
 };
-
-/* Table for stress test 2 */
-const StressTest2 = () => (
-  <Container>
-    <Row className="m-3">
-      <Col className="mx-auto">
-        <h4>60% Sustained drop in return rate of investment</h4>
-      </Col>
-      <Col>
-        <PercentInput />
-      </Col>
-    </Row>
-    <Row>
-      <Table striped bordered>
-        <thead>
-          <tr>
-            <th>Fiscal Year</th>
-            <th>Total Revenues</th>
-            <th>Decrease in Revenues</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>2025</td>
-          </tr>
-          <tr>
-            <td>2026</td>
-          </tr>
-          <tr>
-            <td>2027</td>
-          </tr>
-          <tr>
-            <td>2028</td>
-          </tr>
-          <tr>
-            <td>2029</td>
-          </tr>
-          <tr>
-            <td>2030</td>
-          </tr>
-          <tr>
-            <td>2031</td>
-          </tr>
-          <tr>
-            <td>2032</td>
-          </tr>
-          <tr>
-            <td>2033</td>
-          </tr>
-          <tr>
-            <td>2034</td>
-          </tr>
-          <tr>
-            <td>2035</td>
-          </tr>
-          <tr>
-            <td>2036</td>
-          </tr>
-        </tbody>
-      </Table>
-    </Row>
-  </Container>
-);
 
 export default StressTest2;
