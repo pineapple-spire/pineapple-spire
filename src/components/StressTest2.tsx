@@ -1,29 +1,32 @@
 'use client';
 
-import { Col, Container, Row, Table } from 'react-bootstrap';
-import { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
+import { Container, Row, Col, Form, Table } from 'react-bootstrap';
 import { formatCurrency } from '@/lib/mathUtils';
-import PercentInput from '@/components/PercentInput';
 
 /**
  * StressTest2 calculates and displays a revenue drop scenario.
  */
 const StressTest2 = () => {
-  // Default percent drop is 60%
-  const [percent, setPercent] = useState<string>('60');
+  // Set default values for parameters
+  const [initialPercent, setInitialPercent] = useState<string>('60');
+  const [baseRevenue, setBaseRevenue] = useState<string>('153034');
+  const [growthRate, setGrowthRate] = useState<string>('0.015');
+  const [startYear, setStartYear] = useState<string>('2025');
+  const [totalYears, setTotalYears] = useState<string>('5');
 
-  // Convert user input to a number (or default to 0 if invalid)
-  const dropPercent = Number(percent) || 0;
+  // Convert input strings to numbers (or fallback to 0)
+  const dropPercent = Number(initialPercent) || 0;
+  const baseRevenueNum = Number(baseRevenue) || 0;
+  const growthRateNum = Number(growthRate) || 0;
+  const startYearNum = Number(startYear) || 0;
+  const totalYearsNum = Number(totalYears) || 0;
 
-  const baseRevenue = 153034; // Revenue for 2025
-  const growthRate = 0.015; // 1.5% annual growth
-  const startYear = 2025;
-  const totalYears = 5; // 2025 to 2036
-
-  const rows = Array.from({ length: totalYears }, (_, i) => {
-    const year = startYear + i;
-    // Revenue in year = baseRevenue * (1 + growthRate)^(year - startYear)
-    const totalRevenue = baseRevenue * (1 + growthRate) ** i;
+  // Create revenue rows based on the provided parameters
+  const rows = Array.from({ length: totalYearsNum }, (_, i) => {
+    const year = startYearNum + i;
+    // Revenue in a given year: baseRevenue * (1 + growthRate)^i
+    const totalRevenue = baseRevenueNum * (1 + growthRateNum) ** i;
     // Revenue drop in dollars = totalRevenue * (dropPercent / 100)
     const revenueDrop = totalRevenue * (dropPercent / 100);
     return {
@@ -33,14 +36,61 @@ const StressTest2 = () => {
     };
   });
 
+  const handleChange = (setter: (value: string) => void) => (e:
+  ChangeEvent<HTMLInputElement>) => setter(e.target.value);
+
   return (
     <Container>
-      <Row className="m-3">
-        <Col className="mx-auto">
-          <h4>60% Sustained Drop in Return Rate of Investment</h4>
-        </Col>
+      <Row className="my-3">
         <Col>
-          <PercentInput percent={percent} onChange={setPercent} />
+          <h4>Customize Stress Test Parameters</h4>
+          <Form>
+            <Form.Group className="mb-3" controlId="initialPercent">
+              <Form.Label>Initial Percent Drop</Form.Label>
+              <Form.Control
+                type="text"
+                value={initialPercent}
+                onChange={handleChange(setInitialPercent)}
+                placeholder="Enter percent drop (0-100)"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="baseRevenue">
+              <Form.Label>Base Revenue</Form.Label>
+              <Form.Control
+                type="text"
+                value={baseRevenue}
+                onChange={handleChange(setBaseRevenue)}
+                placeholder="Enter base revenue"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="growthRate">
+              <Form.Label>Growth Rate</Form.Label>
+              <Form.Control
+                type="text"
+                value={growthRate}
+                onChange={handleChange(setGrowthRate)}
+                placeholder="Enter growth rate (e.g., 0.015 for 1.5%)"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="startYear">
+              <Form.Label>Start Year</Form.Label>
+              <Form.Control
+                type="text"
+                value={startYear}
+                onChange={handleChange(setStartYear)}
+                placeholder="Enter start year"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="totalYears">
+              <Form.Label>Total Years</Form.Label>
+              <Form.Control
+                type="text"
+                value={totalYears}
+                onChange={handleChange(setTotalYears)}
+                placeholder="Enter total number of years"
+              />
+            </Form.Group>
+          </Form>
         </Col>
       </Row>
       <Row>
