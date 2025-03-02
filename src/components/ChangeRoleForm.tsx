@@ -5,9 +5,9 @@ import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Role } from '@prisma/client';
-import { LoggedInUserSchema } from '@/lib/validationSchemas';
 import { changeRole } from '@/lib/dbActions';
+import { LoggedInUserSchema } from '@/lib/validationSchemas';
+import { Role } from '@prisma/client';
 
 interface UserRoleProps {
   id: number;
@@ -21,7 +21,7 @@ interface UserRoleProps {
  */
 const onSubmit = async (data: UserRoleProps) => {
   await changeRole(data);
-  swal('Success', 'Your role has been updated', 'success', { timer: 2000 });
+  swal('Success', 'Role has been updated', 'success', { timer: 2000 });
 };
 
 /**
@@ -91,6 +91,9 @@ const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
                   >
                     <option value="ADMIN">ADMIN</option>
                     <option value="USER">USER</option>
+                    <option value="AUDITOR">AUDITOR</option>
+                    <option value="ANALYST">ANALYST</option>
+                    <option value="VIEWER">VIEWER</option>
                   </Form.Select>
                   {errors.role && (
                     <Form.Control.Feedback type="invalid">
