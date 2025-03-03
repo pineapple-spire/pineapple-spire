@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Table, Form } from 'react-bootstrap';
 import { computeFutureValue, formatCurrency } from '@/lib/mathUtils';
+import CommonTabs from '@/components/CommonTabs';
 
 /**
  * Returns an array of objects representing a year-by-year breakdown of investment.
@@ -40,16 +41,27 @@ function getYearlyBreakdown(
   return breakdown;
 }
 
+/* Get the residual effects for the stress test. */
+function getResidualEffects(withDrop: any[], noDrop: any[]) {
+  let cumulativeLost = 0;
+  return withDrop.map((withDropRow: any, index: number) => {
+    const noDropRow = noDrop[index];
+    const lostThisYear = noDropRow.interestEarned - withDropRow.interestEarned;
+    cumulativeLost += lostThisYear;
+
+    return {
+      year: withDropRow.year,
+      lostThisYear,
+      cumulativeLost,
+    };
+  });
+}
+
 /**
  * StressTest1
  *
  * This component demonstrates a side-by-side comparison of an investment
- * scenario with a 30% drop vs. without a 30% drop. The user can modify:
- *   - Present Value
- *   - Interest Rate
- *   - Term (years)
- *   - Monthly Contribution
- *   - % Rate of Return Drop
+ * scenario with a 30% drop vs. without a 30% drop.
  */
 const StressTest1: React.FC = () => {
   const [presentValue, setPresentValue] = useState<number>(50000);
@@ -57,6 +69,8 @@ const StressTest1: React.FC = () => {
   const [term, setTerm] = useState<number>(30);
   const [monthlyContribution, setMonthlyContribution] = useState<number>(1000);
   const [dropRate, setDropRate] = useState<number>(30);
+
+  const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>('stressEffects');
 
   const monthlyRateNoDrop = (interestRate / 100) / 12;
   const monthlyRateWithDrop = ((interestRate * (1 - dropRate / 100)) / 100) / 12;
@@ -108,10 +122,16 @@ const StressTest1: React.FC = () => {
     term,
   );
 
+  const residualData = getResidualEffects(breakdownWithDrop, breakdownNoDrop);
+
   return (
     <Container className="my-4">
-      <h2 className="mb-4">Stress Test #1 - 30% Drop in Return on Initial Investment</h2>
+      <h2 className="mb-4">Stress Test #1: Drop in Return on Initial Investment</h2>
 
+      <CommonTabs
+        defaultTab="stressEffects"
+        onTabChange={(tab) => setActiveTab(tab === 'residualEffects' ? 'residualEffects' : 'stressEffects')}
+      />
       <Row className="mb-4">
         {/* Inputs Section */}
         <Col xs={12} md={4}>
@@ -162,156 +182,189 @@ const StressTest1: React.FC = () => {
             />
           </Form.Group>
         </Col>
+      </Row>
 
-        {/* Summary Tables */}
-        <Col xs={12} md={8}>
+      {activeTab === 'stressEffects' ? (
+        <>
+          {/* Summary Tables */}
+          <Col xs={12} md={8}>
+            <Row>
+              <Col xs={6}>
+                <Table bordered>
+                  <thead>
+                    <tr>
+                      <th colSpan={2} className="text-center">
+                        With
+                        {' '}
+                        {dropRate}
+                        % Drop
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Value after 5 years</td>
+                      <td>{formatCurrency(fvWithDrop5)}</td>
+                    </tr>
+                    <tr>
+                      <td>Interest Earned after 5 years</td>
+                      <td>{formatCurrency(interestWithDrop5)}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Value after
+                        {term}
+                        {' '}
+                        years
+                      </td>
+                      <td>{formatCurrency(fvWithDropTerm)}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Interest Earned after
+                        {term}
+                        {' '}
+                        years
+                      </td>
+                      <td>{formatCurrency(interestWithDropTerm)}</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </Col>
+              <Col xs={6}>
+                <Table bordered>
+                  <thead>
+                    <tr>
+                      <th colSpan={2} className="text-center">
+                        Without
+                        {' '}
+                        {dropRate}
+                        % Drop
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Value after 5 years</td>
+                      <td>{formatCurrency(fvNoDrop5)}</td>
+                    </tr>
+                    <tr>
+                      <td>Interest Earned after 5 years</td>
+                      <td>{formatCurrency(interestNoDrop5)}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Value after
+                        {term}
+                        {' '}
+                        years
+                      </td>
+                      <td>{formatCurrency(fvNoDropTerm)}</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Interest Earned after
+                        {term}
+                        {' '}
+                        years
+                      </td>
+                      <td>{formatCurrency(interestNoDropTerm)}</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </Col>
+            </Row>
+          </Col>
+
+          {/* Detailed Year-by-Year Tables */}
           <Row>
-            <Col xs={6}>
+            <Col xs={12} md={6}>
+              <h5>
+                Detailed Breakdown (With
+                {dropRate}
+                % Drop)
+              </h5>
               <Table bordered>
                 <thead>
                   <tr>
-                    <th colSpan={2} className="text-center">
-                      With
-                      {' '}
-                      {dropRate}
-                      % Drop
-                    </th>
+                    <th>Year</th>
+                    <th>End-of-Year Balance</th>
+                    <th>Total Contrib. This Year</th>
+                    <th>Interest Earned This Year</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Value after 5 years</td>
-                    <td>{formatCurrency(fvWithDrop5)}</td>
-                  </tr>
-                  <tr>
-                    <td>Interest Earned after 5 years</td>
-                    <td>{formatCurrency(interestWithDrop5)}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      Value after
-                      {term}
-                      {' '}
-                      years
-                    </td>
-                    <td>{formatCurrency(fvWithDropTerm)}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      Interest Earned after
-                      {term}
-                      {' '}
-                      years
-                    </td>
-                    <td>{formatCurrency(interestWithDropTerm)}</td>
-                  </tr>
+                  {breakdownWithDrop.map((row) => (
+                    <tr key={row.year}>
+                      <td>{row.year}</td>
+                      <td>{formatCurrency(row.balance)}</td>
+                      <td>{formatCurrency(row.contribution)}</td>
+                      <td>{formatCurrency(row.interestEarned)}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
             </Col>
-            <Col xs={6}>
+
+            <Col xs={12} md={6}>
+              <h5>
+                Detailed Breakdown (Without
+                {dropRate}
+                % Drop)
+              </h5>
               <Table bordered>
                 <thead>
                   <tr>
-                    <th colSpan={2} className="text-center">
-                      Without
-                      {' '}
-                      {dropRate}
-                      % Drop
-                    </th>
+                    <th>Year</th>
+                    <th>End-of-Year Balance</th>
+                    <th>Total Contrib. This Year</th>
+                    <th>Interest Earned This Year</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Value after 5 years</td>
-                    <td>{formatCurrency(fvNoDrop5)}</td>
-                  </tr>
-                  <tr>
-                    <td>Interest Earned after 5 years</td>
-                    <td>{formatCurrency(interestNoDrop5)}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      Value after
-                      {term}
-                      {' '}
-                      years
-                    </td>
-                    <td>{formatCurrency(fvNoDropTerm)}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      Interest Earned after
-                      {term}
-                      {' '}
-                      years
-                    </td>
-                    <td>{formatCurrency(interestNoDropTerm)}</td>
-                  </tr>
+                  {breakdownNoDrop.map((row) => (
+                    <tr key={row.year}>
+                      <td>{row.year}</td>
+                      <td>{formatCurrency(row.balance)}</td>
+                      <td>{formatCurrency(row.contribution)}</td>
+                      <td>{formatCurrency(row.interestEarned)}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </Table>
             </Col>
           </Row>
-        </Col>
-      </Row>
-
-      {/* Detailed Year-by-Year Tables */}
-      <Row>
-        <Col xs={12} md={6}>
-          <h5>
-            Detailed Breakdown (With
-            {dropRate}
-            % Drop)
-          </h5>
-          <Table bordered>
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>End-of-Year Balance</th>
-                <th>Total Contrib. This Year</th>
-                <th>Interest Earned This Year</th>
-              </tr>
-            </thead>
-            <tbody>
-              {breakdownWithDrop.map((row) => (
-                <tr key={row.year}>
-                  <td>{row.year}</td>
-                  <td>{formatCurrency(row.balance)}</td>
-                  <td>{formatCurrency(row.contribution)}</td>
-                  <td>{formatCurrency(row.interestEarned)}</td>
+        </>
+      ) : (
+        <Row>
+          <Col>
+            <h5>
+              Residual Effects: Lost Interest Over
+              {term}
+              {' '}
+              Years
+            </h5>
+            <Table bordered>
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Lost Interest This Year</th>
+                  <th>Cumulative Lost Interest</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Col>
-
-        <Col xs={12} md={6}>
-          <h5>
-            Detailed Breakdown (Without
-            {dropRate}
-            % Drop)
-          </h5>
-          <Table bordered>
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>End-of-Year Balance</th>
-                <th>Total Contrib. This Year</th>
-                <th>Interest Earned This Year</th>
-              </tr>
-            </thead>
-            <tbody>
-              {breakdownNoDrop.map((row) => (
-                <tr key={row.year}>
-                  <td>{row.year}</td>
-                  <td>{formatCurrency(row.balance)}</td>
-                  <td>{formatCurrency(row.contribution)}</td>
-                  <td>{formatCurrency(row.interestEarned)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
+              </thead>
+              <tbody>
+                {residualData.map((row) => (
+                  <tr key={row.year}>
+                    <td>{row.year}</td>
+                    <td>{formatCurrency(row.lostThisYear)}</td>
+                    <td>{formatCurrency(row.cumulativeLost)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+      )}
     </Container>
   );
 };
