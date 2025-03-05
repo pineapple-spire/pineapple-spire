@@ -280,7 +280,7 @@ const StressTest1: React.FC = () => {
           <Row>
             <Col xs={12} md={6}>
               <h5>
-                Detailed Breakdown (With
+                Detailed Breakdown (With&nbsp;
                 {dropRate}
                 % Drop)
               </h5>
@@ -308,7 +308,7 @@ const StressTest1: React.FC = () => {
 
             <Col xs={12} md={6}>
               <h5>
-                Detailed Breakdown (Without
+                Detailed Breakdown (Without&nbsp;
                 {dropRate}
                 % Drop)
               </h5>
