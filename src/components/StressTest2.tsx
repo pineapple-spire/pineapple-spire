@@ -77,55 +77,75 @@ const StressTest2 = () => {
 
   return (
     <Container>
+      <h2 className="mb-4">Model Revenue Drop over Desired Period</h2>
+
       <Row className="my-3">
-        <Col>
-          <h4>Stress Test Parameters</h4>
+        <Col md={12}>
           <Form>
-            <Form.Group className="mb-3" controlId="initialPercent">
-              <Form.Label>Initial Percent Drop</Form.Label>
-              <Form.Control
-                type="text"
-                value={initialPercent}
-                onChange={handleChange(setInitialPercent)}
-                placeholder="Enter percent drop (0-100)"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="baseRevenue">
-              <Form.Label>Base Revenue</Form.Label>
-              <Form.Control
-                type="text"
-                value={baseRevenue}
-                onChange={handleChange(setBaseRevenue)}
-                placeholder="Enter base revenue"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="growthRate">
-              <Form.Label>Growth Rate</Form.Label>
-              <Form.Control
-                type="text"
-                value={growthRate}
-                onChange={handleChange(setGrowthRate)}
-                placeholder="Enter growth rate (e.g., 0.015 for 1.5%)"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="startYear">
-              <Form.Label>Start Year</Form.Label>
-              <Form.Control
-                type="text"
-                value={startYear}
-                onChange={handleChange(setStartYear)}
-                placeholder="Enter start year"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3" controlId="totalYears">
-              <Form.Label>Total Years</Form.Label>
-              <Form.Control
-                type="text"
-                value={totalYears}
-                onChange={handleChange(setTotalYears)}
-                placeholder="Enter total number of years"
-              />
-            </Form.Group>
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-2" controlId="initialPercent">
+                  <Form.Label>Initial Percent Drop (%)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={initialPercent}
+                    onChange={handleChange(setInitialPercent)}
+                    placeholder="e.g., 2.25"
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={4}>
+                <Form.Group className="mb-2" controlId="baseRevenue">
+                  <Form.Label>Base Revenue ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={baseRevenue}
+                    onChange={handleChange(setBaseRevenue)}
+                    placeholder="e.g., 153034"
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={4}>
+                <Form.Group className="mb-2" controlId="growthRate">
+                  <Form.Label>Growth Rate (%)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.001"
+                    value={growthRate}
+                    onChange={handleChange(setGrowthRate)}
+                    placeholder="e.g., 1.5"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-2" controlId="startYear">
+                  <Form.Label>Start Year</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={startYear}
+                    onChange={handleChange(setStartYear)}
+                    placeholder="e.g., 2025"
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group className="mb-2" controlId="totalYears">
+                  <Form.Label>Total Years</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={totalYears}
+                    onChange={handleChange(setTotalYears)}
+                    placeholder="e.g., 5"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
           </Form>
         </Col>
       </Row>

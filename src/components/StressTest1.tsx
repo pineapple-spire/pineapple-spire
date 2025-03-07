@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Container, Row, Col, Table, Form } from 'react-bootstrap';
+import { Container, Row, Col, Table, Form, Card } from 'react-bootstrap';
 import { computeFutureValue, formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 
@@ -126,155 +126,146 @@ const StressTest1: React.FC = () => {
 
   return (
     <Container className="my-4">
-      <h2 className="mb-4">Stress Test #1: Drop in Return on Initial Investment</h2>
+      <h2 className="mb-4">Model Drop in Return on Initial Investment</h2>
+
+      <Row className="g-3 mb-4">
+        <Col md={4}>
+          <Form.Label>Present Value ($)</Form.Label>
+          <Form.Control
+            type="number"
+            value={presentValue}
+            onChange={(e) => setPresentValue(Number(e.target.value))}
+          />
+        </Col>
+        <Col md={4}>
+          <Form.Label>Interest Rate (%)</Form.Label>
+          <Form.Control
+            type="number"
+            step="0.01"
+            value={interestRate}
+            onChange={(e) => setInterestRate(Number(e.target.value))}
+          />
+        </Col>
+        <Col md={4}>
+          <Form.Label>Term (years)</Form.Label>
+          <Form.Control
+            type="number"
+            value={term}
+            onChange={(e) => setTerm(Number(e.target.value))}
+          />
+        </Col>
+
+        <Col md={6}>
+          <Form.Label>Monthly Contribution ($)</Form.Label>
+          <Form.Control
+            type="number"
+            value={monthlyContribution}
+            onChange={(e) => setMonthlyContribution(Number(e.target.value))}
+          />
+        </Col>
+        <Col md={6}>
+          <Form.Label>% Rate of Return Drop</Form.Label>
+          <Form.Control
+            type="number"
+            value={dropRate}
+            onChange={(e) => setDropRate(Number(e.target.value))}
+          />
+        </Col>
+      </Row>
 
       <CommonTabs
         defaultTab="stressEffects"
         onTabChange={(tab) => setActiveTab(tab === 'residualEffects' ? 'residualEffects' : 'stressEffects')}
       />
-      <Row className="mb-4">
-        {/* Inputs Section */}
-        <Col xs={12} md={4}>
-          <Form.Group className="mb-3">
-            <Form.Label>Present Value</Form.Label>
-            <Form.Control
-              type="number"
-              value={presentValue}
-              onChange={(e) => setPresentValue(Number(e.target.value))}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Interest Rate (%)</Form.Label>
-            <Form.Control
-              type="number"
-              step="0.01"
-              value={interestRate}
-              onChange={(e) => setInterestRate(Number(e.target.value))}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Term (in years)</Form.Label>
-            <Form.Control
-              type="number"
-              value={term}
-              onChange={(e) => setTerm(Number(e.target.value))}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Monthly Contribution</Form.Label>
-            <Form.Control
-              type="number"
-              value={monthlyContribution}
-              onChange={(e) => setMonthlyContribution(Number(e.target.value))}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>% Rate of Return Drop</Form.Label>
-            <Form.Control
-              type="number"
-              step="1"
-              value={dropRate}
-              onChange={(e) => setDropRate(Number(e.target.value))}
-            />
-          </Form.Group>
-        </Col>
-      </Row>
 
       {activeTab === 'stressEffects' ? (
         <>
           {/* Summary Tables */}
-          <Col xs={12} md={8}>
-            <Row>
-              <Col xs={6}>
-                <Table bordered>
-                  <thead>
-                    <tr>
-                      <th colSpan={2} className="text-center">
-                        With
-                        {' '}
-                        {dropRate}
-                        % Drop
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Value after 5 years</td>
-                      <td>{formatCurrency(fvWithDrop5)}</td>
-                    </tr>
-                    <tr>
-                      <td>Interest Earned after 5 years</td>
-                      <td>{formatCurrency(interestWithDrop5)}</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        Value after
-                        {term}
-                        {' '}
-                        years
-                      </td>
-                      <td>{formatCurrency(fvWithDropTerm)}</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        Interest Earned after
-                        {term}
-                        {' '}
-                        years
-                      </td>
-                      <td>{formatCurrency(interestWithDropTerm)}</td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </Col>
-              <Col xs={6}>
-                <Table bordered>
-                  <thead>
-                    <tr>
-                      <th colSpan={2} className="text-center">
-                        Without
-                        {' '}
-                        {dropRate}
-                        % Drop
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Value after 5 years</td>
-                      <td>{formatCurrency(fvNoDrop5)}</td>
-                    </tr>
-                    <tr>
-                      <td>Interest Earned after 5 years</td>
-                      <td>{formatCurrency(interestNoDrop5)}</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        Value after
-                        {term}
-                        {' '}
-                        years
-                      </td>
-                      <td>{formatCurrency(fvNoDropTerm)}</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        Interest Earned after
-                        {term}
-                        {' '}
-                        years
-                      </td>
-                      <td>{formatCurrency(interestNoDropTerm)}</td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </Col>
-            </Row>
-          </Col>
+          <Row className="mb-4">
+            <Col md={6}>
+              <Card className="p-2">
+                <Card.Body>
+                  <Card.Title className="text-center">
+                    With&nbsp;
+                    {dropRate}
+                    % Drop
+                  </Card.Title>
+                  <Table responsive striped bordered size="sm">
+                    <tbody>
+                      <tr>
+                        <td>Value after 5 years</td>
+                        <td>{formatCurrency(fvWithDrop5)}</td>
+                      </tr>
+                      <tr>
+                        <td>Interest Earned after 5 years</td>
+                        <td>{formatCurrency(interestWithDrop5)}</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          Value after&nbsp;
+                          {term}
+                          {' '}
+                          years
+                        </td>
+                        <td>{formatCurrency(fvWithDropTerm)}</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          Interest Earned after&nbsp;
+                          {term}
+                          {' '}
+                          years
+                        </td>
+                        <td>{formatCurrency(interestWithDropTerm)}</td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col md={6}>
+              <Card className="p-2">
+                <Card.Body>
+                  <Card.Title className="text-center">
+                    Without&nbsp;
+                    {dropRate}
+                    % Drop
+                  </Card.Title>
+                  <Table responsive striped bordered size="sm">
+                    <tbody>
+                      <tr>
+                        <td>Value after 5 years</td>
+                        <td>{formatCurrency(fvNoDrop5)}</td>
+                      </tr>
+                      <tr>
+                        <td>Interest Earned after 5 years</td>
+                        <td>{formatCurrency(interestNoDrop5)}</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          Value after&nbsp;
+                          {term}
+                          {' '}
+                          years
+                        </td>
+                        <td>{formatCurrency(fvNoDropTerm)}</td>
+                      </tr>
+                      <tr>
+                        <td>
+                          Interest Earned after&nbsp;
+                          {term}
+                          {' '}
+                          years
+                        </td>
+                        <td>{formatCurrency(interestNoDropTerm)}</td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
 
           {/* Detailed Year-by-Year Tables */}
           <Row>
@@ -284,7 +275,7 @@ const StressTest1: React.FC = () => {
                 {dropRate}
                 % Drop)
               </h5>
-              <Table bordered>
+              <Table responsive striped bordered>
                 <thead>
                   <tr>
                     <th>Year</th>
@@ -312,7 +303,7 @@ const StressTest1: React.FC = () => {
                 {dropRate}
                 % Drop)
               </h5>
-              <Table bordered>
+              <Table responsive striped bordered>
                 <thead>
                   <tr>
                     <th>Year</th>
@@ -339,12 +330,12 @@ const StressTest1: React.FC = () => {
         <Row>
           <Col>
             <h5>
-              Residual Effects: Lost Interest Over
+              Residual Effects: Lost Interest Over&nbsp;
               {term}
               {' '}
               Years
             </h5>
-            <Table bordered>
+            <Table responsive striped bordered>
               <thead>
                 <tr>
                   <th>Year</th>
