@@ -2,16 +2,21 @@
 
 import { Col, Container, Form, Nav, Row, Table } from 'react-bootstrap';
 import { useState } from 'react';
+import { calculateCompoundInterest } from '@/lib/mathUtils';
 
+/**
+ * This stress test calculates the financial impact of a one-time expense
+ * and tracks the associated loss in earnings over multiple fiscal years.
+ */
 const StressTest3 = () => {
-  // Lets the user set the annual return rate
   const [annualRate, setAnnualRate] = useState(6.02);
+  const [oneTimeEvent] = useState(50000);
+
   const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     setAnnualRate(value);
   };
 
-  // Holds fiscal year, principal amount, and lost earnings for principal
   const [data, setData] = useState<{ [year: number]: { amount: number; lost: number } }>(
     Array.from({ length: 12 }, (_, i) => 2025 + i).reduce((acc, year) => {
       acc[year] = { amount: 0, lost: 0 };
@@ -19,12 +24,12 @@ const StressTest3 = () => {
     }, {} as { [year: number]: { amount: number; lost: number } }),
   );
 
-  // Handles when the user changes the increase in expenses
   const handleInputChange = (year: number, value: string) => {
     const amountValue = parseInt(value, 10);
     const newData = { ...data };
     newData[year].amount = amountValue;
     Object.keys(newData).forEach((y) => (newData[Number(y)].lost = 0));
+
     Object.keys(newData)
       .map(Number)
       .sort((a, b) => a - b)
@@ -33,22 +38,23 @@ const StressTest3 = () => {
         for (let i = 0; i < Object.keys(newData).length; i++) {
           const futureYear = startYear + i;
           if (newData[futureYear]) {
-            const totalAmount = principal * (1 + (annualRate / 100)) ** (i + 1) - principal;
+            const totalAmount = calculateCompoundInterest(principal, annualRate, i + 1);
             newData[futureYear].lost += parseInt(totalAmount.toFixed(0), 10);
           }
         }
       });
+
     setData(newData);
   };
 
-  // Allows for the user to switch between 'Stress Effects' and 'Residual Effects'
   const [activeTab, setActiveTab] = useState<any>('stressEffects');
 
-  // Tables for Stress Test 3
   return (
-    // Navbar for switching between the 'Stress Effects' and 'Residual Effects' tabs
     <Container>
-      <h3>One-time &quot;X&quot; Event of $50,000</h3>
+      <h3>
+        One-time &quot;X&quot; Event of $
+        {oneTimeEvent}
+      </h3>
       <Nav variant="tabs" activeKey={activeTab} onSelect={(selectedKey) => setActiveTab(selectedKey)}>
         <Nav.Item>
           <Nav.Link eventKey="stressEffects">Stress Effects</Nav.Link>
@@ -57,7 +63,9 @@ const StressTest3 = () => {
           <Nav.Link eventKey="residualEffects">Residual Effects</Nav.Link>
         </Nav.Item>
       </Nav>
-      {activeTab === 'stressEffects' ? ( // If the selected tab is Stress Effects
+      {activeTab === 'stressEffects' ? (
+        // If the selected tab is 'Stress Effects', allow the user to enter
+        // annual return rates and track the increase in expenses.
         <Row>
           <Col className="p-2">
             <Form.Group controlId="returnRate">
@@ -97,7 +105,8 @@ const StressTest3 = () => {
             </tbody>
           </Table>
         </Row>
-      ) : ( // Else, show the 'Residual Effects' tab
+      ) : (
+        // Else, show the 'Residual Effects' tab with details on lost earnings
         <Row>
           <Table striped bordered>
             <thead>

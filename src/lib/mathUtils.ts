@@ -16,6 +16,23 @@ export function calculateEarnings(
 }
 
 /**
+ * Calculates compound interest given principal, rate, and years.
+ *
+ * @param principal - The initial investment or loan amount.
+ * @param annualReturnRate - Annual return rate as a percentage (e.g., 6.02 for 6.02%).
+ * @param years - Number of years to calculate compound interest.
+ * @returns The compounded value (principal + interest).
+ */
+export function calculateCompoundInterest(
+  principal: number,
+  annualReturnRate: number,
+  years: number,
+): number {
+  const rateAsDecimal = annualReturnRate / 100;
+  return principal * (1 + rateAsDecimal) ** years;
+}
+
+/**
  * Calculates the interest portion of a loan payment
  * for a given period. Equivalent to the IPMT in Excel.
  *

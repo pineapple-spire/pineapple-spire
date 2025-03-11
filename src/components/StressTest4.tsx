@@ -2,22 +2,20 @@
 
 import React, { useState } from 'react';
 import { Table, Container, Col, Row, Form, Tabs, Tab } from 'react-bootstrap';
+import { formatCurrency } from '@/lib/mathUtils';
 
-const fakeData1 = [
-  { year: 2025, expense: 1315 },
-  { year: 2026, expense: 1347 },
-  { year: 2027, expense: 1381 },
-  { year: 2028, expense: 1416 },
-  { year: 2029, expense: 1451 },
-  { year: 2030, expense: 1487 },
-  { year: 2031, expense: 1525 },
-  { year: 2032, expense: 1563 },
-  { year: 2033, expense: 1602 },
-  { year: 2034, expense: 1642 },
-  { year: 2035, expense: 1683 },
-  { year: 2036, expense: 1725 },
-];
+const generateData = (
+  startYear: number,
+  initialExpense: number,
+  increaseRate: number,
+) => Array.from({ length: 12 }, (_, i) => {
+  const year = startYear + i;
+  const expense = Math.round(initialExpense * (1 + increaseRate / 100) ** i);
+  return { year, expense };
+});
 
+// TODO: Replace with real data.
+const fakeData1 = generateData(2025, 1315, 2.5);
 const fakeData2 = fakeData1.map(({ year, expense }, index) => ({
   year,
   principal: -expense,
@@ -25,24 +23,17 @@ const fakeData2 = fakeData1.map(({ year, expense }, index) => ({
   totalImpact: -expense - index * 250,
 }));
 
-const residualEffectsData = [
-  { year: 2025, principal: -1315, lostInterest: -79, totalLost: -79 },
-  { year: 2026, principal: -1314, lostInterest: -163, totalLost: -242 },
-  { year: 2027, principal: -1323, lostInterest: -252, totalLost: -495 },
-  { year: 2028, principal: -1317, lostInterest: -346, totalLost: -842 },
-  { year: 2029, principal: -1318, lostInterest: -446, totalLost: -1289 },
-  { year: 2030, principal: -1320, lostInterest: -552, totalLost: -1843 },
-  { year: 2031, principal: -1318, lostInterest: -665, totalLost: -2509 },
-  { year: 2032, principal: -1319, lostInterest: -784, totalLost: -3295 },
-  { year: 2033, principal: -1319, lostInterest: -910, totalLost: -4207 },
-  { year: 2034, principal: -1319, lostInterest: -1044, totalLost: -5254 },
-  { year: 2035, principal: -1319, lostInterest: -1186, totalLost: -6443 },
-  { year: 2036, principal: -1319, lostInterest: -1337, totalLost: -7783 },
-];
+const residualEffectsData = fakeData1.map(({ year, expense }, index) => ({
+  year,
+  principal: -expense,
+  lostInterest: -(index * 80),
+  totalLost: -(index * 80 + expense),
+}));
 
 const StressTest4: React.FC = () => {
   const [increaseRate, setIncreaseRate] = useState(2.5);
   const [returnRate, setReturnRate] = useState(6.02);
+  const [initialExpense, setInitialExpense] = useState(1315);
 
   return (
     <Container className="my-4">
@@ -51,6 +42,20 @@ const StressTest4: React.FC = () => {
           <Row className="mb-3">
             <Col md={6}>
               <h5>Operating Expense Increase Analysis</h5>
+              <Form.Group as={Row} controlId="initialExpense">
+                <Form.Label column sm={6}>
+                  Initial Expense:
+                </Form.Label>
+                <Col sm={6}>
+                  <Form.Control
+                    type="number"
+                    value={initialExpense}
+                    step="1"
+                    onChange={(e) => setInitialExpense(parseFloat(e.target.value))}
+                  />
+                </Col>
+              </Form.Group>
+
               <Form.Group as={Row} controlId="increaseRate">
                 <Form.Label column sm={6}>
                   Annual Increase Rate:
@@ -67,20 +72,7 @@ const StressTest4: React.FC = () => {
             </Col>
 
             <Col md={6}>
-              <h5>Operating Expense Increase Analysis</h5>
-              <Form.Group as={Row} controlId="increaseRate">
-                <Form.Label column sm={6}>
-                  Annual Increase Rate:
-                </Form.Label>
-                <Col sm={6}>
-                  <Form.Control
-                    type="number"
-                    value={increaseRate}
-                    step="0.1"
-                    onChange={(e) => setReturnRate(parseFloat(e.target.value))}
-                  />
-                </Col>
-              </Form.Group>
+              <h5>Investment Analysis</h5>
               <Form.Group as={Row} controlId="returnRate">
                 <Form.Label column sm={6}>
                   Annual Return Rate:
@@ -110,10 +102,7 @@ const StressTest4: React.FC = () => {
                   {fakeData1.map(({ year, expense }) => (
                     <tr key={year}>
                       <td>{year}</td>
-                      <td style={{ color: 'red' }}>
-                        $
-                        {expense.toLocaleString()}
-                      </td>
+                      <td style={{ color: 'red' }}>{formatCurrency(expense)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -134,21 +123,9 @@ const StressTest4: React.FC = () => {
                   {fakeData2.map(({ year, principal, lostEarnings, totalImpact }) => (
                     <tr key={year}>
                       <td>{year}</td>
-                      <td style={{ color: 'red' }}>
-                        ($
-                        {Math.abs(principal).toLocaleString()}
-                        )
-                      </td>
-                      <td style={{ color: 'red' }}>
-                        ($
-                        {Math.abs(lostEarnings).toLocaleString()}
-                        )
-                      </td>
-                      <td style={{ color: 'red' }}>
-                        ($
-                        {Math.abs(totalImpact).toLocaleString()}
-                        )
-                      </td>
+                      <td style={{ color: 'red' }}>{formatCurrency(principal)}</td>
+                      <td style={{ color: 'red' }}>{formatCurrency(lostEarnings)}</td>
+                      <td style={{ color: 'red' }}>{formatCurrency(totalImpact)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -172,21 +149,9 @@ const StressTest4: React.FC = () => {
               {residualEffectsData.map(({ year, principal, lostInterest, totalLost }) => (
                 <tr key={year}>
                   <td>{year}</td>
-                  <td style={{ color: 'red' }}>
-                    ($
-                    {Math.abs(principal).toLocaleString()}
-                    )
-                  </td>
-                  <td style={{ color: 'red' }}>
-                    ($
-                    {Math.abs(lostInterest).toLocaleString()}
-                    )
-                  </td>
-                  <td style={{ color: 'red' }}>
-                    ($
-                    {Math.abs(totalLost).toLocaleString()}
-                    )
-                  </td>
+                  <td style={{ color: 'red' }}>{formatCurrency(principal)}</td>
+                  <td style={{ color: 'red' }}>{formatCurrency(lostInterest)}</td>
+                  <td style={{ color: 'red' }}>{formatCurrency(totalLost)}</td>
                 </tr>
               ))}
             </tbody>
