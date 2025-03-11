@@ -1,39 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Table, Container, Col, Row, Form, Tabs, Tab } from 'react-bootstrap';
 import { formatCurrency } from '@/lib/mathUtils';
 
-const generateData = (
-  startYear: number,
-  initialExpense: number,
-  increaseRate: number,
-) => Array.from({ length: 12 }, (_, i) => {
+// eslint-disable-next-line max-len
+const generateData = (startYear: number, increaseRate: number, startExpense: number) => Array.from({ length: 12 }, (_, i) => {
   const year = startYear + i;
-  const expense = Math.round(initialExpense * (1 + increaseRate / 100) ** i);
+  const expense = Math.round(startExpense * (1 + increaseRate / 100) ** i);
   return { year, expense };
 });
 
-// TODO: Replace with real data.
-const fakeData1 = generateData(2025, 1315, 2.5);
-const fakeData2 = fakeData1.map(({ year, expense }, index) => ({
-  year,
-  principal: -expense,
-  lostEarnings: -(index * 250),
-  totalImpact: -expense - index * 250,
-}));
-
-const residualEffectsData = fakeData1.map(({ year, expense }, index) => ({
-  year,
-  principal: -expense,
-  lostInterest: -(index * 80),
-  totalLost: -(index * 80 + expense),
-}));
-
-const StressTest4: React.FC = () => {
+const StressTest4 = () => {
   const [increaseRate, setIncreaseRate] = useState(2.5);
   const [returnRate, setReturnRate] = useState(6.02);
-  const [initialExpense, setInitialExpense] = useState(1315);
+  const [initialExpense, setInitialExpense] = useState(52589);
+
+  const expenseData = useMemo(
+    () => generateData(2025, increaseRate, 1315),
+    [increaseRate],
+  );
+  const investmentData = useMemo(
+    () => expenseData.map(({ year, expense }, index) => {
+      const principal = -expense;
+      const lostEarnings = Math.round(principal * ((1 + returnRate / 100) ** (index + 1) - 1));
+
+      return {
+        year,
+        principal,
+        lostEarnings,
+        totalImpact: principal + lostEarnings,
+      };
+    }),
+    [expenseData, returnRate],
+  );
+
+  const residualEffectsData = useMemo(
+    () => investmentData.map(({ year, principal, lostEarnings }) => ({
+      year,
+      principal,
+      lostInterest: lostEarnings, // Match lost interest to lost earnings
+      totalLost: principal + lostEarnings,
+    })),
+    [investmentData],
+  );
 
   return (
     <Container className="my-4">
@@ -42,53 +52,41 @@ const StressTest4: React.FC = () => {
           <Row className="mb-3">
             <Col md={6}>
               <h5>Operating Expense Increase Analysis</h5>
-              <Form.Group as={Row} controlId="initialExpense">
-                <Form.Label column sm={6}>
-                  Initial Expense:
-                </Form.Label>
+              <Form.Group as={Row}>
+                <Form.Label column sm={6}>Initial Expense:</Form.Label>
                 <Col sm={6}>
                   <Form.Control
                     type="number"
                     value={initialExpense}
-                    step="1"
-                    onChange={(e) => setInitialExpense(parseFloat(e.target.value))}
+                    onChange={(e) => setInitialExpense(parseFloat(e.target.value) || 0)}
                   />
                 </Col>
               </Form.Group>
-
-              <Form.Group as={Row} controlId="increaseRate">
-                <Form.Label column sm={6}>
-                  Annual Increase Rate:
-                </Form.Label>
+              <Form.Group as={Row}>
+                <Form.Label column sm={6}>Annual Increase Rate:</Form.Label>
                 <Col sm={6}>
                   <Form.Control
                     type="number"
                     value={increaseRate}
-                    step="0.1"
-                    onChange={(e) => setIncreaseRate(parseFloat(e.target.value))}
+                    onChange={(e) => setIncreaseRate(parseFloat(e.target.value) || 0)}
                   />
                 </Col>
               </Form.Group>
             </Col>
-
             <Col md={6}>
               <h5>Investment Analysis</h5>
-              <Form.Group as={Row} controlId="returnRate">
-                <Form.Label column sm={6}>
-                  Annual Return Rate:
-                </Form.Label>
+              <Form.Group as={Row}>
+                <Form.Label column sm={6}>Annual Return Rate:</Form.Label>
                 <Col sm={6}>
                   <Form.Control
                     type="number"
                     value={returnRate}
-                    step="0.1"
-                    onChange={(e) => setReturnRate(parseFloat(e.target.value))}
+                    onChange={(e) => setReturnRate(parseFloat(e.target.value) || 0)}
                   />
                 </Col>
               </Form.Group>
             </Col>
           </Row>
-
           <Row>
             <Col md={6}>
               <Table striped bordered hover>
@@ -99,7 +97,7 @@ const StressTest4: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {fakeData1.map(({ year, expense }) => (
+                  {expenseData.map(({ year, expense }) => (
                     <tr key={year}>
                       <td>{year}</td>
                       <td style={{ color: 'red' }}>{formatCurrency(expense)}</td>
@@ -108,7 +106,6 @@ const StressTest4: React.FC = () => {
                 </tbody>
               </Table>
             </Col>
-
             <Col md={6}>
               <Table striped bordered hover>
                 <thead>
@@ -120,7 +117,7 @@ const StressTest4: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {fakeData2.map(({ year, principal, lostEarnings, totalImpact }) => (
+                  {investmentData.map(({ year, principal, lostEarnings, totalImpact }) => (
                     <tr key={year}>
                       <td>{year}</td>
                       <td style={{ color: 'red' }}>{formatCurrency(principal)}</td>
@@ -133,7 +130,6 @@ const StressTest4: React.FC = () => {
             </Col>
           </Row>
         </Tab>
-
         <Tab eventKey="residualEffects" title="Residual Effects">
           <h5 className="mt-3">Residual Effects Analysis</h5>
           <Table striped bordered hover>
