@@ -1,7 +1,7 @@
 'use client';
 
 import { Col, Container, Form, Row, Table } from 'react-bootstrap';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { calculateCompoundInterest, formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 
@@ -57,10 +57,6 @@ const StressTest3 = () => {
 
     setData(newData);
   };
-
-  useEffect(() => {
-    handleInputUpdate(); // Run once on mount to calculate lost earnings
-  }, []);
 
   return (
     <Container>
