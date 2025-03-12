@@ -23,6 +23,7 @@ const StressTest3 = () => {
 
   const handleInputUpdate = (year?: number, value: string = '', isRateChange = false) => {
     const newData = { ...data };
+
     if (isRateChange) {
       // If the change is from the annual rate input
       const newRate = parseFloat(value) || 0; // Ensure value is always parsed
@@ -31,6 +32,7 @@ const StressTest3 = () => {
       // If the change is from a yearly expense input
       newData[year].amount = parseInt(value, 10) || 0;
     }
+
     // Reset lost earnings before recalculating
     Object.keys(newData).forEach((y) => (newData[Number(y)].lost = 0));
 
