@@ -75,3 +75,49 @@ export function formatCurrency(value: number): string {
     minimumFractionDigits: 2,
   });
 }
+
+// Function to calculate table data based on inputs
+export function calculateTableData(
+  presentValue: number,
+  interestRate: number,
+  term: number,
+  monthlyContribution: number,
+) {
+  let balance = presentValue;
+  const interestRateDecimal = interestRate / 100;
+  const rows = [];
+
+  // Iterate over each year
+  for (let year = 1; year <= term; year++) {
+    // Calculate interest based on the current balance
+    const interestEarned = parseFloat((balance * interestRateDecimal).toFixed(2));
+
+    // Total yearly contribution (subtract monthly contribution from balance)
+    const yearlyContribution = monthlyContribution * 12;
+
+    // Calculate the new balance after adding interest and subtracting contributions
+    let newBalance = balance + interestEarned;
+
+    // Round the balance to avoid floating-point precision issues
+    newBalance = parseFloat(newBalance.toFixed(2));
+
+    // Store the values for each year
+    rows.push({
+      year,
+      balance: formatCurrency(balance), // Balance before interest and contribution
+      contribution: formatCurrency(yearlyContribution), // Total yearly contribution
+      interest: formatCurrency(interestEarned), // Interest earned this year
+      total: formatCurrency(newBalance), // New balance after interest and contribution
+    });
+
+    // Set the new balance for the next year
+    balance = newBalance - yearlyContribution;
+
+    // Stop calculations if balance goes negative (optional)
+    if (balance <= 0) {
+      break;
+    }
+  }
+
+  return rows;
+}
