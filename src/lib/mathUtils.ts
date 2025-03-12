@@ -92,3 +92,13 @@ export function formatCurrency(value: number): string {
     minimumFractionDigits: 2,
   });
 }
+
+/**
+ * Compute the multiplier based on the given value
+ * This function is used for the financial compilation
+ */
+export function computeMultiplier(percent: number, value: any): number {
+  const multiplierPercent = percent / 100;
+  const calculatedValue = value + (value * multiplierPercent);
+  return Math.round(calculatedValue);
+}
