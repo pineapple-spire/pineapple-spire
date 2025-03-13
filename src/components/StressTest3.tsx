@@ -1,7 +1,7 @@
 'use client';
 
-import { Col, Container, Form, Row, Table } from 'react-bootstrap';
-import { useState } from 'react';
+import { Container, Form, Row, Table } from 'react-bootstrap';
+import { useState, ChangeEvent } from 'react';
 import { calculateCompoundInterest, formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 
@@ -10,46 +10,56 @@ import CommonTabs from '@/components/CommonTabs';
  * and tracks the associated loss in earnings over multiple fiscal years.
  */
 const StressTest3 = () => {
-  const [activeTab, setActiveTab] = useState<any>('stressEffects');
+  const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>('stressEffects');
+
   const [annualRate, setAnnualRate] = useState(6.02);
   const [oneTimeEvent] = useState(50000);
 
-  const [data, setData] = useState<{ [year: number]: { amount: number; lost: number } }>(
+  // Yearly data
+  const [data, setData] = useState<{
+    [year: number]: { amount: number; lost: number };
+  }>(
+    // Initialize data for years 2025 through 2025 + 11 (12 total)
     Array.from({ length: 12 }, (_, i) => 2025 + i).reduce((acc, year) => {
       acc[year] = { amount: 0, lost: 0 };
       return acc;
     }, {} as { [year: number]: { amount: number; lost: number } }),
   );
 
-  const handleInputUpdate = (year?: number, value: string = '', isRateChange = false) => {
+  // Handle changes to the annual rate and the yearly amounts
+  const handleInputUpdate = (
+    year?: number,
+    value?: string,
+    isRateChange?: boolean,
+  ) => {
     const newData = { ...data };
 
-    if (isRateChange) {
-      // If the change is from the annual rate input
-      const newRate = parseFloat(value) || 0; // Ensure value is always parsed
+    if (isRateChange && value !== undefined) {
+      // If the input is the annual rate
+      const newRate = parseFloat(value) || 0;
       setAnnualRate(newRate);
-    } else if (year !== undefined) {
-      // If the change is from a yearly expense input
+    } else if (year !== undefined && value !== undefined) {
       newData[year].amount = parseInt(value, 10) || 0;
     }
 
     // Reset lost earnings before recalculating
-    Object.keys(newData).forEach((y) => (newData[Number(y)].lost = 0));
+    Object.keys(newData).forEach((y) => {
+      newData[Number(y)].lost = 0;
+    });
 
-    // Recalculate lost earnings based on updated values
+    // Recalculate lost earnings
     Object.keys(newData)
       .map(Number)
       .sort((a, b) => a - b)
       .forEach((startYear) => {
         const principal = newData[startYear].amount;
+
+        // For each subsequent year, compound from startYear's amount
         for (let i = 0; i < Object.keys(newData).length; i++) {
           const futureYear = startYear + i;
           if (newData[futureYear]) {
-            const totalAmount = calculateCompoundInterest(
-              principal,
-              isRateChange ? parseFloat(value) || annualRate : annualRate,
-              i + 1,
-            );
+            const rateUsed = isRateChange ? parseFloat(value || '0') || annualRate : annualRate;
+            const totalAmount = calculateCompoundInterest(principal, rateUsed, i + 1);
             newData[futureYear].lost += parseInt(totalAmount.toFixed(0), 10);
           }
         }
@@ -59,37 +69,38 @@ const StressTest3 = () => {
   };
 
   return (
-    <Container>
-      <h3>
-        One-time &quot;X&quot; Event of $
-        {oneTimeEvent}
-      </h3>
+    <Container className="my-4">
+      <Row className="mb-3">
+        <h3>
+          One-time &quot;X&quot; Event of $
+          {oneTimeEvent}
+        </h3>
+        <Row md={6}>
+          <Form.Group controlId="returnRate">
+            <Form.Label>Annual Return Rate (%)</Form.Label>
+            <Form.Control
+              type="number"
+              value={annualRate}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputUpdate(undefined, e.target.value, true)}
+              onBlur={(e) => {
+                if (e.target.value.trim() === '') {
+                  handleInputUpdate(undefined, '6.02', true);
+                }
+              }}
+              placeholder="Enter annual return rate"
+            />
+          </Form.Group>
+        </Row>
+      </Row>
 
+      {/* Common Tabs */}
       <CommonTabs
         defaultTab="stressEffects"
         onTabChange={(tab) => setActiveTab(tab === 'residualEffects' ? 'residualEffects' : 'stressEffects')}
       />
 
       {activeTab === 'stressEffects' ? (
-        // If the selected tab is 'Stress Effects', allow the user to enter
-        // annual return rates and track the increase in expenses.
         <Row>
-          <Col className="p-2">
-            <Form.Group controlId="returnRate">
-              <Form.Label>Annual Return Rate (%)</Form.Label>
-              <Form.Control
-                type="number"
-                value={annualRate}
-                onChange={(e) => handleInputUpdate(undefined, e.target.value, true)}
-                onBlur={(e) => {
-                  if (e.target.value.trim() === '') {
-                    handleInputUpdate(undefined, '6.02', true);
-                  }
-                }}
-                placeholder="Enter annual return rate (%)"
-              />
-            </Form.Group>
-          </Col>
           <Table striped bordered>
             <thead>
               <tr>
@@ -123,7 +134,6 @@ const StressTest3 = () => {
           </Table>
         </Row>
       ) : (
-        // Else, show the 'Residual Effects' tab with details on lost earnings
         <Row>
           <Table striped bordered>
             <thead>
