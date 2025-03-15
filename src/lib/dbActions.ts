@@ -61,7 +61,7 @@ interface FinancialDataValues {
   otherIncome: number;
   incomeTaxes: number;
   cashAndEquivalents: number;
-  accountsReveivable: number;
+  accountsReceivable: number;
   inventory: number;
   propertyPlantAndEquipment: number;
   investment: number;
@@ -132,7 +132,7 @@ export async function getAuditData() {
     otherIncome: 0,
     incomeTaxes: 0,
     cashAndEquivalents: 0,
-    accountsReveivable: 0,
+    accountsReceivable: 0,
     inventory: 0,
     propertyPlantAndEquipment: 0,
     investment: 0,
