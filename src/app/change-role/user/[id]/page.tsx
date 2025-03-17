@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { notFound } from 'next/navigation';
 import { User } from '@prisma/client';
 import authOptions from '@/lib/authOptions';
-import { loggedInProtectedPage } from '@/lib/page-protection';
+import { adminProtectedPage } from '@/lib/page-protection';
 import { prisma } from '@/lib/prisma';
 import ChangeRoleForm from '@/components/ChangeRoleForm';
 
@@ -16,7 +16,7 @@ export default async function ChangeRolePage({
   params: { id: string | string[] };
 }) {
   const session = await getServerSession(authOptions);
-  loggedInProtectedPage(
+  adminProtectedPage(
     session as {
       user: { email: string; id: string; randomKey: string };
     } | null,
