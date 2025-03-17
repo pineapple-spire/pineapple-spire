@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useMemo, ChangeEvent } from 'react';
-import { Container, Row, Col, Form, Table } from 'react-bootstrap';
+import { Container, Row, Col, Form, Table, Card } from 'react-bootstrap';
 import { formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
+import LinePlot from '@/components/LinePlot';
 
+// Generates expense data for 12 consecutive years starting from startYear.
 const generateData = (
   startYear: number,
   increaseRate: number,
@@ -26,34 +28,87 @@ const StressTest4 = () => {
     setter(parseFloat(e.target.value) || 0);
   };
 
-  // Generate expense data
   const expenseData = useMemo(
     () => generateData(2025, increaseRate, 1315),
     [increaseRate],
   );
 
-  // Calculate investment data based on expenseData
-  const investmentData = useMemo(() => expenseData.map(({ year, expense }, index) => {
-    const principal = -expense;
-    const lostEarnings = Math.round(
-      principal * ((1 + returnRate / 100) ** (index + 1) - 1),
-    );
+  // Calculate investment data based on expenseData.
+  const investmentData = useMemo(
+    () => expenseData.map(({ year, expense }, index) => {
+      const principal = -expense;
+      const lostEarnings = Math.round(
+        principal * ((1 + returnRate / 100) ** (index + 1) - 1),
+      );
+      return {
+        year,
+        principal,
+        lostEarnings,
+        totalImpact: principal + lostEarnings,
+      };
+    }),
+    [expenseData, returnRate],
+  );
 
-    return {
+  // Residual effects data derived from investmentData.
+  const residualEffectsData = useMemo(
+    () => investmentData.map(({ year, principal, lostEarnings }) => ({
       year,
       principal,
-      lostEarnings,
-      totalImpact: principal + lostEarnings,
-    };
-  }), [expenseData, returnRate]);
+      lostInterest: lostEarnings,
+      totalLost: principal + lostEarnings,
+    })),
+    [investmentData],
+  );
 
-  // Residual effects from investmentData
-  const residualEffectsData = useMemo(() => investmentData.map(({ year, principal, lostEarnings }) => ({
-    year,
-    principal,
-    lostInterest: lostEarnings,
-    totalLost: principal + lostEarnings,
-  })), [investmentData]);
+  // Prepare chart data for "stressEffects" tab.
+  // It shows two datasets: Increase in Expenses and Total Impact.
+  const stressEffectsChartData = useMemo(
+    () => ({
+      labels: expenseData.map(({ year }) => year.toString()),
+      datasets: [
+        {
+          label: 'Increase in Expenses',
+          data: expenseData.map(({ expense }) => expense),
+          borderColor: 'red',
+          fill: false,
+          tension: 0.1,
+        },
+        {
+          label: 'Total Impact (Investment)',
+          data: investmentData.map(({ totalImpact }) => totalImpact),
+          borderColor: 'green',
+          fill: false,
+          tension: 0.1,
+        },
+      ],
+    }),
+    [expenseData, investmentData],
+  );
+
+  // Prepare chart data for "residualEffects" tab.
+  const residualChartData = useMemo(
+    () => ({
+      labels: residualEffectsData.map(({ year }) => year.toString()),
+      datasets: [
+        {
+          label: 'Lost Interest',
+          data: residualEffectsData.map(({ lostInterest }) => lostInterest),
+          borderColor: 'blue',
+          fill: false,
+          tension: 0.1,
+        },
+        {
+          label: 'Total Interests Lost',
+          data: residualEffectsData.map(({ totalLost }) => totalLost),
+          borderColor: 'orange',
+          fill: false,
+          tension: 0.1,
+        },
+      ],
+    }),
+    [residualEffectsData],
+  );
 
   return (
     <Container className="my-4">
@@ -103,71 +158,142 @@ const StressTest4 = () => {
       />
 
       {activeTab === 'stressEffects' ? (
-        <Row>
-          <Col md={6}>
+        <>
+          {/* Line Chart for Stress Effects */}
+          <Row className="mb-4">
+            <Col md={{ span: 8, offset: 2 }}>
+              <Card>
+                <Card.Body>
+                  <Card.Title className="text-center">
+                    Yearly Increase in Expenses vs Total Impact
+                  </Card.Title>
+                  <LinePlot
+                    data={stressEffectsChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                          display: true,
+                          text: 'Yearly Expenses & Impact',
+                        },
+                      },
+                      layout: { padding: 10 },
+                      scales: {
+                        x: { title: { display: true, text: 'Fiscal Year' } },
+                        y: { title: { display: true, text: 'Amount ($)' } },
+                      },
+                    }}
+                    style={{ minHeight: '450px', maxHeight: '650px' }}
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Tables for Stress Effects */}
+          <Row>
+            <Col md={6}>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Fiscal Year</th>
+                    <th>Increase in Expenses</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expenseData.map(({ year, expense }) => (
+                    <tr key={year}>
+                      <td>{year}</td>
+                      <td>{formatCurrency(expense)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Col>
+            <Col md={6}>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Principal</th>
+                    <th>Lost Earnings</th>
+                    <th>Total Impact</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {investmentData.map(({ year, principal, lostEarnings, totalImpact }) => (
+                    <tr key={year}>
+                      <td>{year}</td>
+                      <td>{formatCurrency(principal)}</td>
+                      <td>{formatCurrency(lostEarnings)}</td>
+                      <td>{formatCurrency(totalImpact)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <>
+          {/* Line Chart for Residual Effects */}
+          <Row className="mb-4">
+            <Col md={{ span: 8, offset: 2 }}>
+              <Card>
+                <Card.Body>
+                  <Card.Title className="text-center">
+                    Residual Effects Analysis
+                  </Card.Title>
+                  <LinePlot
+                    data={residualChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                          display: true,
+                          text: 'Yearly Lost Interest vs Total Interests Lost',
+                        },
+                      },
+                      layout: { padding: 10 },
+                      scales: {
+                        x: { title: { display: true, text: 'Fiscal Year' } },
+                        y: { title: { display: true, text: 'Amount ($)' } },
+                      },
+                    }}
+                    style={{ minHeight: '450px', maxHeight: '650px' }}
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Table for Residual Effects */}
+          <Row>
             <Table striped bordered hover>
               <thead>
                 <tr>
                   <th>Fiscal Year</th>
-                  <th>Increase in Expenses</th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenseData.map(({ year, expense }) => (
-                  <tr key={year}>
-                    <td>{year}</td>
-                    <td>{formatCurrency(expense)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-          <Col md={6}>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Year</th>
                   <th>Principal</th>
-                  <th>Lost Earnings</th>
-                  <th>Total Impact</th>
+                  <th>Lost Interest</th>
+                  <th>Total Interests Lost</th>
                 </tr>
               </thead>
               <tbody>
-                {investmentData.map(({ year, principal, lostEarnings, totalImpact }) => (
+                {residualEffectsData.map(({ year, principal, lostInterest, totalLost }) => (
                   <tr key={year}>
                     <td>{year}</td>
                     <td>{formatCurrency(principal)}</td>
-                    <td>{formatCurrency(lostEarnings)}</td>
-                    <td>{formatCurrency(totalImpact)}</td>
+                    <td>{formatCurrency(lostInterest)}</td>
+                    <td>{formatCurrency(totalLost)}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-          </Col>
-        </Row>
-      ) : (
-        <>
-          <h5 className="mt-3">Residual Effects Analysis</h5>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th>Principal</th>
-                <th>Lost Interest</th>
-                <th>Total Interests Lost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {residualEffectsData.map(({ year, principal, lostInterest, totalLost }) => (
-                <tr key={year}>
-                  <td>{year}</td>
-                  <td>{formatCurrency(principal)}</td>
-                  <td>{formatCurrency(lostInterest)}</td>
-                  <td>{formatCurrency(totalLost)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          </Row>
         </>
       )}
     </Container>
