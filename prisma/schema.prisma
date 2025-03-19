@@ -64,7 +64,7 @@ model FinancialData {
 
   // Assets Section
   cashAndEquivalents          Float
-  accountsReveivable          Float
+  accountsReceivable          Float
   inventory                   Float
   propertyPlantAndEquipment   Float
   investment                  Float

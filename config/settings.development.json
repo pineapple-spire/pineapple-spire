@@ -9,5 +9,25 @@
 
   "defaultScenarios": [
     { "id": 1, "title": "Stress Scenario #1", "description": "This is a base stress scenario.", "excelWorkbookUrl": "https://example.com/file.xlsx" }
+  ],
+
+  "defaultData": [
+    { "year": 2022, "revenue": 131345.00, "costContracting": 48456.00, "overhead": 667.00, "salariesAndBenefits": 23872.00,
+    "rentAndOverhead": 10087.00, "depreciationAndAmortization": 17205.00, "interest": 1500.00, "interestIncome": 0.0, "interestExpense": 0.0,
+    "gainOnDisposalAssets": 0.0, "otherIncome": 0.0, "incomeTaxes": 8483.00, "cashAndEquivalents": 183715.00, "accountsReceivable": 6567.00,
+    "inventory": 9825.00, "propertyPlantAndEquipment": 40145.00, "investment": 0.00, "accountsPayable": 4912.00, "currentDebtService": 5000.00,
+    "taxesPayable": 4265.00, "longTermDebtService": 15000.00, "loansPayable": 20000.00, "equityCapital": 170000.00, "retainedEarnings": 21075.00 },
+    { "year": 2023, "revenue": 142341.00, "costContracting": 52587.00, "overhead": 667.00, "salariesAndBenefits": 23002.00,
+    "rentAndOverhead": 11020.00, "depreciationAndAmortization": 16544.00, "interest": 900.00, "interestIncome": 0.0, "interestExpense": 0.0,
+    "gainOnDisposalAssets": 0.0, "otherIncome": 0.0, "incomeTaxes": 10908.00, "cashAndEquivalents": 191069.00, "accountsReceivable": 7117.00,
+    "inventory": 10531.00, "propertyPlantAndEquipment": 38602.00, "investment": 20000.00, "accountsPayable": 5265.00, "currentDebtService": 5000.00,
+    "taxesPayable": 5341.00, "longTermDebtService": 15000.00, "loansPayable": 40000.00, "equityCapital": 170000.00, "retainedEarnings": 26713.00 },
+    { "year": 2024, "revenue": 150772.00, "costContracting": 56643.00, "overhead": 667.00, "salariesAndBenefits": 25245.00,
+    "rentAndOverhead": 11412.00, "depreciationAndAmortization": 16080.00, "interest": 900.00, "interestIncome": 0.0, "interestExpense": 0.0,
+    "gainOnDisposalAssets": 0.0, "otherIncome": 0.0, "incomeTaxes": 11598.00, "cashAndEquivalents": 189550.00, "accountsReceivable": 7539.00,
+    "inventory": 11342.00, "propertyPlantAndEquipment": 37521.00, "investment": 50000.00, "accountsPayable": 5671.00, "currentDebtService": 5000.00,
+    "taxesPayable": 2054.00, "longTermDebtService": 15000.00, "loansPayable": 70000.00, "equityCapital": 170000.00, "retainedEarnings": 28227.00 } 
+
+ 
   ]
 }
