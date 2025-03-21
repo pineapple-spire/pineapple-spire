@@ -4,10 +4,9 @@ import { useState } from 'react';
 import { Col, Container, Row, Table, Form } from 'react-bootstrap';
 import MultiplierInput from '@/components/MultiplierInput';
 import ForecastTypeDropdown from '@/components/ForecastTypeDropdown';
-import { computeMultiplier } from '@/lib/mathUtils';
+import { computeMultiplier, toNumber } from '@/lib/mathUtils';
 import useFinancialData from '@/lib/useFinancialData';
 
-// Define the years for the table
 const years = Array.from({ length: 12 }, (_, i) => 2025 + i);
 
 const incomeCategories = [
@@ -34,7 +33,6 @@ const operatingCategories = [
   'Profit (loss) from Operations %',
 ];
 
-// Example of financial categories for the assets table
 const assetsCategories = [
   'Cash & Cash Equivalents',
   'Accounts Receivable',
@@ -46,7 +44,6 @@ const assetsCategories = [
   'Total Assets',
 ];
 
-// Example of other financial tables (e.g., Liabilities, Income, etc.)
 const liabilitiesCategories = [
   'Accounts Payable',
   'Current Debt Service',
@@ -62,50 +59,33 @@ const liabilitiesCategories = [
   'Total Liabilities & Equity',
 ];
 
-// Helper function to generate random financial data
-const generateRandomFinancialData = (year: number) => ({
-  year,
-  revenue: 100,
-  costContracting: 200,
-  overhead: 300,
-  salariesAndBenefits: 400,
-  rentAndOverhead: 100,
-  depreciationAndAmortization: 500,
-  interest: 600,
-  interestIncome: 700,
-  interestExpense: 800,
-  gainOnDisposalAssets: 900,
-  otherIncome: 1000,
-  incomeTaxes: 100,
-  cashAndEquivalents: 200,
-  accountsReceivable: 300,
-  inventory: 400,
-  propertyPlantAndEquipment: 500,
-  investment: 600,
-  accountsPayable: 700,
-  currentDebtService: 800,
-  taxesPayable: 900,
-  longTermDebtService: 1000,
-  loansPayable: 100,
-  equityCapital: 200,
-  retainedEarnings: 300,
-});
+// Applies the multiplier repeatedly for each successive year.
+const getForecastValueForYear = (baseValue: number, yearIndex: number, multiplier: number): number => {
+  let value = baseValue;
+  for (let i = 0; i < yearIndex; i++) {
+    value = computeMultiplier(multiplier, value);
+  }
+  return value;
+};
 
-const FinancialCompilationClient = () => {
-  const data = generateRandomFinancialData(2025);
-  const financialData = useFinancialData(data);
+// Updated heatmap style function that accepts the row's maximum value.
+const getHeatmapStyle = (value: number | string, rowMax: number) => {
+  if (typeof value !== 'number' || rowMax === 0) return {};
+
+  if (value >= 0) {
+    const intensity = Math.min(value / rowMax, 1);
+    return { backgroundColor: `rgba(0, 128, 0, ${intensity})` };
+  }
+  const intensity = Math.min(Math.abs(value) / rowMax, 1);
+  return { backgroundColor: `rgba(128, 0, 0, ${intensity})` };
+};
+
+// @ts-ignore
+const FinancialCompilationClient = ({ initialData }) => {
+  const financialData = useFinancialData(initialData);
   const [randomData, setRandomData] = useState(financialData);
 
-  const toNumber = (value: string | number): number => {
-    if (typeof value === 'string') {
-      // If it's a string, try converting it to a number
-      const parsedValue = parseFloat(value);
-      return Number.isNaN(parsedValue) ? 0 : parsedValue; // Return 0 if the conversion fails
-    }
-    return value; // If it's already a number, just return it
-  };
-
-  const categoryDataMap: Record<string, number> = {
+  const categoryDataMap: Record<string, number | string> = {
     Revenue: randomData.revenue,
     'Net Sales': randomData.netSales,
     'Cost of Contracting': randomData.costContracting,
@@ -160,32 +140,70 @@ const FinancialCompilationClient = () => {
 
   const handleMultiplierChange = (newMultiplier: number) => {
     setMultiplier(newMultiplier);
-
-    // Apply the multiplier to all forecast type "Multiplier"
     for (const name in categoryDataMap) {
       if (forecastTypes[name] === 'Multiplier') {
         const baseValue = categoryDataMap[name];
-        // Compute the updated value with the multiplier
         const updatedValue = computeMultiplier(newMultiplier, baseValue);
-
-        // Update the randomData object with the new value
         categoryDataMap[name] = updatedValue;
       }
     }
-
-    // Update the state with modified data
-    setRandomData(randomData);
+    setRandomData({ ...randomData });
   };
 
+  // If forecast type is set to 'Multiplier', we apply computeMultiplier once.
   const getCategoryData = (name: string) => {
     const baseValue = categoryDataMap[name] ?? 'N/A';
-    // Apply the multiplier for rows marked as 'Multiplier'
     if (forecastTypes[name] === 'Multiplier') {
-      const newValue = computeMultiplier(multiplier, baseValue);
-      return newValue;
+      return computeMultiplier(multiplier, baseValue);
     }
     return baseValue;
   };
+
+  // Each row computes forecast values per year.
+  const renderTable = (categories: string[]) => (
+    <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
+      <Table striped bordered>
+        <thead>
+          <tr>
+            <th>Select Forecast Type</th>
+            <th>Name</th>
+            {years.map((year) => (
+              <th key={year}>{year}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((name) => {
+            // For each row, compute the forecasted values for each year.
+            const rowValues = years.map((year, index) => {
+              const baseValue = Number(getCategoryData(name));
+              return getForecastValueForYear(baseValue, index, multiplier);
+            });
+            // Compute the maximum absolute value in the row for heatmap scaling.
+            const rowMax = Math.max(...rowValues.map((val) => Math.abs(val)), 0);
+            return (
+              <tr key={name}>
+                <td>
+                  {!(name !== 'Revenue' && name === 'Revenue')
+                    && !name.includes('Total') && (
+                      <ForecastTypeDropdown
+                        onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
+                      />
+                  )}
+                </td>
+                <td>{name}</td>
+                {rowValues.map((value, index) => (
+                  <td key={`${name}-${years[index]}`} style={getHeatmapStyle(value, rowMax)}>
+                    {value}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+    </div>
+  );
 
   return (
     <Container>
@@ -201,7 +219,6 @@ const FinancialCompilationClient = () => {
         </Col>
       </Row>
 
-      {/* Toggle for showing assets table */}
       <Row>
         <Col>
           <Form.Check
@@ -245,181 +262,11 @@ const FinancialCompilationClient = () => {
         </Col>
       </Row>
 
-      {/* Conditionally render tables based on the toggled checkboxes */}
-      {showIncome && (
-        <Row>
-          <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
-            <Table striped bordered>
-              <thead>
-                <tr>
-                  <th>Select Forecast Type</th>
-                  <th>Name</th>
-                  {years.map((year) => (
-                    <th key={year}>{year}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {incomeCategories.map((name) => (
-                  <tr key={name}>
-                    <td>
-                      {name === 'Revenue' ? (
-                        <ForecastTypeDropdown
-                          onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                        />
-                      ) : null}
-                    </td>
-                    <td>{name}</td>
-                    {years.map((year) => (
-                      <td key={`${name}-${year}`}>{getCategoryData(name)}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </Row>
-      )}
-
-      {showGoods && (
-        <Row>
-          <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
-            <Table striped bordered>
-              <thead>
-                <tr>
-                  <th>Select Forecast Type</th>
-                  <th>Name</th>
-                  {years.map((year) => (
-                    <th key={year}>{year}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {goodsCategories.map((name) => (
-                  <tr key={name}>
-                    <td>
-                      {!name.includes('Gross') && (
-                        <ForecastTypeDropdown
-                          onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                        />
-                      )}
-                    </td>
-                    <td>{name}</td>
-                    {years.map((year) => (
-                      <td key={`${name}-${year}`}>{getCategoryData(name)}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </Row>
-      )}
-
-      {showOperating && (
-        <Row>
-          <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
-            <Table striped bordered>
-              <thead>
-                <tr>
-                  <th>Select Forecast Type</th>
-                  <th>Name</th>
-                  {years.map((year) => (
-                    <th key={year}>{year}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {operatingCategories.map((name) => (
-                  <tr key={name}>
-                    <td>
-                      {!(name.includes('Expenses') || name.includes('%')) ? (
-                        <ForecastTypeDropdown
-                          onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                        />
-                      ) : null}
-                    </td>
-                    <td>{name}</td>
-                    {years.map((year) => (
-                      <td key={`${name}-${year}`}>{getCategoryData(name)}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </Row>
-      )}
-
-      {showAssets && (
-        <Row>
-          <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
-            <Table striped bordered>
-              <thead>
-                <tr>
-                  <th>Select Forecast Type</th>
-                  <th>Name</th>
-                  {years.map((year) => (
-                    <th key={year}>{year}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {assetsCategories.map((name) => (
-                  <tr key={name}>
-                    <td>
-                      {!name.includes('Total') ? (
-                        <ForecastTypeDropdown
-                          onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                        />
-                      ) : null}
-                    </td>
-                    <td>{name}</td>
-                    {years.map((year) => (
-                      <td key={`${name}-${year}`}>{getCategoryData(name)}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </Row>
-      )}
-
-      {showLiabilities && (
-        <Row>
-          <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
-            <Table striped bordered>
-              <thead>
-                <tr>
-                  <th>Select Forecast Type</th>
-                  <th>Name</th>
-                  {years.map((year) => (
-                    <th key={year}>{year}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {liabilitiesCategories.map((name) => (
-                  <tr key={name}>
-                    <td>
-                      {!name.includes('Total') ? (
-                        <ForecastTypeDropdown
-                          onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                        />
-                      ) : null}
-                    </td>
-                    <td>{name}</td>
-                    {years.map((year) => (
-                      <td key={`${name}-${year}`}>{getCategoryData(name)}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </Row>
-      )}
+      {showIncome && renderTable(incomeCategories)}
+      {showGoods && renderTable(goodsCategories)}
+      {showOperating && renderTable(operatingCategories)}
+      {showAssets && renderTable(assetsCategories)}
+      {showLiabilities && renderTable(liabilitiesCategories)}
     </Container>
   );
 };

@@ -102,3 +102,106 @@ export function computeMultiplier(percent: number, value: any): number {
   const calculatedValue = value + (value * multiplierPercent);
   return Math.round(calculatedValue);
 }
+
+/**
+ * Casts a value to a number (if not already a number).
+ */
+export function toNumber(value: string | number): string | number {
+  if (typeof value === 'string') {
+    const parsedValue = parseFloat(value);
+    return Number.isNaN(parsedValue) ? 0 : parsedValue;
+  }
+  return value.toFixed(2);
+}
+
+/**
+ * Generates a random number in a given minmax range.
+ */
+export function randomNumber(min: number, max: number): number {
+  return Math.round(Math.random() * (max - min) + min);
+}
+
+/**
+ * Generates random data for the Financial Compilations page.
+ */
+export function generateRandomFinancialData(year: number) {
+  const revenue = randomNumber(1_000_000, 5_000_000);
+  const costContracting = randomNumber(200_000, 1_000_000);
+  const overhead = randomNumber(150_000, 800_000);
+  const salariesAndBenefits = randomNumber(500_000, 2_000_000);
+  const rentAndOverhead = randomNumber(100_000, 500_000);
+  const depreciationAndAmortization = randomNumber(50_000, 300_000);
+  const interest = randomNumber(20_000, 100_000);
+  const interestIncome = randomNumber(5_000, 30_000);
+  const interestExpense = randomNumber(10_000, 50_000);
+  const gainOnDisposalAssets = randomNumber(10_000, 100_000);
+  const otherIncome = randomNumber(20_000, 150_000);
+  const incomeTaxes = randomNumber(50_000, 300_000);
+  const cashAndEquivalents = randomNumber(100_000, 1_000_000);
+  const accountsReceivable = randomNumber(200_000, 1_500_000);
+  const inventory = randomNumber(150_000, 800_000);
+  const propertyPlantAndEquipment = randomNumber(1_000_000, 5_000_000);
+  const investment = randomNumber(50_000, 500_000);
+  const accountsPayable = randomNumber(100_000, 1_000_000);
+  const currentDebtService = randomNumber(50_000, 300_000);
+  const taxesPayable = randomNumber(20_000, 150_000);
+  const longTermDebtService = randomNumber(100_000, 500_000);
+  const loansPayable = randomNumber(50_000, 300_000);
+  const equityCapital = randomNumber(1_000_000, 5_000_000);
+  const retainedEarnings = randomNumber(200_000, 1_500_000);
+
+  const netSales = Math.round(revenue * 0.97);
+  const costGoodsSold = Math.round(revenue * (0.3 + Math.random() * 0.3));
+  const grossProfit = revenue - costGoodsSold;
+  const grossMarginPercent = Number(((grossProfit / revenue) * 100).toFixed(2));
+
+  const totalCurrentAssets = cashAndEquivalents + accountsReceivable + inventory;
+  const totalLongTermAssets = propertyPlantAndEquipment + investment;
+  const totalAssets = totalCurrentAssets + totalLongTermAssets;
+
+  const totalCurrentLiabilities = accountsPayable + currentDebtService + taxesPayable;
+  const totalLongTermLiabilities = longTermDebtService + loansPayable;
+  const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities;
+  const totalStockholdersEquity = equityCapital + retainedEarnings;
+  const totalLiabilitiesAndEquity = totalLiabilities + totalStockholdersEquity;
+
+  return {
+    year,
+    revenue,
+    netSales,
+    costContracting,
+    overhead,
+    costGoodsSold,
+    grossProfit,
+    grossMarginPercent,
+    salariesAndBenefits,
+    rentAndOverhead,
+    depreciationAndAmortization,
+    interest,
+    interestIncome,
+    interestExpense,
+    gainOnDisposalAssets,
+    otherIncome,
+    incomeTaxes,
+    cashAndEquivalents,
+    accountsReceivable,
+    inventory,
+    totalCurrentAssets,
+    propertyPlantAndEquipment,
+    investment,
+    totalLongTermAssets,
+    totalAssets,
+    accountsPayable,
+    currentDebtService,
+    taxesPayable,
+    totalCurrentLiabilities,
+    longTermDebtService,
+    loansPayable,
+    totalLongTermLiabilities,
+    totalLiabilities,
+    equityCapital,
+    retainedEarnings,
+    totalStockholdersEquity,
+    totalLiabilitiesAndEquity,
+  };
+}

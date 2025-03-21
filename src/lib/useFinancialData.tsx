@@ -30,7 +30,7 @@ interface FinancialDataValues {
   retainedEarnings: number;
 }
 
-const useFinancialData = (inputData:FinancialDataValues) => {
+const useFinancialData = (inputData: FinancialDataValues) => {
   const [data, setData] = useState({ ...inputData });
   const setField = (field:string, value:number) => {
     setData((prev) => ({ ...prev, [field]: value }));
