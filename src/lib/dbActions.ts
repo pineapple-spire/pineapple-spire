@@ -148,7 +148,6 @@ export async function getAuditData() {
   const records = [await prisma.financialData.findUnique({ where: { year: 2022 } }), await prisma.financialData.findUnique({ where: { year: 2023 } }), await prisma.financialData.findUnique({ where: { year: 2024 } })];
   for (let i = 0; i < records.length; i++) {
     if (!records[i]) {
-      console.log('default model generated in dbActions');
       records[i] = {
         year: 2022 + i,
         ...defaultFinancialModel,
@@ -156,6 +155,5 @@ export async function getAuditData() {
     }
   }
 
-  console.log('default model generated in dbActions');
   return records;
 }

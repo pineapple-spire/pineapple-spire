@@ -13,7 +13,6 @@ type ChangePasswordForm = {
   oldpassword: string;
   password: string;
   confirmPassword: string;
-  // acceptTerms: boolean;
 };
 
 /** The change password page. */
@@ -41,7 +40,6 @@ const ChangePassword = () => {
   });
 
   const onSubmit = async (data: ChangePasswordForm) => {
-    // console.log(JSON.stringify(data, null, 2));
     await changePassword({ email, ...data });
     await swal('Password Changed', 'Your password has been changed', 'success', { timer: 2000 });
     reset();

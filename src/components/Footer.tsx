@@ -7,10 +7,9 @@ const Footer = () => (
   <footer className="mt-auto py-3 footer">
     <Container>
       <Row>
-        {/* TODO: Update this to have links to contact info, social media, disclaimer, and support sections. */}
+        {/* TODO: Update this to have link to disclaimer. */}
         <Col className="text-center g-3">
-          {/* TODO: link to contact page */}
-          <a href="/" target="_blank" rel="noopener noreferrer">Contact Us</a>
+          <a href="/contact" rel="noopener noreferrer">Contact Us</a>
           <br />
           <a href="https://www.spirehawaii.com/" target="_blank" rel="noopener noreferrer">Visit Spire LLP</a>
         </Col>
@@ -44,10 +43,9 @@ const Footer = () => (
         </Col>
         <Col className="text-center g-3">
           {/* TODO: link to disclaimer */}
-          <a href="/" target="_blank" rel="noopener noreferrer">Disclaimer</a>
+          <a href="/" rel="noopener noreferrer">Disclaimer</a>
           <br />
-          {/* TODO: link to report problem page */}
-          <a href="/" target="_blank" rel="noopener noreferrer">Report A Problem</a>
+          <a href="/report" rel="noopener noreferrer">Report A Problem</a>
         </Col>
       </Row>
     </Container>
