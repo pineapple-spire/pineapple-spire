@@ -9,5 +9,25 @@
 
   "defaultScenarios": [
     { "id": 1, "title": "Stress Scenario #1", "description": "This is a base stress scenario.", "excelWorkbookUrl": "https://example.com/file.xlsx" }
+  ],
+
+  "defaultData": [
+    { "year": 2022, "revenue": 131345, "costContracting": 48456, "overhead": 667, "salariesAndBenefits": 23872,
+    "rentAndOverhead": 10087, "depreciationAndAmortization": 17205, "interest": 1500, "interestIncome": 0, "interestExpense": 0,
+    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 8483, "cashAndEquivalents": 183715, "accountsReceivable": 6567,
+    "inventory": 9825, "propertyPlantAndEquipment": 40145, "investment": 0, "accountsPayable": 4912, "currentDebtService": 5000,
+    "taxesPayable": 4265, "longTermDebtService": 15000, "loansPayable": 20000, "equityCapital": 170000, "retainedEarnings": 21075 },
+    { "year": 2023, "revenue": 142341, "costContracting": 52587, "overhead": 667, "salariesAndBenefits": 23002,
+    "rentAndOverhead": 11020, "depreciationAndAmortization": 16544, "interest": 900, "interestIncome": 0, "interestExpense": 0,
+    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 10908, "cashAndEquivalents": 191069, "accountsReceivable": 7117,
+    "inventory": 10531, "propertyPlantAndEquipment": 38602, "investment": 20000, "accountsPayable": 5265, "currentDebtService": 5000,
+    "taxesPayable": 5341, "longTermDebtService": 15000, "loansPayable": 40000, "equityCapital": 170000, "retainedEarnings": 26713 },
+    { "year": 2024, "revenue": 150772, "costContracting": 56643, "overhead": 667, "salariesAndBenefits": 25245,
+    "rentAndOverhead": 11412, "depreciationAndAmortization": 16080, "interest": 900, "interestIncome": 0, "interestExpense": 0,
+    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 11598, "cashAndEquivalents": 189550, "accountsReceivable": 7539,
+    "inventory": 11342, "propertyPlantAndEquipment": 37521, "investment": 50000, "accountsPayable": 5671, "currentDebtService": 5000,
+    "taxesPayable": 2054, "longTermDebtService": 15000, "loansPayable": 70000, "equityCapital": 170000, "retainedEarnings": 28227 } 
+
+ 
   ]
 }
