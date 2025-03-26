@@ -12,21 +12,21 @@
   ],
 
   "defaultData": [
-    { "year": 2022, "revenue": 131345.00, "costContracting": 48456.00, "overhead": 667.00, "salariesAndBenefits": 23872.00,
-    "rentAndOverhead": 10087.00, "depreciationAndAmortization": 17205.00, "interest": 1500.00, "interestIncome": 0.0, "interestExpense": 0.0,
-    "gainOnDisposalAssets": 0.0, "otherIncome": 0.0, "incomeTaxes": 8483.00, "cashAndEquivalents": 183715.00, "accountsReceivable": 6567.00,
-    "inventory": 9825.00, "propertyPlantAndEquipment": 40145.00, "investment": 0.00, "accountsPayable": 4912.00, "currentDebtService": 5000.00,
-    "taxesPayable": 4265.00, "longTermDebtService": 15000.00, "loansPayable": 20000.00, "equityCapital": 170000.00, "retainedEarnings": 21075.00 },
-    { "year": 2023, "revenue": 142341.00, "costContracting": 52587.00, "overhead": 667.00, "salariesAndBenefits": 23002.00,
-    "rentAndOverhead": 11020.00, "depreciationAndAmortization": 16544.00, "interest": 900.00, "interestIncome": 0.0, "interestExpense": 0.0,
-    "gainOnDisposalAssets": 0.0, "otherIncome": 0.0, "incomeTaxes": 10908.00, "cashAndEquivalents": 191069.00, "accountsReceivable": 7117.00,
-    "inventory": 10531.00, "propertyPlantAndEquipment": 38602.00, "investment": 20000.00, "accountsPayable": 5265.00, "currentDebtService": 5000.00,
-    "taxesPayable": 5341.00, "longTermDebtService": 15000.00, "loansPayable": 40000.00, "equityCapital": 170000.00, "retainedEarnings": 26713.00 },
-    { "year": 2024, "revenue": 150772.00, "costContracting": 56643.00, "overhead": 667.00, "salariesAndBenefits": 25245.00,
-    "rentAndOverhead": 11412.00, "depreciationAndAmortization": 16080.00, "interest": 900.00, "interestIncome": 0.0, "interestExpense": 0.0,
-    "gainOnDisposalAssets": 0.0, "otherIncome": 0.0, "incomeTaxes": 11598.00, "cashAndEquivalents": 189550.00, "accountsReceivable": 7539.00,
-    "inventory": 11342.00, "propertyPlantAndEquipment": 37521.00, "investment": 50000.00, "accountsPayable": 5671.00, "currentDebtService": 5000.00,
-    "taxesPayable": 2054.00, "longTermDebtService": 15000.00, "loansPayable": 70000.00, "equityCapital": 170000.00, "retainedEarnings": 28227.00 } 
+    { "year": 2022, "revenue": 131345, "costContracting": 48456, "overhead": 667, "salariesAndBenefits": 23872,
+    "rentAndOverhead": 10087, "depreciationAndAmortization": 17205, "interest": 1500, "interestIncome": 0, "interestExpense": 0,
+    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 8483, "cashAndEquivalents": 183715, "accountsReceivable": 6567,
+    "inventory": 9825, "propertyPlantAndEquipment": 40145, "investment": 0, "accountsPayable": 4912, "currentDebtService": 5000,
+    "taxesPayable": 4265, "longTermDebtService": 15000, "loansPayable": 20000, "equityCapital": 170000, "retainedEarnings": 21075 },
+    { "year": 2023, "revenue": 142341, "costContracting": 52587, "overhead": 667, "salariesAndBenefits": 23002,
+    "rentAndOverhead": 11020, "depreciationAndAmortization": 16544, "interest": 900, "interestIncome": 0, "interestExpense": 0,
+    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 10908, "cashAndEquivalents": 191069, "accountsReceivable": 7117,
+    "inventory": 10531, "propertyPlantAndEquipment": 38602, "investment": 20000, "accountsPayable": 5265, "currentDebtService": 5000,
+    "taxesPayable": 5341, "longTermDebtService": 15000, "loansPayable": 40000, "equityCapital": 170000, "retainedEarnings": 26713 },
+    { "year": 2024, "revenue": 150772, "costContracting": 56643, "overhead": 667, "salariesAndBenefits": 25245,
+    "rentAndOverhead": 11412, "depreciationAndAmortization": 16080, "interest": 900, "interestIncome": 0, "interestExpense": 0,
+    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 11598, "cashAndEquivalents": 189550, "accountsReceivable": 7539,
+    "inventory": 11342, "propertyPlantAndEquipment": 37521, "investment": 50000, "accountsPayable": 5671, "currentDebtService": 5000,
+    "taxesPayable": 2054, "longTermDebtService": 15000, "loansPayable": 70000, "equityCapital": 170000, "retainedEarnings": 28227 } 
 
  
   ]

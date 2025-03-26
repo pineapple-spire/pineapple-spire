@@ -30,6 +30,41 @@ async function main() {
     });
   });
 
+  config.defaultData.forEach(async (data) => {
+    console.log(`  Creating base data: ${data.year}`);
+    await prisma.financialData.upsert({
+      where: { year: data.year },
+      update: {},
+      create: {
+        year: data.year,
+        revenue: data.revenue,
+        costContracting: data.costContracting,
+        overhead: data.overhead,
+        salariesAndBenefits: data.salariesAndBenefits,
+        rentAndOverhead: data.rentAndOverhead,
+        depreciationAndAmortization: data.depreciationAndAmortization,
+        interest: data.interest,
+        interestIncome: data.interestIncome,
+        interestExpense: data.interestExpense,
+        gainOnDisposalAssets: data.gainOnDisposalAssets,
+        otherIncome: data.otherIncome,
+        incomeTaxes: data.incomeTaxes,
+        cashAndEquivalents: data.cashAndEquivalents,
+        accountsReceivable: data.accountsReceivable,
+        inventory: data.inventory,
+        propertyPlantAndEquipment: data.propertyPlantAndEquipment,
+        investment: data.investment,
+        accountsPayable: data.accountsPayable,
+        currentDebtService: data.currentDebtService,
+        taxesPayable: data.taxesPayable,
+        longTermDebtService: data.longTermDebtService,
+        loansPayable: data.loansPayable,
+        equityCapital: data.equityCapital,
+        retainedEarnings: data.retainedEarnings,
+      },
+    });
+  });
+
   config.defaultScenarios.forEach(async (scenario) => {
     console.log('  Creating base stress test scenarios');
     await prisma.stressScenario.upsert({
