@@ -46,7 +46,7 @@ export async function changeRole(credentials: { email: string; role: Role }) {
   });
 }
 
-interface FinancialDataValues {
+export interface FinancialDataValues {
   year: number;
   revenue: number;
   costContracting: number;
@@ -73,42 +73,24 @@ interface FinancialDataValues {
   equityCapital: number;
   retainedEarnings: number;
 }
-type AuditDataValues = [FinancialDataValues, FinancialDataValues, FinancialDataValues];
+
+export type AuditDataValues = [
+  FinancialDataValues,
+  FinancialDataValues,
+  FinancialDataValues,
+];
+
 /**
- * Upserts an audit data record. Audit data is the baseline for forecasting.
+ * Upserts an audit data record. Audit data is the baseline.
  */
-export async function submitAuditData(data:AuditDataValues) {
-  // TODO: Should AuditData be different per user, user group, etc?
-  await prisma.financialData.upsert({
-    where: { year: data[0].year },
-    update: {
-      ...data[0],
-    },
-    create: {
-      // Creates an instance of the data if not found
-      ...data[0],
-    },
-  });
-  await prisma.financialData.upsert({
-    where: { year: data[1].year },
-    update: {
-      ...data[1],
-    },
-    create: {
-      // Creates an instance of the data if not found
-      ...data[1],
-    },
-  });
-  await prisma.financialData.upsert({
-    where: { year: data[2].year },
-    update: {
-      ...data[2],
-    },
-    create: {
-      // Creates an instance of the data if not found
-      ...data[2],
-    },
-  });
+export async function submitAuditData(data: AuditDataValues): Promise<void> {
+  await Promise.all(
+    data.map((financialData) => prisma.financialData.upsert({
+      where: { year: financialData.year },
+      update: { ...financialData },
+      create: { ...financialData },
+    })),
+  );
 
   redirect('/audit-data');
 }
@@ -117,9 +99,9 @@ export async function submitAuditData(data:AuditDataValues) {
  * Retrieves the audit data record.
  * If no record exists, returns 0 for every field.
  */
-export async function getAuditData() {
+export async function getAuditData(): Promise<AuditDataValues> {
   const defaultFinancialModel = {
-    revenue: 1000,
+    revenue: 0,
     costContracting: 0,
     overhead: 0,
     salariesAndBenefits: 0,
@@ -144,16 +126,18 @@ export async function getAuditData() {
     equityCapital: 0,
     retainedEarnings: 0,
   };
-  // eslint-disable-next-line max-len
-  const records = [await prisma.financialData.findUnique({ where: { year: 2022 } }), await prisma.financialData.findUnique({ where: { year: 2023 } }), await prisma.financialData.findUnique({ where: { year: 2024 } })];
-  for (let i = 0; i < records.length; i++) {
-    if (!records[i]) {
-      records[i] = {
-        year: 2022 + i,
-        ...defaultFinancialModel,
-      };
-    }
-  }
 
-  return records;
+  const years = [2022, 2023, 2024];
+  const records = await prisma.financialData.findMany({
+    where: {
+      year: { in: years },
+    },
+  });
+
+  const results = years.map((year) => {
+    const record = records.find((rec) => rec.year === year);
+    return record || { year, ...defaultFinancialModel };
+  }) as AuditDataValues;
+
+  return results;
 }

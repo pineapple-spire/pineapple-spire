@@ -4,38 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Form } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
-import { submitAuditData, getAuditData } from '@/lib/dbActions';
+import {
+  submitAuditData,
+  getAuditData,
+  FinancialDataValues,
+  AuditDataValues,
+} from '@/lib/dbActions';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
-interface FinancialDataValues {
-  year: number;
-  revenue: number;
-  costContracting: number;
-  overhead: number;
-  salariesAndBenefits: number;
-  rentAndOverhead: number;
-  depreciationAndAmortization: number;
-  interest: number;
-  interestIncome: number;
-  interestExpense: number;
-  gainOnDisposalAssets: number;
-  otherIncome: number;
-  incomeTaxes: number;
-  cashAndEquivalents: number;
-  accountsReceivable: number;
-  inventory: number;
-  propertyPlantAndEquipment: number;
-  investment: number;
-  accountsPayable: number;
-  currentDebtService: number;
-  taxesPayable: number;
-  longTermDebtService: number;
-  loansPayable: number;
-  equityCapital: number;
-  retainedEarnings: number;
-}
-type AuditDataFormValues = [FinancialDataValues, FinancialDataValues, FinancialDataValues];
-
-const defaultFinancialModel = {
+const defaultFinancialModel: FinancialDataValues = {
   year: 0,
   revenue: 0,
   costContracting: 0,
@@ -62,7 +39,12 @@ const defaultFinancialModel = {
   equityCapital: 0,
   retainedEarnings: 0,
 };
-const defaultValues: AuditDataFormValues = [defaultFinancialModel, defaultFinancialModel, defaultFinancialModel];
+
+const defaultValues: AuditDataValues = [
+  { ...defaultFinancialModel },
+  { ...defaultFinancialModel },
+  { ...defaultFinancialModel },
+];
 
 const financialFields = [
   { key: 'revenue', label: 'Revenue' },
@@ -92,30 +74,41 @@ const financialFields = [
 ];
 
 const AuditDataForm: React.FC = () => {
-  const { register, handleSubmit, reset } = useForm<AuditDataFormValues>({ defaultValues });
-  const [finData, setFinData] = useState([defaultFinancialModel, defaultFinancialModel, defaultFinancialModel]);
+  const { register, handleSubmit, reset } = useForm<AuditDataValues>({ defaultValues });
+  const [finData, setFinData] = useState<AuditDataValues>(defaultValues);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getAuditData();
-      // @ts-ignore
-      setFinData(data);
-      // @ts-ignore
-      reset(data);
+      setLoading(true);
+      try {
+        const data = (await getAuditData()) as AuditDataValues;
+        setFinData(data);
+        reset(data);
+      } catch (error) {
+        console.error('Error fetching audit data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
   }, [reset]);
 
-  const onSubmit = async (data: AuditDataFormValues) => {
+  const onSubmit = async (data: AuditDataValues) => {
     try {
       await submitAuditData(data);
       swal('Success', 'Audit Data submitted successfully', 'success', { timer: 2000 });
       reset(data);
     } catch (error) {
+      console.error('Error submitting audit data:', error);
       swal('Error', 'Failed to submit Audit Data', 'error', { timer: 2000 });
     }
   };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
@@ -123,22 +116,25 @@ const AuditDataForm: React.FC = () => {
         <thead>
           <tr>
             <th>Category</th>
-            <th>{ finData[0].year }</th>
-            <th>{ finData[1].year }</th>
-            <th>{ finData[2].year }</th>
+            {finData.map((data, idx) => (
+              <th key={`header-${data.year}-${idx}`}>{data.year}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {financialFields.map(({ key, label }) => (
-            <tr key={key}>
+            <tr key={`row-${key}`}>
               <td>{label}</td>
-              {[0, 1, 2].map((index) => (
-                <td key={index}>
+              {finData.map((data, idx) => (
+                <td key={`cell-${key}-${idx}`}>
                   <Form.Control
                     type="number"
                     step="0.01"
-                    // @ts-ignore
-                    {...register(`${index}.${key}`, { valueAsNumber: true })}
+                    defaultValue="0"
+                    {...register(
+                      `${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`,
+                      { valueAsNumber: true },
+                    )}
                   />
                 </td>
               ))}
