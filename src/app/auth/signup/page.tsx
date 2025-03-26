@@ -31,7 +31,7 @@ export default function SignUpPage() {
     try {
       await createUser(data);
       await signIn('credentials', {
-        callbackUrl: '/add',
+        callbackUrl: '/',
         email: data.email,
         password: data.password,
       });

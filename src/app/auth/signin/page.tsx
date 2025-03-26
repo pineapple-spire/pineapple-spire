@@ -1,9 +1,63 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
-/** The sign in page. */
+import React, { useState } from 'react';
+import { Button, Form } from 'react-bootstrap';
+import Link from 'next/link';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+const styles = {
+  formContainer: {
+    backgroundColor: '#e8e8e8',
+    padding: '2rem',
+    borderRadius: '8px',
+    width: '100%',
+    maxWidth: '600px',
+    margin: '2rem auto',
+  },
+  formHeader: {
+    backgroundColor: '#ffff00',
+    margin: '-2rem -2rem 2rem -2rem',
+    padding: '1rem',
+    borderTopLeftRadius: '8px',
+    borderTopRightRadius: '8px',
+  },
+  title: {
+    textAlign: 'center',
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    margin: 0,
+  },
+  input: {
+    textAlign: 'center',
+    padding: '0.75rem',
+    marginBottom: '1rem',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+  },
+  submitButton: {
+    backgroundColor: '#fff168',
+    border: 'none',
+    borderRadius: '9999px',
+    padding: '0.5rem 2rem',
+    color: 'black',
+    width: 'fit-content',
+    margin: '1rem auto',
+    display: 'block',
+  },
+  footer: {
+    textAlign: 'center',
+    marginTop: '1.5rem',
+  },
+  signUpLink: {
+    color: '#2196f3',
+    textDecoration: 'none',
+  },
+} as const;
+
 const SignIn = () => {
+  const [errorMessage, setErrorMessage] = useState('');
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const target = e.target as typeof e.target & {
@@ -18,40 +72,50 @@ const SignIn = () => {
       password,
     });
     if (result?.error) {
-      console.error('Sign in failed: ', result.error);
+      setErrorMessage(result.error);
     }
   };
+
   return (
-    <main>
-      <Container>
-        <Row className="justify-content-center">
-          <Col xs={5}>
-            <h1 className="text-center">Sign In</h1>
-            <Card>
-              <Card.Body>
-                <Form method="post" onSubmit={handleSubmit}>
-                  <Form.Group controlId="formBasicEmail">
-                    <Form.Label>Email</Form.Label>
-                    <input name="email" type="text" className="form-control" />
-                  </Form.Group>
-                  <Form.Group>
-                    <Form.Label>Password</Form.Label>
-                    <input name="password" type="password" className="form-control" />
-                  </Form.Group>
-                  <Button type="submit" className="mt-3">
-                    Signin
-                  </Button>
-                </Form>
-              </Card.Body>
-              <Card.Footer>
-                Don&apos;t have an account?
-                <a href="/auth/signup">Sign up</a>
-              </Card.Footer>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </main>
+    <div style={styles.formContainer}>
+      <div style={styles.formHeader}>
+        <h1 style={styles.title}>Sign In</h1>
+      </div>
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Control
+            type="text"
+            name="email"
+            placeholder="Email"
+            style={styles.input}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Control
+            type="password"
+            name="password"
+            placeholder="Password"
+            style={styles.input}
+            required
+          />
+        </Form.Group>
+        {errorMessage && (
+          <div className="text-danger text-center mb-3">{errorMessage}</div>
+        )}
+        <Button type="submit" style={styles.submitButton}>
+          Sign In
+        </Button>
+      </Form>
+      <div style={styles.footer}>
+        Don&apos;t have an account?
+        {' '}
+        <Link href="/auth/signup" style={styles.signUpLink}>
+          Sign Up
+        </Link>
+      </div>
+    </div>
   );
 };
+
 export default SignIn;

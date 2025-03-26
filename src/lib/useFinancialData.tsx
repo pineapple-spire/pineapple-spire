@@ -17,7 +17,7 @@ interface FinancialDataValues {
   otherIncome: number;
   incomeTaxes: number;
   cashAndEquivalents: number;
-  accountsReveivable: number;
+  accountsReceivable: number;
   inventory: number;
   propertyPlantAndEquipment: number;
   investment: number;
@@ -30,7 +30,7 @@ interface FinancialDataValues {
   retainedEarnings: number;
 }
 
-const useFinancialData = (inputData:FinancialDataValues) => {
+const useFinancialData = (inputData: FinancialDataValues) => {
   const [data, setData] = useState({ ...inputData });
   const setField = (field:string, value:number) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -42,7 +42,7 @@ const useFinancialData = (inputData:FinancialDataValues) => {
   // eslint-disable-next-line max-len
   const totalOperatingExpenses = data.salariesAndBenefits + data.rentAndOverhead + data.depreciationAndAmortization + data.interest;
   const totalOtherIncome = data.interestIncome + data.interestExpense + data.gainOnDisposalAssets + data.otherIncome;
-  const totalCurrentAssets = data.cashAndEquivalents + data.accountsReveivable + data.inventory;
+  const totalCurrentAssets = data.cashAndEquivalents + data.accountsReceivable + data.inventory;
   const totalLongTermAssets = data.propertyPlantAndEquipment + data.investment;
   const totalCurrentLiabilities = data.accountsPayable + data.currentDebtService + data.taxesPayable;
   const totalLongTermLiabilities = data.longTermDebtService + data.loansPayable;

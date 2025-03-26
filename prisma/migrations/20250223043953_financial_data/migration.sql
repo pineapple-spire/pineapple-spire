@@ -14,7 +14,7 @@ CREATE TABLE "FinancialData" (
     "otherIncome" DOUBLE PRECISION NOT NULL,
     "incomeTaxes" DOUBLE PRECISION NOT NULL,
     "cashAndEquivalents" DOUBLE PRECISION NOT NULL,
-    "accountsReveivable" DOUBLE PRECISION NOT NULL,
+    "accountsReceivable" DOUBLE PRECISION NOT NULL,
     "inventory" DOUBLE PRECISION NOT NULL,
     "propertyPlantAndEquipment" DOUBLE PRECISION NOT NULL,
     "investment" DOUBLE PRECISION NOT NULL,

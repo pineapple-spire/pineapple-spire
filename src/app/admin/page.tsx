@@ -5,6 +5,41 @@ import { prisma } from '@/lib/prisma';
 import { adminProtectedPage } from '@/lib/page-protection';
 import authOptions from '@/lib/authOptions';
 
+const styles = {
+  container: {
+    backgroundColor: '#e8e8e8',
+    padding: '2rem',
+    borderRadius: '8px',
+    maxWidth: '900px',
+    margin: '2rem auto',
+  },
+  header: {
+    backgroundColor: '#ffff00',
+    padding: '1rem',
+    margin: '-2rem -2rem 2rem -2rem',
+    borderTopLeftRadius: '8px',
+    borderTopRightRadius: '8px',
+    textAlign: 'center' as const,
+  },
+  headerTitle: {
+    margin: 0,
+    fontSize: '1.5rem',
+    fontWeight: 'bold' as const,
+  },
+  content: {
+    padding: '1rem',
+  },
+  actionLink: {
+    display: 'inline-block',
+    backgroundColor: '#fff168',
+    color: 'black',
+    borderRadius: '9999px',
+    padding: '0.5rem 1rem',
+    textDecoration: 'none',
+    fontWeight: 'bold' as const,
+  },
+};
+
 const AdminPage = async () => {
   const session = await getServerSession(authOptions);
   adminProtectedPage(
@@ -12,32 +47,43 @@ const AdminPage = async () => {
       user: { email: string; id: string; randomKey: string };
     } | null,
   );
+
   const users = await prisma.user.findMany({});
 
   return (
     <main>
-      <Container id="list" fluid className="py-3">
+      <Container fluid className="py-3">
         <Row>
           <Col>
-            <h1 className="text-center">Registered Users</h1>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th aria-label="change" />
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.email}</td>
-                    <td>{user.role}</td>
-                    <td><Link href={`/change-role/user/${user.id}`}>Change Role</Link></td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+            <div style={styles.container}>
+              <div style={styles.header}>
+                <h1 style={styles.headerTitle}>Registered Users</h1>
+              </div>
+              <div style={styles.content}>
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th style={{ textAlign: 'center' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td>{user.email}</td>
+                        <td>{user.role}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <Link href={`/change-role/user/${user.id}`} style={styles.actionLink}>
+                            Change Role
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </div>
           </Col>
         </Row>
       </Container>

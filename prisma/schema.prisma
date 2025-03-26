@@ -39,6 +39,20 @@ model StressScenario {
   excelWorkbookUrl String
 }
 
+model ContactUsData {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String
+  message         String
+}
+
+model ReportPageData {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String
+  problem         String 
+}
+
 model FinancialData {
   year                        Int      @id
 

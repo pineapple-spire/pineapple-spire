@@ -21,7 +21,7 @@ interface FinancialDataValues {
   otherIncome: number;
   incomeTaxes: number;
   cashAndEquivalents: number;
-  accountsReveivable: number;
+  accountsReceivable: number;
   inventory: number;
   propertyPlantAndEquipment: number;
   investment: number;
@@ -50,7 +50,7 @@ const defaultFinancialModel = {
   otherIncome: 0,
   incomeTaxes: 0,
   cashAndEquivalents: 0,
-  accountsReveivable: 0,
+  accountsReceivable: 0,
   inventory: 0,
   propertyPlantAndEquipment: 0,
   investment: 0,
@@ -78,7 +78,7 @@ const financialFields = [
   { key: 'otherIncome', label: 'Other Income' },
   { key: 'incomeTaxes', label: 'Income Taxes' },
   { key: 'cashAndEquivalents', label: 'Cash and Equivalents' },
-  { key: 'accountsReveivable', label: 'Accounts Receivable' },
+  { key: 'accountsReceivable', label: 'Accounts Receivable' },
   { key: 'inventory', label: 'Inventory' },
   { key: 'propertyPlantAndEquipment', label: 'Property, Plant, and Equipment' },
   { key: 'investment', label: 'Investment' },

@@ -1,14 +1,14 @@
 'use client';
 
-import { Form, Button, InputGroup } from 'react-bootstrap';
+import { Form, InputGroup } from 'react-bootstrap';
 import { useState } from 'react';
 
 interface MultiplierInputProps {
-  onMultiplierChange: (value: number) => void; // Callback function to send the numeric value to the parent
+  onMultiplierChange: (value: number) => void;
 }
 
 const MultiplierInput: React.FC<MultiplierInputProps> = ({ onMultiplierChange }) => {
-  const [multiplier, setMultiplier] = useState<string>(''); // Keeping it as a string to manage the input format
+  const [multiplier, setMultiplier] = useState<string>('5');
 
   const handleMultiplier = (event: { target: { value: string } }) => {
     const inputNumber = event.target.value;
@@ -17,18 +17,15 @@ const MultiplierInput: React.FC<MultiplierInputProps> = ({ onMultiplierChange })
 
     // Pass the numeric value to the parent if valid
     if (!Number.isNaN(numericMultiplier) && numericMultiplier >= 0 && numericMultiplier <= 100) {
-      onMultiplierChange(numericMultiplier); // Call the parent function with the numeric value
+      onMultiplierChange(numericMultiplier);
     }
   };
 
-  const handleClear = () => {
-    setMultiplier(''); // Reset the local state
-    onMultiplierChange(1); // Reset the multiplier to 1 in the parent (or whatever default value you prefer)
-  };
-
   const numericMultiplier = parseFloat(multiplier);
-  const isValidMultiplier = multiplier !== '' && !Number.isNaN(numericMultiplier) && numericMultiplier
-  >= 0 && numericMultiplier <= 100;
+  const isValidMultiplier = multiplier !== ''
+    && !Number.isNaN(numericMultiplier)
+    && numericMultiplier >= 0
+    && numericMultiplier <= 100;
 
   return (
     <Form.Group className="mb-3" style={{ maxWidth: '400px', width: '100%' }}>
@@ -47,18 +44,11 @@ const MultiplierInput: React.FC<MultiplierInputProps> = ({ onMultiplierChange })
           step="1"
           isInvalid={!isValidMultiplier && multiplier !== ''}
         />
-        {multiplier && (
-          <Button
-            variant="outline-secondary"
-            onClick={handleClear}
-            style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-          >
-            Clear
-          </Button>
-        )}
       </InputGroup>
 
-      <Form.Control.Feedback type="invalid">Please enter a number between 0 and 100.</Form.Control.Feedback>
+      <Form.Control.Feedback type="invalid">
+        Please enter a number between 0 and 100.
+      </Form.Control.Feedback>
     </Form.Group>
   );
 };

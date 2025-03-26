@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
+import { Button, Col, Form, Row } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -15,19 +15,71 @@ interface UserRoleProps {
   role: Role;
 }
 
-/**
- * Handles form submission by updating the user's role.
- * @param data - The user data from the form.
- */
+const styles = {
+  formContainer: {
+    backgroundColor: '#e8e8e8',
+    padding: '2rem',
+    borderRadius: '8px',
+    width: '100%',
+    maxWidth: '600px',
+    margin: '2rem auto',
+  },
+  formHeader: {
+    backgroundColor: '#ffff00',
+    margin: '-2rem -2rem 2rem -2rem',
+    padding: '1rem',
+    borderTopLeftRadius: '8px',
+    borderTopRightRadius: '8px',
+  },
+  title: {
+    textAlign: 'center' as const,
+    fontSize: '1.5rem',
+    fontWeight: 'bold' as const,
+    margin: 0,
+    color: 'black',
+  },
+  input: {
+    textAlign: 'center' as const,
+    padding: '0.75rem',
+    marginBottom: '1rem',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+  },
+  submitButton: {
+    backgroundColor: '#fff168',
+    border: 'none',
+    borderRadius: '9999px',
+    padding: '0.5rem 2rem',
+    color: 'black',
+    width: 'fit-content',
+    margin: '1rem auto',
+    display: 'block',
+  },
+  resetButton: {
+    backgroundColor: '#ffd700',
+    border: 'none',
+    borderRadius: '9999px',
+    padding: '0.5rem 2rem',
+    color: 'black',
+    width: 'fit-content',
+    margin: '1rem auto',
+    display: 'block',
+  },
+  footer: {
+    textAlign: 'center' as const,
+    marginTop: '1.5rem',
+  },
+  signInLink: {
+    color: '#2196f3',
+    textDecoration: 'none',
+  },
+} as const;
+
 const onSubmit = async (data: UserRoleProps) => {
   await changeRole(data);
   swal('Success', 'Role has been updated', 'success', { timer: 2000 });
 };
 
-/**
- * ChangeRoleForm component allows updating the user's role.
- * @param user - The user object to edit.
- */
 const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
   const {
     register,
@@ -39,9 +91,6 @@ const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
     defaultValues: { id: user.id, email: user.email, role: user.role },
   });
 
-  /**
-   * Checks if the role field has changed before submitting.
-   */
   const handleFormSubmit = async (data: UserRoleProps) => {
     if (dirtyFields.role) {
       await onSubmit(data);
@@ -54,78 +103,67 @@ const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
   };
 
   return (
-    <Container className="py-3">
-      <Row className="justify-content-center">
-        <Col xs={12} md={6} lg={5}>
-          <div className="text-center mb-3">
-            <h2>Edit Role</h2>
-          </div>
-          <Card>
-            <Card.Body>
-              <Form onSubmit={handleSubmit(handleFormSubmit)}>
-                <Form.Control type="hidden" {...register('id')} />
+    <div style={styles.formContainer}>
+      <div style={styles.formHeader}>
+        <h2 style={styles.title}>Edit Role</h2>
+      </div>
+      <Form onSubmit={handleSubmit(handleFormSubmit)}>
+        <Form.Control type="hidden" {...register('id')} />
 
-                {/* Email field (read-only) */}
-                <Form.Group className="mb-3" controlId="formEmail">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="text"
-                    readOnly
-                    disabled
-                    {...register('email')}
-                    className={errors.email ? 'is-invalid' : ''}
-                  />
-                  {errors.email && (
-                    <Form.Control.Feedback type="invalid">
-                      {errors.email.message}
-                    </Form.Control.Feedback>
-                  )}
-                </Form.Group>
+        {/* Email field (read-only) */}
+        <Form.Group className="mb-3" controlId="formEmail">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="text"
+            readOnly
+            disabled
+            {...register('email')}
+            style={styles.input}
+            className={errors.email ? 'is-invalid' : ''}
+          />
+          {errors.email && (
+            <Form.Control.Feedback type="invalid">
+              {errors.email.message}
+            </Form.Control.Feedback>
+          )}
+        </Form.Group>
 
-                {/* Role select field */}
-                <Form.Group className="mb-3" controlId="formRole">
-                  <Form.Label>Role</Form.Label>
-                  <Form.Select
-                    {...register('role')}
-                    className={errors.role ? 'is-invalid' : ''}
-                  >
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="USER">USER</option>
-                    <option value="AUDITOR">AUDITOR</option>
-                    <option value="ANALYST">ANALYST</option>
-                    <option value="VIEWER">VIEWER</option>
-                  </Form.Select>
-                  {errors.role && (
-                    <Form.Control.Feedback type="invalid">
-                      {errors.role.message}
-                    </Form.Control.Feedback>
-                  )}
-                </Form.Group>
+        {/* Role select field */}
+        <Form.Group className="mb-3" controlId="formRole">
+          <Form.Label>Role</Form.Label>
+          <Form.Select
+            {...register('role')}
+            style={styles.input}
+            className={errors.role ? 'is-invalid' : ''}
+          >
+            <option value="ADMIN">ADMIN</option>
+            <option value="USER">USER</option>
+            <option value="AUDITOR">AUDITOR</option>
+            <option value="ANALYST">ANALYST</option>
+            <option value="VIEWER">VIEWER</option>
+          </Form.Select>
+          {errors.role && (
+            <Form.Control.Feedback type="invalid">
+              {errors.role.message}
+            </Form.Control.Feedback>
+          )}
+        </Form.Group>
 
-                {/* Form buttons */}
-                <Row className="pt-3">
-                  <Col>
-                    <Button type="submit" variant="primary" className="w-100">
-                      Submit
-                    </Button>
-                  </Col>
-                  <Col>
-                    <Button
-                      type="button"
-                      onClick={() => reset()}
-                      variant="warning"
-                      className="w-100"
-                    >
-                      Reset
-                    </Button>
-                  </Col>
-                </Row>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+        {/* Form buttons */}
+        <Row className="pt-3">
+          <Col>
+            <Button type="submit" style={styles.submitButton}>
+              Submit
+            </Button>
+          </Col>
+          <Col>
+            <Button type="button" onClick={() => reset()} style={styles.resetButton}>
+              Reset
+            </Button>
+          </Col>
+        </Row>
+      </Form>
+    </div>
   );
 };
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Table, Form, Card } from 'react-bootstrap';
 import { computeFutureValue, formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
+import LinePlot from '@/components/LinePlot';
 
 /**
  * Returns an array of objects representing a year-by-year breakdown of investment.
@@ -124,6 +125,48 @@ const StressTest1: React.FC = () => {
 
   const residualData = getResidualEffects(breakdownWithDrop, breakdownNoDrop);
 
+  // Chart data for the Investment Growth Comparison (Stress Effects)
+  const chartData = {
+    labels: breakdownNoDrop.map((row) => row.year.toString()),
+    datasets: [
+      {
+        label: `With ${dropRate}% Drop`,
+        data: breakdownWithDrop.map((row) => row.balance),
+        borderColor: 'red',
+        fill: false,
+        tension: 0.1,
+      },
+      {
+        label: `Without ${dropRate}% Drop`,
+        data: breakdownNoDrop.map((row) => row.balance),
+        borderColor: 'green',
+        fill: false,
+        tension: 0.1,
+      },
+    ],
+  };
+
+  // Chart data for the Residual Effects Comparison
+  const residualChartData = {
+    labels: residualData.map((row) => row.year.toString()),
+    datasets: [
+      {
+        label: 'Lost Interest This Year',
+        data: residualData.map((row) => row.lostThisYear),
+        borderColor: 'blue',
+        fill: false,
+        tension: 0.1,
+      },
+      {
+        label: 'Cumulative Lost Interest',
+        data: residualData.map((row) => row.cumulativeLost),
+        borderColor: 'orange',
+        fill: false,
+        tension: 0.1,
+      },
+    ],
+  };
+
   return (
     <Container className="my-4">
       <h2 className="mb-4">Model Drop in Return on Initial Investment</h2>
@@ -180,7 +223,50 @@ const StressTest1: React.FC = () => {
 
       {activeTab === 'stressEffects' ? (
         <>
-          {/* Summary Tables */}
+          {/* Line Chart for Investment Growth */}
+          <Row className="mb-4">
+            <Col md={{ span: 8, offset: 2 }}>
+              <Card>
+                <Card.Body>
+                  <Card.Title className="text-center">Investment Growth Comparison</Card.Title>
+                  <LinePlot
+                    data={chartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                          display: true,
+                          text: 'Yearly Investment Balance Comparison',
+                        },
+                      },
+                      layout: {
+                        padding: 10,
+                      },
+                      scales: {
+                        x: {
+                          title: {
+                            display: true,
+                            text: 'Year',
+                          },
+                        },
+                        y: {
+                          title: {
+                            display: true,
+                            text: 'Balance ($)',
+                          },
+                        },
+                      },
+                    }}
+                    style={{ minHeight: '450px', maxHeight: '650px' }}
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Summary Tables for Stress Effects */}
           <Row className="mb-4">
             <Col md={6}>
               <Card className="p-2">
@@ -267,7 +353,7 @@ const StressTest1: React.FC = () => {
             </Col>
           </Row>
 
-          {/* Detailed Year-by-Year Tables */}
+          {/* Detailed Year-by-Year Tables for Stress Effects */}
           <Row>
             <Col xs={12} md={6}>
               <h5>
@@ -327,34 +413,82 @@ const StressTest1: React.FC = () => {
           </Row>
         </>
       ) : (
-        <Row>
-          <Col>
-            <h5>
-              Residual Effects: Lost Interest Over&nbsp;
-              {term}
-              {' '}
-              Years
-            </h5>
-            <Table responsive striped bordered>
-              <thead>
-                <tr>
-                  <th>Year</th>
-                  <th>Lost Interest This Year</th>
-                  <th>Cumulative Lost Interest</th>
-                </tr>
-              </thead>
-              <tbody>
-                {residualData.map((row) => (
-                  <tr key={row.year}>
-                    <td>{row.year}</td>
-                    <td>{formatCurrency(row.lostThisYear)}</td>
-                    <td>{formatCurrency(row.cumulativeLost)}</td>
+        <>
+          {/* Line Chart for Residual Effects */}
+          <Row className="mb-4">
+            <Col md={{ span: 8, offset: 2 }}>
+              <Card>
+                <Card.Body>
+                  <Card.Title className="text-center">
+                    Residual Effects: Lost Interest Comparison
+                  </Card.Title>
+                  <LinePlot
+                    data={residualChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                          display: true,
+                          text: 'Residual Effects: Lost Interest Over Time',
+                        },
+                      },
+                      layout: {
+                        padding: 10,
+                      },
+                      scales: {
+                        x: {
+                          title: {
+                            display: true,
+                            text: 'Year',
+                          },
+                        },
+                        y: {
+                          title: {
+                            display: true,
+                            text: 'Interest Lost ($)',
+                          },
+                        },
+                      },
+                    }}
+                    style={{ minHeight: '450px', maxHeight: '650px' }}
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Residual Effects Table */}
+          <Row>
+            <Col>
+              <h5>
+                Residual Effects: Lost Interest Over&nbsp;
+                {term}
+                {' '}
+                Years
+              </h5>
+              <Table responsive striped bordered>
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Lost Interest This Year</th>
+                    <th>Cumulative Lost Interest</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
+                </thead>
+                <tbody>
+                  {residualData.map((row) => (
+                    <tr key={row.year}>
+                      <td>{row.year}</td>
+                      <td>{formatCurrency(row.lostThisYear)}</td>
+                      <td>{formatCurrency(row.cumulativeLost)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+        </>
       )}
     </Container>
   );
