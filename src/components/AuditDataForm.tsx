@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form } from 'react-bootstrap';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import swal from 'sweetalert';
 import {
   submitAuditData,
@@ -74,32 +74,50 @@ const financialFields = [
 ];
 
 const AuditDataForm: React.FC = () => {
-  const { register, handleSubmit, reset } = useForm<AuditDataValues>({ defaultValues });
+  const { control, handleSubmit, reset } = useForm<AuditDataValues>({ defaultValues });
   const [finData, setFinData] = useState<AuditDataValues>(defaultValues);
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const data = (await getAuditData()) as AuditDataValues;
-        setFinData(data);
-        reset(data);
-      } catch (error) {
-        console.error('Error fetching audit data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch the latest data from the DB
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = (await getAuditData()) as AuditDataValues;
+      console.log('Fetched data:', data);
+      setFinData(data);
+      reset(data);
+    } catch (error) {
+      console.error('Error fetching audit data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reset]);
 
+  // Sanitize each record so that every expected field is defined.
+  const sanitizeRecord = (record: FinancialDataValues): FinancialDataValues => {
+    const sanitized: FinancialDataValues = { ...defaultFinancialModel };
+    for (const key of Object.keys(defaultFinancialModel) as (keyof FinancialDataValues)[]) {
+      if (record[key] !== undefined && record[key] !== null) {
+        sanitized[key] = record[key];
+      }
+    }
+    return sanitized;
+  };
+
   const onSubmit = async (data: AuditDataValues) => {
+    console.log('Final form data before sanitize:', data);
     try {
-      await submitAuditData(data);
+      const sanitizedData = data.map(sanitizeRecord) as AuditDataValues;
+      console.log('Sanitized data:', sanitizedData);
+      await submitAuditData(sanitizedData);
       swal('Success', 'Audit Data submitted successfully', 'success', { timer: 2000 });
-      reset(data);
+      // Re-fetch the latest data from DB after submission.
+      await fetchData();
     } catch (error) {
       console.error('Error submitting audit data:', error);
       swal('Error', 'Failed to submit Audit Data', 'error', { timer: 2000 });
@@ -127,13 +145,17 @@ const AuditDataForm: React.FC = () => {
               <td>{label}</td>
               {finData.map((data, idx) => (
                 <td key={`cell-${key}-${idx}`}>
-                  <Form.Control
-                    type="number"
-                    step="0.01"
-                    defaultValue="0"
-                    {...register(
-                      `${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`,
-                      { valueAsNumber: true },
+                  <Controller
+                    name={`${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`}
+                    control={control}
+                    defaultValue={data[key as keyof FinancialDataValues] !== undefined
+                      ? data[key as keyof FinancialDataValues] : 0}
+                    render={({ field }) => (
+                      <Form.Control
+                        type="number"
+                        step="0.01"
+                        {...field}
+                      />
                     )}
                   />
                 </td>
