@@ -4,16 +4,15 @@ import { useState } from 'react';
 import { Col, Container, Row, Table, Form } from 'react-bootstrap';
 import MultiplierInput from '@/components/MultiplierInput';
 import ForecastTypeDropdown from '@/components/ForecastTypeDropdown';
-import { computeMultiplier, toNumber } from '@/lib/mathUtils';
-import useFinancialData from '@/lib/useFinancialData';
+import { computeMultiplier, computeAverage } from '@/lib/mathUtils';
 
 const years = Array.from({ length: 12 }, (_, i) => 2025 + i);
 
+// Categories for the financial data
 const incomeCategories = [
   'Revenue',
   'Net Sales',
 ];
-
 const goodsCategories = [
   'Cost of Contracting',
   'Overhead',
@@ -21,7 +20,6 @@ const goodsCategories = [
   'Gross Profit',
   'Gross Margin %',
 ];
-
 const operatingCategories = [
   'Salaries & Benefits',
   'Rent & Overhead',
@@ -32,7 +30,6 @@ const operatingCategories = [
   'Profit (loss) from Operations',
   'Profit (loss) from Operations %',
 ];
-
 const assetsCategories = [
   'Cash & Cash Equivalents',
   'Accounts Receivable',
@@ -43,7 +40,6 @@ const assetsCategories = [
   'Total Long Term Assets',
   'Total Assets',
 ];
-
 const liabilitiesCategories = [
   'Accounts Payable',
   'Current Debt Service',
@@ -82,45 +78,85 @@ const getHeatmapStyle = (value: number | string, rowMax: number) => {
 
 // @ts-ignore
 const FinancialCompilationClient = ({ initialData }) => {
-  const financialData = useFinancialData(initialData);
-  const [randomData, setRandomData] = useState(financialData);
+  const [auditedData, setAuditedData] = useState(initialData || []);
+  const auditDataLength = auditedData.length - 1;
+  const lastAuditRecord = auditedData[auditDataLength] || {};
 
+  // Map the audited data to categories
   const categoryDataMap: Record<string, number | string> = {
-    Revenue: randomData.revenue,
-    'Net Sales': randomData.netSales,
-    'Cost of Contracting': randomData.costContracting,
-    Overhead: randomData.overhead,
-    'Cost of Goods Sold': randomData.costGoodsSold,
-    'Gross Profit': randomData.grossProfit,
-    'Gross Margin %': toNumber(randomData.grossMarginPercent),
-    'Salaries & Benefits': randomData.salariesAndBenefits,
-    'Rent & Overhead': randomData.rentAndOverhead,
-    'Depreciation & Amortization': randomData.depreciationAndAmortization,
-    Interest: randomData.interest,
-    'Total Operating Expenses': randomData.totalOperatingExpenses,
-    'Operating Expenses %': toNumber(randomData.operatingExpensesPercent),
-    'Profit (loss) from Operations': randomData.profitFromOperations,
-    'Profit (loss) from Operations %': toNumber(randomData.profitFromOperationsPercent),
-    'Cash & Cash Equivalents': randomData.cashAndEquivalents,
-    'Accounts Receivable': randomData.accountsReceivable,
-    Inventory: randomData.inventory,
-    'Total Current Assets': randomData.totalCurrentAssets,
-    'Property, Plant, & Equipment': randomData.propertyPlantAndEquipment,
-    Investment: randomData.investment,
-    'Total Long Term Assets': randomData.totalLongTermAssets,
-    'Total Assets': randomData.totalAssets,
-    'Accounts Payable': randomData.accountsPayable,
-    'Current Debt Service': randomData.currentDebtService,
-    'Taxes Payable': randomData.taxesPayable,
-    'Total Current Liabilities': randomData.totalCurrentLiabilities,
-    'Long Term Debt Service': randomData.longTermDebtService,
-    'Loans Payable': randomData.loansPayable,
-    'Total Long Term Liabilities': randomData.totalLongTermLiabilities,
-    'Total Liabilities': randomData.totalLiabilities,
-    'Equity Capital': randomData.equityCapital,
-    'Retained Earnings': randomData.retainedEarnings,
-    'Total Stockholder Equity': randomData.totalStockholdersEquity,
-    'Total Liabilities & Equity': randomData.totalLiabilitiesAndEquity,
+    Revenue: lastAuditRecord.revenue ?? 0,
+    'Net Sales': lastAuditRecord.netSales,
+    'Cost of Contracting': lastAuditRecord.costContracting,
+    Overhead: lastAuditRecord.overhead,
+    'Cost of Goods Sold': lastAuditRecord.costGoodsSold,
+    'Gross Profit': lastAuditRecord.grossProfit,
+    'Gross Margin %': lastAuditRecord.grossMarginPercent,
+    'Salaries & Benefits': lastAuditRecord.salariesAndBenefits,
+    'Rent & Overhead': lastAuditRecord.rentAndOverhead,
+    'Depreciation & Amortization': lastAuditRecord.depreciationAndAmortization,
+    Interest: lastAuditRecord.interest,
+    'Total Operating Expenses': lastAuditRecord.totalOperatingExpenses,
+    'Operating Expenses %': lastAuditRecord.operatingExpensesPercent,
+    'Profit (loss) from Operations': lastAuditRecord.profitFromOperations,
+    'Profit (loss) from Operations %': lastAuditRecord.profitFromOperationsPercent,
+    'Cash & Cash Equivalents': lastAuditRecord.cashAndEquivalents,
+    'Accounts Receivable': lastAuditRecord.accountsReceivable,
+    Inventory: lastAuditRecord.inventory,
+    'Total Current Assets': lastAuditRecord.totalCurrentAssets,
+    'Property, Plant, & Equipment': lastAuditRecord.propertyPlantAndEquipment,
+    Investment: lastAuditRecord.investment,
+    'Total Long Term Assets': lastAuditRecord.totalLongTermAssets,
+    'Total Assets': lastAuditRecord.totalAssets,
+    'Accounts Payable': lastAuditRecord.accountsPayable,
+    'Current Debt Service': lastAuditRecord.currentDebtService,
+    'Taxes Payable': lastAuditRecord.taxesPayable,
+    'Total Current Liabilities': lastAuditRecord.totalCurrentLiabilities,
+    'Long Term Debt Service': lastAuditRecord.longTermDebtService,
+    'Loans Payable': lastAuditRecord.loansPayable,
+    'Total Long Term Liabilities': lastAuditRecord.totalLongTermLiabilities,
+    'Total Liabilities': lastAuditRecord.totalLiabilities,
+    'Equity Capital': lastAuditRecord.equityCapital,
+    'Retained Earnings': lastAuditRecord.retainedEarnings,
+    'Total Stockholder Equity': lastAuditRecord.totalStockholdersEquity,
+    'Total Liabilities & Equity': lastAuditRecord.totalLiabilitiesAndEquity,
+  };
+
+  const auditedDataKeyMap: Record<string, string> = {
+    Revenue: 'revenue',
+    'Net Sales': 'netSales',
+    'Cost of Contracting': 'costContracting',
+    Overhead: 'overhead',
+    'Cost of Goods Sold': 'costGoodsSold',
+    'Gross Profit': 'grossProfit',
+    'Gross Margin %': 'grossMarginPercent',
+    'Salaries & Benefits': 'salariesAndBenefits',
+    'Rent & Overhead': 'rentAndOverhead',
+    'Depreciation & Amortization': 'depreciationAndAmortization',
+    Interest: 'interest',
+    'Total Operating Expenses': 'totalOperatingExpenses',
+    'Operating Expenses %': 'operatingExpensesPercent',
+    'Profit (loss) from Operations': 'profitFromOperations',
+    'Profit (loss) from Operations %': 'profitFromOperationsPercent',
+    'Cash & Cash Equivalents': 'cashAndEquivalents',
+    'Accounts Receivable': 'accountsReceivable',
+    Inventory: 'inventory',
+    'Total Current Assets': 'totalCurrentAssets',
+    'Property, Plant, & Equipment': 'propertyPlantAndEquipment',
+    Investment: 'investment',
+    'Total Long Term Assets': 'totalLongTermAssets',
+    'Total Assets': 'totalAssets',
+    'Accounts Payable': 'accountsPayable',
+    'Current Debt Service': 'currentDebtService',
+    'Taxes Payable': 'taxesPayable',
+    'Total Current Liabilities': 'totalCurrentLiabilities',
+    'Long Term Debt Service': 'longTermDebtService',
+    'Loans Payable': 'loansPayable',
+    'Total Long Term Liabilities': 'totalLongTermLiabilities',
+    'Total Liabilities': 'totalLiabilities',
+    'Equity Capital': 'equityCapital',
+    'Retained Earnings': 'retainedEarnings',
+    'Total Stockholder Equity': 'totalStockholdersEquity',
+    'Total Liabilities & Equity': 'totalLiabilitiesAndEquity',
   };
 
   const [showIncome, setShowIncome] = useState(true);
@@ -140,26 +176,36 @@ const FinancialCompilationClient = ({ initialData }) => {
 
   const handleMultiplierChange = (newMultiplier: number) => {
     setMultiplier(newMultiplier);
-    for (const name in categoryDataMap) {
-      if (forecastTypes[name] === 'Multiplier') {
-        const baseValue = categoryDataMap[name];
-        const updatedValue = computeMultiplier(newMultiplier, baseValue);
-        categoryDataMap[name] = updatedValue;
+
+    setAuditedData((prevData: any) => {
+      if (!prevData.length) return prevData; // Ensure there is data
+
+      // Clone the last audit record and apply multiplier updates
+      const updatedLastAuditRecord = { ...prevData[prevData.length - 1] };
+
+      for (const name in categoryDataMap) {
+        if (forecastTypes[name] === 'Multiplier') {
+          const baseValue = categoryDataMap[name];
+          updatedLastAuditRecord[name] = computeMultiplier(newMultiplier, Number(baseValue) || 0);
+        }
       }
-    }
-    setRandomData({ ...randomData });
+
+      // Replace the last record in the array
+      return [...prevData.slice(0, -1), updatedLastAuditRecord];
+    });
   };
 
-  // If forecast type is set to 'Multiplier', we apply computeMultiplier once.
   const getCategoryData = (name: string) => {
     const baseValue = categoryDataMap[name] ?? 'N/A';
     if (forecastTypes[name] === 'Multiplier') {
       return computeMultiplier(multiplier, baseValue);
     }
+    if (forecastTypes[name] === 'Average') {
+      return computeAverage(auditedDataKeyMap, name, auditedData);
+    }
     return baseValue;
   };
 
-  // Each row computes forecast values per year.
   const renderTable = (categories: string[]) => (
     <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
       <Table striped bordered>
@@ -174,23 +220,28 @@ const FinancialCompilationClient = ({ initialData }) => {
         </thead>
         <tbody>
           {categories.map((name) => {
-            // For each row, compute the forecasted values for each year.
             const rowValues = years.map((year, index) => {
               const baseValue = Number(getCategoryData(name));
               return getForecastValueForYear(baseValue, index, multiplier);
             });
-            // Compute the maximum absolute value in the row for heatmap scaling.
             const rowMax = Math.max(...rowValues.map((val) => Math.abs(val)), 0);
             return (
               <tr key={name}>
                 <td>
-                  {!(name !== 'Revenue' && name === 'Revenue')
-                    && !name.includes('Total') && (
-                      <ForecastTypeDropdown
-                        onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                      />
+                  {!(
+                    name === 'Net Sales'
+                    || name.includes('Goods')
+                    || name.includes('Gross')
+                    || name.includes('%')
+                    || name.includes('Total')
+                    || name.includes('Profit')
+                  ) && (
+                    <ForecastTypeDropdown
+                      onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
+                    />
                   )}
                 </td>
+
                 <td>{name}</td>
                 {rowValues.map((value, index) => (
                   <td key={`${name}-${years[index]}`} style={getHeatmapStyle(value, rowMax)}>

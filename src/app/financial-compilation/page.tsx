@@ -1,7 +1,8 @@
+// page.tsx
 import { getServerSession } from 'next-auth';
 import { loggedInProtectedPage } from '@/lib/page-protection';
 import authOptions from '@/lib/authOptions';
-import { generateRandomFinancialData } from '@/lib/mathUtils';
+import { getAuditData } from '@/lib/dbActions';
 import FinancialCompilationClient from './FinancialCompilationClient';
 
 export default async function FinancialCompilationPage() {
@@ -10,6 +11,7 @@ export default async function FinancialCompilationPage() {
     user: { email: string; id: string; randomKey: string };
   } | null);
 
-  const randomData = generateRandomFinancialData(2025);
-  return <FinancialCompilationClient initialData={randomData} />;
+  const auditedData = await getAuditData();
+  console.log('Fetched Audit Data:', auditedData);
+  return <FinancialCompilationClient initialData={auditedData} />;
 }

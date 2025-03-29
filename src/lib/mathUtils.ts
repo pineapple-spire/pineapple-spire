@@ -104,6 +104,25 @@ export function computeMultiplier(percent: number, value: any): number {
 }
 
 /**
+ * Compute the multiplier based on the given value
+ * This function is used for the financial compilation
+ */
+export function computeAverage(auditedDataKeyMap: any, name: string, auditedData: any): number {
+  const key = auditedDataKeyMap[name]; // Get the actual key
+  if (!key) return 0; // If no mapping exists, return 0
+
+  const lastThreeYears = auditedData.slice(-3)
+    .map((record: any) => (Object.prototype.hasOwnProperty.call(record, key) ? Number(record[key]) : NaN))
+    .filter((val: any) => !Number.isNaN(val)); // Ignore NaN values
+
+  const calculatedValue = lastThreeYears.length > 0
+    ? lastThreeYears.reduce((sum: any, val: any) => sum + val, 0) / lastThreeYears.length
+    : 0;
+
+  return Math.round(calculatedValue);
+}
+
+/**
  * Casts a value to a number (if not already a number).
  */
 export function toNumber(value: string | number): string | number {
