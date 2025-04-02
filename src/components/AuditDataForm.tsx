@@ -145,19 +145,33 @@ const AuditDataForm: React.FC = () => {
               <td>{label}</td>
               {finData.map((data, idx) => (
                 <td key={`cell-${key}-${idx}`}>
-                  <Controller
-                    name={`${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`}
-                    control={control}
-                    defaultValue={data[key as keyof FinancialDataValues] !== undefined
-                      ? data[key as keyof FinancialDataValues] : 0}
-                    render={({ field }) => (
-                      <Form.Control
-                        type="number"
-                        step="0.01"
-                        {...field}
-                      />
-                    )}
-                  />
+                  {(key in data ? ( // Set up for adding more fields to financialFields that are not a part of the form
+                    <Controller
+                      name={`${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`}
+                      control={control}
+                      defaultValue={data[key as keyof FinancialDataValues] !== undefined
+                        ? data[key as keyof FinancialDataValues] : 0}
+                      render={({ field }) => (
+                        <Form.Control
+                          type="number"
+                          step="0.01"
+                          value={field.value}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value) || 0;
+                            // console.log('Changed value:', value);
+                            field.onChange(value);
+                            // console.log('data value:', data[key as keyof FinancialDataValues]);
+                          }}
+                        />
+                      )}
+                    />
+                  ) : (
+                    <span>
+                      {
+                        data[key as keyof FinancialDataValues] ?? 'N/A'
+                      }
+                    </span>
+                  ))}
                 </td>
               ))}
             </tr>
