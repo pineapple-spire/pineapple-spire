@@ -75,3 +75,32 @@ export function formatCurrency(value: number): string {
     minimumFractionDigits: 2,
   });
 }
+
+// Function to calculate the balance and interest for each year, including monthly contributions
+export function calculateInterestAndBalance(
+  presentValue: number,
+  interestRate: number,
+  term: number,
+) {
+  const results = [];
+  let balance = presentValue; // Start with $5000
+  const annualInterestRate = interestRate / 100;
+
+  for (let year = 1; year <= term; year++) {
+    const interestEarned = balance * annualInterestRate; // Interest earned
+    const newBalance = balance - interestEarned; // Deduct interest to get new balance
+    const total = balance + interestEarned;
+
+    results.push({
+      year,
+      balance: formatCurrency(balance), // Balance before interest is deducted
+      contribution: formatCurrency(0), // No yearly contribution
+      interest: formatCurrency(interestEarned), // Interest deducted
+      total: formatCurrency(total), // Corrected balance after interest deduction
+    });
+
+    balance = newBalance; // Update balance for next year
+  }
+
+  return results;
+}
