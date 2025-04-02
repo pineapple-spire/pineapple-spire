@@ -225,30 +225,32 @@ export function generateRandomFinancialData(year: number) {
   };
 }
 
-// Function to calculate the balance and interest for each year, including monthly contributions
+/**
+ * Function to calculate the balance and interest for each year, including yearly contributions.
+ * This will return the correct balance after interest deduction and calculation.
+ */
 export function calculateInterestAndBalance(
-  presentValue: number,
-  interestRate: number,
-  term: number,
+  presentValue: number, // Initial principal
+  interestRate: number, // Annual interest rate (in percentage, e.g., 6%)
+  term: number, // Number of years to calculate
 ) {
   const results = [];
-  let balance = presentValue; // Start with $5000
-  const annualInterestRate = interestRate / 100;
+  let balance = presentValue; // Start with the initial principal
+  const annualInterestRate = interestRate / 100; // Convert interest rate to decimal
 
   for (let year = 1; year <= term; year++) {
-    const interestEarned = balance * annualInterestRate; // Interest earned
-    const newBalance = balance - interestEarned; // Deduct interest to get new balance
-    const total = balance + interestEarned;
+    const interestEarned = balance * annualInterestRate; // Calculate interest based on the current balance
+    const newBalance = balance + interestEarned; // Update balance after adding interest
 
     results.push({
       year,
-      balance: formatCurrency(balance), // Balance before interest is deducted
-      contribution: formatCurrency(0), // No yearly contribution
-      interest: formatCurrency(interestEarned), // Interest deducted
-      total: formatCurrency(total), // Corrected balance after interest deduction
+      balance: formatCurrency(balance), // Display the balance before adding interest
+      contribution: formatCurrency(0), // No yearly contribution, as per your example
+      interest: formatCurrency(interestEarned), // Interest earned for this year
+      total: formatCurrency(newBalance), // Balance after adding interest
     });
 
-    balance = newBalance; // Update balance for next year
+    balance = newBalance; // Update balance for the next year
   }
 
   return results;
