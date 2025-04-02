@@ -224,7 +224,7 @@ export function generateRandomFinancialData(year: number) {
     totalLiabilitiesAndEquity,
   };
 }
-  
+
 // Function to calculate the balance and interest for each year, including monthly contributions
 export function calculateInterestAndBalance(
   presentValue: number,
