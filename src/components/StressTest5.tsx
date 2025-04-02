@@ -9,35 +9,40 @@ import LinePlot from '@/components/LinePlot';
 /* Stress Test 5 Component */
 const StressTest5 = () => {
   // Default values matching Excel sheet
-  const [presentValue, setPresentValue] = useState<number>(5000);
-  const [interestRate, setInterestRate] = useState<number>(6.0); // Starts at 6% (user can change)
-  const [term, setTerm] = useState<number>(30);
+  const [presentValue, setPresentValue] = useState<number | null>(5000);
+  const [interestRate, setInterestRate] = useState<number | null>(6.0); // Starts at 6% (user can change)
+  const [term, setTerm] = useState<number | null>(30);
 
   // Track active tab
   const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>('stressEffects');
 
   // Handle input changes
-  const handleChange = (setter: (value: number) => void) => (e: ChangeEvent<HTMLInputElement>) => {
-    setter(parseFloat(e.target.value) || 0);
+  const handleChange = (setter: (value: number | null) => void) => (e: ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setter(value === '' ? null : parseFloat(value));
   };
 
   // Calculate table data for Stress Effects (using formatted values)
   const calculateTableData = () => {
+    if (presentValue === null || interestRate === null || term === null) {
+      return []; // Return an empty array if any input is invalid
+    }
+
     const rate = interestRate / 100;
-    let balance = presentValue; // Start with the initial present value
+    let balance = presentValue;
     const rows = [];
 
     for (let year = 1; year <= term; year++) {
-      const interestEarned = parseFloat((balance * rate).toFixed(2)); // Calculate interest based on current balance
-      const total = parseFloat((balance + interestEarned).toFixed(2)); // Calculate balance + interest
+      const interestEarned = parseFloat((balance * rate).toFixed(2));
+      const total = parseFloat((balance + interestEarned).toFixed(2));
       rows.push({
         year,
-        balance: formatCurrency(balance), // Current balance
-        contribution: '$-', // No contributions
-        interest: formatCurrency(interestEarned), // Interest earned
-        total: formatCurrency(total), // Balance + interest
+        balance: formatCurrency(balance),
+        contribution: '$-',
+        interest: formatCurrency(interestEarned),
+        total: formatCurrency(total),
       });
-      balance = parseFloat((balance - interestEarned).toFixed(2)); // Decrease balance by interest earned
+      balance = parseFloat((balance - interestEarned).toFixed(2));
     }
 
     return rows;
@@ -45,12 +50,12 @@ const StressTest5 = () => {
 
   // Calculate table data for Residual Effects (using formatted values)
   const calculateResidualEffectsData = (initialValue: number) => {
-    let balance = presentValue;
+    let balance = presentValue ?? 0;
     let cumulativeInterest = 0;
-    const rate = interestRate / 100;
+    const rate = (interestRate ?? 0) / 100;
     const rows = [];
 
-    for (let year = 1; year <= term; year++) {
+    for (let year = 1; year <= (term ?? 0); year++) {
       const interestEarned = parseFloat((balance * rate).toFixed(2));
       balance = parseFloat((balance + interestEarned).toFixed(2));
       cumulativeInterest += interestEarned;
@@ -58,7 +63,7 @@ const StressTest5 = () => {
       rows.push({
         year,
         principal: initialValue,
-        annualReturnRate: `${interestRate.toFixed(2)}%`,
+        annualReturnRate: `${(interestRate ?? 0).toFixed(2)}%`,
         lostEarningsForPrincipalCum: cumulativeInterest,
         totalInterestLostCum: cumulativeInterest,
       });
@@ -68,11 +73,11 @@ const StressTest5 = () => {
 
   // Compute raw data for charting in Stress Effects tab (for balance & annual interest)
   const stressEffectsRawData = useMemo(() => {
-    const rate = interestRate / 100;
-    let balance = presentValue; // Start with the initial present value
+    const rate = (interestRate ?? 0) / 100;
+    let balance = presentValue ?? 0; // Start with the initial present value
     const result = [];
 
-    for (let year = 1; year <= term; year++) {
+    for (let year = 1; year <= (term ?? 0); year++) {
       const interestEarned = parseFloat((balance * rate).toFixed(2)); // Calculate interest based on current balance
       result.push({ year, balance, interestEarned }); // Push the current balance and interest earned
       balance = parseFloat((balance - interestEarned).toFixed(2)); // Decrease balance by interest earned
@@ -104,11 +109,11 @@ const StressTest5 = () => {
 
   // Compute raw data for charting in Residual Effects tab (cumulative interest)
   const residualEffectsRawData = useMemo(() => {
-    let balance = presentValue;
+    let balance = presentValue ?? 0;
     let cumulativeInterest = 0;
-    const rate = interestRate / 100;
+    const rate = (interestRate ?? 0) / 100;
     const result = [];
-    for (let year = 1; year <= term; year++) {
+    for (let year = 1; year <= (term ?? 0); year++) {
       const interestEarned = balance * rate;
       balance += interestEarned;
       cumulativeInterest += interestEarned;
@@ -142,8 +147,9 @@ const StressTest5 = () => {
                 <Form.Label>Present Value</Form.Label>
                 <Form.Control
                   type="number"
-                  value={presentValue}
+                  value={presentValue === null ? '' : presentValue}
                   onChange={handleChange(setPresentValue)}
+                  placeholder="Enter present value (e.g., 5000)"
                 />
               </Form.Group>
             </Col>
@@ -153,8 +159,9 @@ const StressTest5 = () => {
                 <Form.Label>Interest Rate (%)</Form.Label>
                 <Form.Control
                   type="number"
-                  value={interestRate}
+                  value={interestRate === null ? '' : interestRate}
                   onChange={handleChange(setInterestRate)}
+                  placeholder="Enter interest rate (e.g., 6.0)"
                 />
               </Form.Group>
             </Col>
@@ -164,8 +171,9 @@ const StressTest5 = () => {
                 <Form.Label>Term (Years)</Form.Label>
                 <Form.Control
                   type="number"
-                  value={term}
+                  value={term === null ? '' : term}
                   onChange={handleChange(setTerm)}
+                  placeholder="Enter term in years (e.g., 30)"
                 />
               </Form.Group>
             </Col>
@@ -287,7 +295,7 @@ const StressTest5 = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {calculateResidualEffectsData(presentValue).map((row) => (
+                  {calculateResidualEffectsData(presentValue ?? 0).map((row) => (
                     <tr key={row.year}>
                       <td>{row.year}</td>
                       <td>{formatCurrency(row.principal)}</td>
