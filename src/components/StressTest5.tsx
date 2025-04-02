@@ -23,21 +23,21 @@ const StressTest5 = () => {
 
   // Calculate table data for Stress Effects (using formatted values)
   const calculateTableData = () => {
-    let balance = presentValue;
     const rate = interestRate / 100;
+    let balance = presentValue; // Start with the initial present value
     const rows = [];
 
     for (let year = 1; year <= term; year++) {
-      const interestEarned = parseFloat((balance * rate).toFixed(2));
-      balance = parseFloat((balance + interestEarned).toFixed(2));
-
+      const interestEarned = parseFloat((balance * rate).toFixed(2)); // Calculate interest based on current balance
+      const total = parseFloat((balance + interestEarned).toFixed(2)); // Calculate balance + interest
       rows.push({
         year,
-        balance: formatCurrency(balance),
+        balance: formatCurrency(balance), // Current balance
         contribution: '$-', // No contributions
-        interest: formatCurrency(interestEarned),
-        total: formatCurrency(balance), // Balance after interest
+        interest: formatCurrency(interestEarned), // Interest earned
+        total: formatCurrency(total), // Balance + interest
       });
+      balance = parseFloat((balance - interestEarned).toFixed(2)); // Decrease balance by interest earned
     }
 
     return rows;
@@ -68,14 +68,16 @@ const StressTest5 = () => {
 
   // Compute raw data for charting in Stress Effects tab (for balance & annual interest)
   const stressEffectsRawData = useMemo(() => {
-    let balance = presentValue;
     const rate = interestRate / 100;
+    let balance = presentValue; // Start with the initial present value
     const result = [];
+
     for (let year = 1; year <= term; year++) {
-      const interestEarned = balance * rate;
-      balance += interestEarned;
-      result.push({ year, balance, interestEarned });
+      const interestEarned = parseFloat((balance * rate).toFixed(2)); // Calculate interest based on current balance
+      result.push({ year, balance, interestEarned }); // Push the current balance and interest earned
+      balance = parseFloat((balance - interestEarned).toFixed(2)); // Decrease balance by interest earned
     }
+
     return result;
   }, [presentValue, interestRate, term]);
 

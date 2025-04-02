@@ -255,3 +255,50 @@ export function calculateInterestAndBalance(
 
   return results;
 }
+
+/**
+ * Calculate table data for Stress Test 5
+ * @param presentValue - The initial balance
+ * @param interestRate - The annual interest rate (as a percentage)
+ * @param term - The number of years
+ * @param monthlyContribution - The monthly contribution amount
+ * @returns Array of rows containing year, balance, contribution, interest, and total
+ */
+export function calculateTableData(
+  presentValue: number,
+  interestRate: number,
+  term: number,
+  monthlyContribution: number,
+) {
+  let balance = presentValue;
+  const interestRateDecimal = interestRate / 100;
+  const rows = [];
+
+  // Iterate over each year
+  for (let year = 1; year <= term; year++) {
+    // Calculate interest based on the current balance
+    const interestEarned = parseFloat((balance * interestRateDecimal).toFixed(2));
+
+    // Total yearly contribution (set to $0 in this case)
+    const yearlyContribution = monthlyContribution * 12;
+
+    // Store the values for the current year BEFORE updating the balance
+    rows.push({
+      year,
+      balance: formatCurrency(balance), // Balance before interest and contribution
+      contribution: formatCurrency(yearlyContribution), // Total yearly contribution
+      interest: formatCurrency(interestEarned), // Interest earned this year
+      total: formatCurrency(balance + interestEarned), // Balance after adding interest
+    });
+
+    // Update the balance for the next year
+    balance = balance + interestEarned - yearlyContribution;
+
+    // Stop calculations if balance goes negative (optional)
+    if (balance <= 0) {
+      break;
+    }
+  }
+
+  return rows;
+}
