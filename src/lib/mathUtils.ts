@@ -100,11 +100,14 @@ export function formatCurrency(value: number): string {
 export function computeMultiplier(percent: number, value: any): number {
   const multiplierPercent = percent / 100;
   const calculatedValue = value + (value * multiplierPercent);
+  if (Number.isNaN(calculatedValue)) {
+    return 0;
+  }
   return Math.round(calculatedValue);
 }
 
 /**
- * Compute the multiplier based on the given value
+ * Compute the average based on the given value
  * This function is used for the financial compilation
  */
 export function computeAverage(auditedDataKeyMap: any, name: string, auditedData: any): number {
@@ -119,6 +122,9 @@ export function computeAverage(auditedDataKeyMap: any, name: string, auditedData
     ? lastThreeYears.reduce((sum: any, val: any) => sum + val, 0) / lastThreeYears.length
     : 0;
 
+  if (Number.isNaN(calculatedValue)) {
+    return 0;
+  }
   return Math.round(calculatedValue);
 }
 

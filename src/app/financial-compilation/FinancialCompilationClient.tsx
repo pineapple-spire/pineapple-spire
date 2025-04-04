@@ -78,6 +78,8 @@ const getHeatmapStyle = (value: number | string, rowMax: number) => {
 
 // @ts-ignore
 const FinancialCompilationClient = ({ initialData }) => {
+  const [heatmapOn, setHeatmapOn] = useState<'true' | 'false'>('true');
+
   const [auditedData, setAuditedData] = useState(initialData || []);
   const auditDataLength = auditedData.length - 1;
   const lastAuditRecord = auditedData[auditDataLength] || {};
@@ -196,7 +198,7 @@ const FinancialCompilationClient = ({ initialData }) => {
   };
 
   const getCategoryData = (name: string) => {
-    const baseValue = categoryDataMap[name] ?? 'N/A';
+    const baseValue = categoryDataMap[name] ?? 0;
     if (forecastTypes[name] === 'Multiplier') {
       return computeMultiplier(multiplier, baseValue);
     }
@@ -228,26 +230,32 @@ const FinancialCompilationClient = ({ initialData }) => {
             return (
               <tr key={name}>
                 <td>
-                  {!(
-                    name === 'Net Sales'
-                    || name.includes('Goods')
-                    || name.includes('Gross')
-                    || name.includes('%')
-                    || name.includes('Total')
-                    || name.includes('Profit')
+                  {!(name === 'Net Sales'
+                  || name.includes('Goods')
+                  || name.includes('Gross')
+                  || name.includes('%')
+                  || name.includes('Total')
+                  || name.includes('Profit')
                   ) && (
-                    <ForecastTypeDropdown
-                      onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                    />
+                  <ForecastTypeDropdown
+                    onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
+                  />
                   )}
                 </td>
-
                 <td>{name}</td>
-                {rowValues.map((value, index) => (
-                  <td key={`${name}-${years[index]}`} style={getHeatmapStyle(value, rowMax)}>
-                    {value}
-                  </td>
-                ))}
+                {heatmapOn === 'true' ? (
+                  rowValues.map((value, index) => (
+                    <td key={`${name}-${years[index]}`} style={getHeatmapStyle(value, rowMax)}>
+                      {value}
+                    </td>
+                  ))
+                ) : (
+                  rowValues.map((value, index) => (
+                    <td key={`${name}-${years[index]}`}>
+                      {value}
+                    </td>
+                  ))
+                )}
               </tr>
             );
           })}
@@ -264,6 +272,19 @@ const FinancialCompilationClient = ({ initialData }) => {
           <p className="text-muted" style={{ fontSize: '1rem' }}>
             Analyze the different types of financial data and their forecast.
           </p>
+          {/* Toggle switch row */}
+          <Row className="mb-6 d-flex align-items-center">
+            <Col md={12} className="d-flex align-items-center">
+              <Form.Check
+                type="switch"
+                id="heatmapOnToggle"
+                className="me-2"
+                checked={heatmapOn === 'false'}
+                onChange={() => setHeatmapOn(heatmapOn === 'true' ? 'false' : 'true')}
+              />
+              <span>{heatmapOn === 'false' ? 'Show Heatmap' : 'Hide Heatmap'}</span>
+            </Col>
+          </Row>
         </Col>
         <Col>
           <MultiplierInput onMultiplierChange={handleMultiplierChange} />

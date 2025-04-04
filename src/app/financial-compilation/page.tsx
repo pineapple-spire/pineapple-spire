@@ -11,6 +11,5 @@ export default async function FinancialCompilationPage() {
   } | null);
 
   const auditedData = await getAuditData();
-  console.log('Fetched Audit Data:', auditedData);
   return <FinancialCompilationClient initialData={auditedData} />;
 }
