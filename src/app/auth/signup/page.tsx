@@ -3,6 +3,7 @@
 import { signIn } from 'next-auth/react';
 import SignUpForm from '@/components/SignUpForm';
 import { createUser } from '@/lib/dbActions';
+import styles from '@/styles/formStyles';
 
 export type SignUpFormData = {
   firstName: string;
@@ -12,19 +13,6 @@ export type SignUpFormData = {
   password: string;
   confirmPassword: string;
 };
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#FFFFFF',
-  },
-  main: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '3rem 1rem',
-  },
-} as const;
 
 export default function SignUpPage() {
   const handleSignUp = async (data: SignUpFormData) => {
@@ -41,7 +29,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div style={styles.container}>
+    <div>
       <main style={styles.main}>
         <SignUpForm onSubmit={handleSignUp} />
       </main>
