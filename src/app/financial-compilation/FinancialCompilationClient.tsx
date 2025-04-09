@@ -20,6 +20,19 @@ const goodsCategories = [
   'Gross Profit',
   'Gross Margin %',
 ];
+const otherIncomeCategories = [
+  'Interest Income',
+  'Interest Expense',
+  'Gain (loss) on Disposal of Assets',
+  'Other Income (expense)',
+  'Total Other Income (expense)',
+  'Total Other Income (expense) %',
+  'Income (loss) before Income Taxes',
+  'Pre-tax Income %',
+  'Income Taxes',
+  'Net Income (loss)',
+  'Net Income (loss) %',
+];
 const operatingCategories = [
   'Salaries & Benefits',
   'Rent & Overhead',
@@ -82,45 +95,56 @@ const FinancialCompilationClient = ({ initialData }) => {
 
   const [auditedData, setAuditedData] = useState(initialData || []);
   const auditDataLength = auditedData.length - 1;
-  const lastAuditRecord = auditedData[auditDataLength] || {};
+  const [baseAuditRecord] = useState(auditedData[auditDataLength] || {});
 
   // Map the audited data to categories
   const categoryDataMap: Record<string, number | string> = {
-    Revenue: lastAuditRecord.revenue ?? 0,
-    'Net Sales': lastAuditRecord.netSales,
-    'Cost of Contracting': lastAuditRecord.costContracting,
-    Overhead: lastAuditRecord.overhead,
-    'Cost of Goods Sold': lastAuditRecord.costGoodsSold,
-    'Gross Profit': lastAuditRecord.grossProfit,
-    'Gross Margin %': lastAuditRecord.grossMarginPercent,
-    'Salaries & Benefits': lastAuditRecord.salariesAndBenefits,
-    'Rent & Overhead': lastAuditRecord.rentAndOverhead,
-    'Depreciation & Amortization': lastAuditRecord.depreciationAndAmortization,
-    Interest: lastAuditRecord.interest,
-    'Total Operating Expenses': lastAuditRecord.totalOperatingExpenses,
-    'Operating Expenses %': lastAuditRecord.operatingExpensesPercent,
-    'Profit (loss) from Operations': lastAuditRecord.profitFromOperations,
-    'Profit (loss) from Operations %': lastAuditRecord.profitFromOperationsPercent,
-    'Cash & Cash Equivalents': lastAuditRecord.cashAndEquivalents,
-    'Accounts Receivable': lastAuditRecord.accountsReceivable,
-    Inventory: lastAuditRecord.inventory,
-    'Total Current Assets': lastAuditRecord.totalCurrentAssets,
-    'Property, Plant, & Equipment': lastAuditRecord.propertyPlantAndEquipment,
-    Investment: lastAuditRecord.investment,
-    'Total Long Term Assets': lastAuditRecord.totalLongTermAssets,
-    'Total Assets': lastAuditRecord.totalAssets,
-    'Accounts Payable': lastAuditRecord.accountsPayable,
-    'Current Debt Service': lastAuditRecord.currentDebtService,
-    'Taxes Payable': lastAuditRecord.taxesPayable,
-    'Total Current Liabilities': lastAuditRecord.totalCurrentLiabilities,
-    'Long Term Debt Service': lastAuditRecord.longTermDebtService,
-    'Loans Payable': lastAuditRecord.loansPayable,
-    'Total Long Term Liabilities': lastAuditRecord.totalLongTermLiabilities,
-    'Total Liabilities': lastAuditRecord.totalLiabilities,
-    'Equity Capital': lastAuditRecord.equityCapital,
-    'Retained Earnings': lastAuditRecord.retainedEarnings,
-    'Total Stockholder Equity': lastAuditRecord.totalStockholdersEquity,
-    'Total Liabilities & Equity': lastAuditRecord.totalLiabilitiesAndEquity,
+    Revenue: baseAuditRecord.revenue,
+    'Net Sales': baseAuditRecord.netSales,
+    'Cost of Contracting': baseAuditRecord.costContracting,
+    Overhead: baseAuditRecord.overhead,
+    'Cost of Goods Sold': baseAuditRecord.costGoodsSold,
+    'Gross Profit': baseAuditRecord.grossProfit,
+    'Gross Margin %': baseAuditRecord.grossMarginPercent,
+    'Interest Income': baseAuditRecord.interestIncome,
+    'Interest Expense': baseAuditRecord.interestExpense,
+    'Gain (loss) on Disposal of Assets': baseAuditRecord.gainOnDisposalAssets,
+    'Other Income (expense)': baseAuditRecord.otherIncome,
+    'Total Other Income (expense)': baseAuditRecord.totalOtherIncome,
+    'Total Other Income (expense) %': baseAuditRecord.operatingExpensesPercent,
+    'Income (loss) before Income Taxes': baseAuditRecord.incomeBeforeIncomeTaxes,
+    'Pre-tax Income %': baseAuditRecord.preTaxIncomePercent,
+    'Income Taxes': baseAuditRecord.incomeTaxes,
+    'Net Income (loss)': baseAuditRecord.netIncome,
+    'Net Income (loss) %': baseAuditRecord.netIncomePercent,
+    'Salaries & Benefits': baseAuditRecord.salariesAndBenefits,
+    'Rent & Overhead': baseAuditRecord.rentAndOverhead,
+    'Depreciation & Amortization': baseAuditRecord.depreciationAndAmortization,
+    Interest: baseAuditRecord.interest,
+    'Total Operating Expenses': baseAuditRecord.totalOperatingExpenses,
+    'Operating Expenses %': baseAuditRecord.operatingExpensesPercent,
+    'Profit (loss) from Operations': baseAuditRecord.profitFromOperations,
+    'Profit (loss) from Operations %': baseAuditRecord.profitFromOperationsPercent,
+    'Cash & Cash Equivalents': baseAuditRecord.cashAndEquivalents,
+    'Accounts Receivable': baseAuditRecord.accountsReceivable,
+    Inventory: baseAuditRecord.inventory,
+    'Total Current Assets': baseAuditRecord.totalCurrentAssets,
+    'Property, Plant, & Equipment': baseAuditRecord.propertyPlantAndEquipment,
+    Investment: baseAuditRecord.investment,
+    'Total Long Term Assets': baseAuditRecord.totalLongTermAssets,
+    'Total Assets': baseAuditRecord.totalAssets,
+    'Accounts Payable': baseAuditRecord.accountsPayable,
+    'Current Debt Service': baseAuditRecord.currentDebtService,
+    'Taxes Payable': baseAuditRecord.taxesPayable,
+    'Total Current Liabilities': baseAuditRecord.totalCurrentLiabilities,
+    'Long Term Debt Service': baseAuditRecord.longTermDebtService,
+    'Loans Payable': baseAuditRecord.loansPayable,
+    'Total Long Term Liabilities': baseAuditRecord.totalLongTermLiabilities,
+    'Total Liabilities': baseAuditRecord.totalLiabilities,
+    'Equity Capital': baseAuditRecord.equityCapital,
+    'Retained Earnings': baseAuditRecord.retainedEarnings,
+    'Total Stockholder Equity': baseAuditRecord.totalStockholdersEquity,
+    'Total Liabilities & Equity': baseAuditRecord.totalLiabilitiesAndEquity,
   };
 
   const auditedDataKeyMap: Record<string, string> = {
@@ -131,6 +155,16 @@ const FinancialCompilationClient = ({ initialData }) => {
     'Cost of Goods Sold': 'costGoodsSold',
     'Gross Profit': 'grossProfit',
     'Gross Margin %': 'grossMarginPercent',
+    'Interest Income': 'interestIncome',
+    'Interest Expense': 'interestExpense',
+    'Gain (loss) on Disposal of Assets': 'gainOnDisposalAssets',
+    'Other Income (expense)': 'otherIncome',
+    'Total Other Income (expense)': 'totalOtherIncome',
+    'Total Other Income (expense) %': 'operatingExpensesPercent',
+    'Income (loss) before Income Taxes': 'incomeBeforeIncomeTaxes',
+    'Pre-tax Income %': 'preTaxIncomePercent',
+    'Income Taxes': 'incomeTaxes',
+    'Net Income (loss)': 'netIncome',
     'Salaries & Benefits': 'salariesAndBenefits',
     'Rent & Overhead': 'rentAndOverhead',
     'Depreciation & Amortization': 'depreciationAndAmortization',
@@ -163,6 +197,7 @@ const FinancialCompilationClient = ({ initialData }) => {
 
   const [showIncome, setShowIncome] = useState(true);
   const [showGoods, setShowGoods] = useState(true);
+  const [showOtherIncome, setShowOtherIncome] = useState(true);
   const [showOperating, setShowOperating] = useState(true);
   const [showAssets, setShowAssets] = useState(true);
   const [showLiabilities, setShowLiabilities] = useState(true);
@@ -180,19 +215,20 @@ const FinancialCompilationClient = ({ initialData }) => {
     setMultiplier(newMultiplier);
 
     setAuditedData((prevData: any) => {
-      if (!prevData.length) return prevData; // Ensure there is data
+      if (!prevData.length) return prevData;
 
-      // Clone the last audit record and apply multiplier updates
       const updatedLastAuditRecord = { ...prevData[prevData.length - 1] };
 
       for (const name in categoryDataMap) {
         if (forecastTypes[name] === 'Multiplier') {
-          const baseValue = categoryDataMap[name];
-          updatedLastAuditRecord[name] = computeMultiplier(newMultiplier, Number(baseValue) || 0);
+          const dataKey = auditedDataKeyMap[name];
+          if (dataKey) {
+            const baseValue = baseAuditRecord[dataKey];
+            updatedLastAuditRecord[dataKey] = computeMultiplier(newMultiplier, Number(baseValue) || 0);
+          }
         }
       }
 
-      // Replace the last record in the array
       return [...prevData.slice(0, -1), updatedLastAuditRecord];
     });
   };
@@ -223,9 +259,15 @@ const FinancialCompilationClient = ({ initialData }) => {
         <tbody>
           {categories.map((name) => {
             const rowValues = years.map((year, index) => {
+              const forecastType = forecastTypes[name];
               const baseValue = Number(getCategoryData(name));
-              return getForecastValueForYear(baseValue, index, multiplier);
+
+              if (forecastType === 'Multiplier') {
+                return getForecastValueForYear(baseValue, index, multiplier);
+              }
+              return baseValue;
             });
+
             const rowMax = Math.max(...rowValues.map((val) => Math.abs(val)), 0);
             return (
               <tr key={name}>
@@ -311,6 +353,14 @@ const FinancialCompilationClient = ({ initialData }) => {
         <Col>
           <Form.Check
             type="checkbox"
+            label="Other Income"
+            checked={showOtherIncome}
+            onChange={() => setShowOtherIncome((prev) => !prev)}
+          />
+        </Col>
+        <Col>
+          <Form.Check
+            type="checkbox"
             label="Operating Expenses"
             checked={showOperating}
             onChange={() => setShowOperating((prev) => !prev)}
@@ -336,6 +386,7 @@ const FinancialCompilationClient = ({ initialData }) => {
 
       {showIncome && renderTable(incomeCategories)}
       {showGoods && renderTable(goodsCategories)}
+      {showOtherIncome && renderTable(otherIncomeCategories)}
       {showOperating && renderTable(operatingCategories)}
       {showAssets && renderTable(assetsCategories)}
       {showLiabilities && renderTable(liabilitiesCategories)}
