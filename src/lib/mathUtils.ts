@@ -112,21 +112,18 @@ export function computeMultiplier(percent: number, value: any): number {
  * Compute the average based on the given value
  * This function is used for the financial compilation
  */
-export function computeAverage(auditedDataKeyMap: any, name: string, auditedData: any): number {
-  const key = auditedDataKeyMap[name]; // Get the actual key
-  if (!key) return 0; // If no mapping exists, return 0
+export function computeAverage(auditedDataKeyMap: any, name: string, priorRecords: any[]): number {
+  const key = auditedDataKeyMap[name];
+  if (!key) return 0;
 
-  const lastThreeYears = auditedData.slice(-3)
+  const lastThreeYears = priorRecords.slice(-3)
     .map((record: any) => (Object.prototype.hasOwnProperty.call(record, key) ? Number(record[key]) : NaN))
-    .filter((val: any) => !Number.isNaN(val)); // Ignore NaN values
+    .filter((val: any) => !Number.isNaN(val));
 
   const calculatedValue = lastThreeYears.length > 0
-    ? lastThreeYears.reduce((sum: any, val: any) => sum + val, 0) / lastThreeYears.length
+    ? lastThreeYears.reduce((sum: number, val: number) => sum + val, 0) / lastThreeYears.length
     : 0;
 
-  if (Number.isNaN(calculatedValue)) {
-    return 0;
-  }
   return Math.round(calculatedValue);
 }
 
@@ -149,96 +146,14 @@ export function randomNumber(min: number, max: number): number {
 }
 
 /**
- * Generates random data for the Financial Compilations page.
+ * Generates initial calculations for financial compilation page.
  */
-export function generateRandomFinancialData(year: number) {
-  const revenue = randomNumber(1_000_000, 5_000_000);
-  const costContracting = randomNumber(200_000, 1_000_000);
-  const overhead = randomNumber(150_000, 800_000);
-  const salariesAndBenefits = randomNumber(500_000, 2_000_000);
-  const rentAndOverhead = randomNumber(100_000, 500_000);
-  const depreciationAndAmortization = randomNumber(50_000, 300_000);
-  const interest = randomNumber(20_000, 100_000);
-  const interestIncome = randomNumber(5_000, 30_000);
-  const interestExpense = randomNumber(10_000, 50_000);
-  const gainOnDisposalAssets = randomNumber(10_000, 100_000);
-  const otherIncome = randomNumber(20_000, 150_000);
-  const incomeTaxes = randomNumber(50_000, 300_000);
-  const cashAndEquivalents = randomNumber(100_000, 1_000_000);
-  const accountsReceivable = randomNumber(200_000, 1_500_000);
-  const inventory = randomNumber(150_000, 800_000);
-  const propertyPlantAndEquipment = randomNumber(1_000_000, 5_000_000);
-  const investment = randomNumber(50_000, 500_000);
-  const accountsPayable = randomNumber(100_000, 1_000_000);
-  const currentDebtService = randomNumber(50_000, 300_000);
-  const taxesPayable = randomNumber(20_000, 150_000);
-  const longTermDebtService = randomNumber(100_000, 500_000);
-  const loansPayable = randomNumber(50_000, 300_000);
-  const equityCapital = randomNumber(1_000_000, 5_000_000);
-  const retainedEarnings = randomNumber(200_000, 1_500_000);
-
-  const netSales = Math.round(revenue * 0.97);
-  const costGoodsSold = Math.round(revenue * (0.3 + Math.random() * 0.3));
-  const grossProfit = revenue - costGoodsSold;
-  const grossMarginPercent = Number(((grossProfit / revenue) * 100).toFixed(2));
-
-  const totalCurrentAssets = cashAndEquivalents + accountsReceivable + inventory;
-  const totalLongTermAssets = propertyPlantAndEquipment + investment;
-  const totalAssets = totalCurrentAssets + totalLongTermAssets;
-
-  const totalCurrentLiabilities = accountsPayable + currentDebtService + taxesPayable;
-  const totalLongTermLiabilities = longTermDebtService + loansPayable;
-  const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities;
-  const totalStockholdersEquity = equityCapital + retainedEarnings;
-  const totalLiabilitiesAndEquity = totalLiabilities + totalStockholdersEquity;
-
-  return {
-    year,
-    revenue,
-    netSales,
-    costContracting,
-    overhead,
-    costGoodsSold,
-    grossProfit,
-    grossMarginPercent,
-    salariesAndBenefits,
-    rentAndOverhead,
-    depreciationAndAmortization,
-    interest,
-    interestIncome,
-    interestExpense,
-    gainOnDisposalAssets,
-    otherIncome,
-    incomeTaxes,
-    cashAndEquivalents,
-    accountsReceivable,
-    inventory,
-    totalCurrentAssets,
-    propertyPlantAndEquipment,
-    investment,
-    totalLongTermAssets,
-    totalAssets,
-    accountsPayable,
-    currentDebtService,
-    taxesPayable,
-    totalCurrentLiabilities,
-    longTermDebtService,
-    loansPayable,
-    totalLongTermLiabilities,
-    totalLiabilities,
-    equityCapital,
-    retainedEarnings,
-    totalStockholdersEquity,
-    totalLiabilitiesAndEquity,
-  };
-}
-
 export function calculateFinancialData(data: FinancialDataValues) {
   // Level 1 Computed Values
   const netSales = data.revenue;
   const costGoodsSold = data.costContracting + data.overhead;
-  // eslint-disable-next-line max-len
-  const totalOperatingExpenses = data.salariesAndBenefits + data.rentAndOverhead + data.depreciationAndAmortization + data.interest;
+  const totalOperatingExpenses = data.salariesAndBenefits + data.rentAndOverhead
+  + data.depreciationAndAmortization + data.interest;
   const totalOtherIncome = data.interestIncome + data.interestExpense + data.gainOnDisposalAssets + data.otherIncome;
   const totalCurrentAssets = data.cashAndEquivalents + data.accountsReceivable + data.inventory;
   const totalLongTermAssets = data.propertyPlantAndEquipment + data.investment;
