@@ -3,23 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 
-export default function ReportPage() {
-  const { data: session, status } = useSession();
+interface StatusMessage {
+  success: boolean;
+  msg: string;
+}
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [problem, setProblem] = useState('');
-  const [statusMessage, setStatusMessage] = useState<{ success: boolean; msg: string } | null>(null);
-  const [loading, setLoading] = useState(false);
+/**
+ * ReportPage Component
+ *
+ * This component allows a user to report problems with the application.
+ * It pre-populates the the email field if the user is authenticated.
+ */
+const ReportPage: React.FC = () => {
+  const { data: session } = useSession();
 
+  // State variables for form fields and feedback
+  const [email, setEmail] = useState<string>('');
+  const [problem, setProblem] = useState<string>('');
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Populate the user email from the session
   useEffect(() => {
     if (session?.user) {
-      setName(session.user.name || '');
       setEmail(session.user.email || '');
     }
-  }, [session, status]);
+  }, [session]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setStatusMessage(null);
@@ -28,11 +39,10 @@ export default function ReportPage() {
       const response = await fetch('/api/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, problem }),
+        body: JSON.stringify({ email, problem }),
       });
 
       if (response.ok) {
-        setName('');
         setProblem('');
         setStatusMessage({ success: true, msg: 'Problem reported successfully!' });
       } else {
@@ -44,11 +54,12 @@ export default function ReportPage() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  const isNameReadOnly = session?.user?.name;
-  const isEmailReadOnly = session?.user?.email;
+  // Determine if fields should be read-only based on the user's session
+  const isEmailReadOnly = Boolean(session?.user?.email);
 
+  // Base styling for inputs
   const inputBaseStyle: React.CSSProperties = {
     width: '100%',
     padding: 8,
@@ -56,6 +67,7 @@ export default function ReportPage() {
     borderRadius: 4,
   };
 
+  // Styling for read-only inputs
   const inputReadOnlyStyle: React.CSSProperties = {
     ...inputBaseStyle,
     backgroundColor: '#f0f0f0',
@@ -68,28 +80,16 @@ export default function ReportPage() {
       <p>Thank you for helping enhance our application!</p>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <label htmlFor="name">
-          Name
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            readOnly={!!isNameReadOnly}
-            style={isNameReadOnly ? inputReadOnlyStyle : inputBaseStyle}
-          />
-        </label>
-
         <label htmlFor="email">
           Email
           <input
             id="email"
             type="email"
             value={email}
+            placeholder="Enter your email"
             onChange={(e) => setEmail(e.target.value)}
             required
-            readOnly={!!isEmailReadOnly}
+            readOnly={isEmailReadOnly}
             style={isEmailReadOnly ? inputReadOnlyStyle : inputBaseStyle}
           />
         </label>
@@ -99,6 +99,7 @@ export default function ReportPage() {
           <textarea
             id="problem"
             value={problem}
+            placeholder="Write your problem here..."
             onChange={(e) => setProblem(e.target.value)}
             required
             style={{ ...inputBaseStyle, minHeight: 100 }}
@@ -128,4 +129,6 @@ export default function ReportPage() {
       )}
     </div>
   );
-}
+};
+
+export default ReportPage;

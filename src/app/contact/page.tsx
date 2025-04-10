@@ -3,23 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 
-export default function ContactPage() {
-  const { data: session, status } = useSession();
+interface StatusMessage {
+  success: boolean;
+  msg: string;
+}
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [statusMessage, setStatusMessage] = useState<{ success: boolean; msg: string } | null>(null);
-  const [loading, setLoading] = useState(false);
+/**
+ * ContactPage Component
+ *
+ * This component renders a contact form that allows users to send messages.
+ * If the user is logged in, their email is pre-populated and made read-only.
+ */
+const ContactPage: React.FC = () => {
+  const { data: session } = useSession();
 
+  const [email, setEmail] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Populate email from session when available
   useEffect(() => {
     if (session?.user) {
-      setName(session.user.name || '');
       setEmail(session.user.email || '');
     }
-  }, [session, status]);
+  }, [session]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Handler for form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setStatusMessage(null);
@@ -28,11 +39,10 @@ export default function ContactPage() {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ email, message }),
       });
 
       if (response.ok) {
-        setName('');
         setMessage('');
         setStatusMessage({ success: true, msg: 'Message sent successfully!' });
       } else {
@@ -44,11 +54,10 @@ export default function ContactPage() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  const isNameReadOnly = session?.user?.name;
-  const isEmailReadOnly = session?.user?.email;
-
+  // Determine if the email field should be read-only
+  const isEmailReadOnly = Boolean(session?.user?.email);
   const inputBaseStyle: React.CSSProperties = {
     width: '100%',
     padding: 8,
@@ -56,6 +65,7 @@ export default function ContactPage() {
     borderRadius: 4,
   };
 
+  // Styling for read-only input fields
   const inputReadOnlyStyle: React.CSSProperties = {
     ...inputBaseStyle,
     backgroundColor: '#f0f0f0',
@@ -67,28 +77,16 @@ export default function ContactPage() {
       <h1>Contact Us</h1>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <label htmlFor="name">
-          Name
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            readOnly={!!isNameReadOnly}
-            style={isNameReadOnly ? inputReadOnlyStyle : inputBaseStyle}
-          />
-        </label>
-
         <label htmlFor="email">
           Email
           <input
             id="email"
             type="email"
             value={email}
+            placeholder="Enter your email"
             onChange={(e) => setEmail(e.target.value)}
             required
-            readOnly={!!isEmailReadOnly}
+            readOnly={isEmailReadOnly}
             style={isEmailReadOnly ? inputReadOnlyStyle : inputBaseStyle}
           />
         </label>
@@ -98,6 +96,7 @@ export default function ContactPage() {
           <textarea
             id="message"
             value={message}
+            placeholder="Write your message here..."
             onChange={(e) => setMessage(e.target.value)}
             required
             style={{ ...inputBaseStyle, minHeight: 100 }}
@@ -127,4 +126,6 @@ export default function ContactPage() {
       )}
     </div>
   );
-}
+};
+
+export default ContactPage;

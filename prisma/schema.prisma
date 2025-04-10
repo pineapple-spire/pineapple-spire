@@ -41,16 +41,16 @@ model StressScenario {
 
 model ContactUsData {
   id              Int      @id @default(autoincrement())
-  name            String
+  createdAt       DateTime @default(now())
   email           String
   message         String
 }
 
 model ReportPageData {
   id              Int      @id @default(autoincrement())
-  name            String
+  createdAt       DateTime @default(now())
   email           String
-  problem         String 
+  problem         String
 }
 
 model FinancialData {
