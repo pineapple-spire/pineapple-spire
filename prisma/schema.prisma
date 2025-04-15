@@ -22,6 +22,7 @@ enum Role {
   ADMIN
   AUDITOR
   ANALYST
+  EXECUTIVE
   VIEWER
 }
 
