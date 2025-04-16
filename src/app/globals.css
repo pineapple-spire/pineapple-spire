@@ -1,30 +1,38 @@
 html,
 body {
-  --bs-light-rgb: 236, 236, 236;
-  box-sizing: border-box;
-  height: 100%;
-  padding: 0;
   margin: 0;
+  padding: 0;
+  height: 100%;
+  background: url("https://img.freepik.com/free-vector/abstract-soft-blue-watercolor-texture-design-background_1055-17547.jpg?semt=ais_hybrid&w=740")
+    center center/cover;
+  position: relative;
+  font-family: Arial, sans-serif;
+  color: #333;
 }
+
+.main {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+}
+
 .wrapper {
-  box-sizing: border-box;
-  min-height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-.navbar {
-  background-color: #FFF24B;
-}
-
+.navbar,
 .footer {
   background-color: #FFF24B;
+  padding: 1rem 2rem;
+  text-align: center;
 }
 
 .home-page-img {
-  margin-left: 150px;
-  margin-top: -20px;
-  margin-bottom: -20px;
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .position-relative {
@@ -33,25 +41,32 @@ body {
 
 .transparent-button1 {
   background-color: transparent;
-  border: 1px solid black;
-  color: black;
+  border: 2px solid #222;
+  color: #222;
   cursor: pointer;
-  width: 300px;
-  height: 60px;
-  padding: 10px 20px;
-  border-radius: 20px;
-  margin: 10px;
+  width: 280px;
+  height: 56px;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  margin: 1rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .transparent-button1 .star {
-  position: left;
   color: #fca382;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  font-size: 1.2rem;
+  display: inline-block;
 }
 
 .transparent-button1:hover {
   background-color: #FFF24B;
-  color: black;
+  color: #222;
+  border-color: #222;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }

@@ -20,32 +20,35 @@ interface ChartSectionProps {
 }
 
 const ChartSection: React.FC<ChartSectionProps> = ({ title, data, chartType }) => {
-  const chartData = useMemo(() => ({
-    labels: data.map((d) => d.year.toString()),
-    datasets: [
-      {
-        label: 'Conservative',
-        data: data.map((d) => d.conservative),
-        backgroundColor: '#3b82f6',
-        borderColor: '#3b82f6',
-        fill: chartType === 'bar',
-      },
-      {
-        label: 'Moderate',
-        data: data.map((d) => d.moderate),
-        backgroundColor: '#10b981',
-        borderColor: '#10b981',
-        fill: chartType === 'bar',
-      },
-      {
-        label: 'Aggressive',
-        data: data.map((d) => d.aggressive),
-        backgroundColor: '#f59e0b',
-        borderColor: '#f59e0b',
-        fill: chartType === 'bar',
-      },
-    ],
-  }), [data, chartType]);
+  const chartData = useMemo(
+    () => ({
+      labels: data.map((d) => d.year.toString()),
+      datasets: [
+        {
+          label: 'Conservative',
+          data: data.map((d) => d.conservative),
+          backgroundColor: '#3b82f6',
+          borderColor: '#3b82f6',
+          fill: chartType === 'bar',
+        },
+        {
+          label: 'Moderate',
+          data: data.map((d) => d.moderate),
+          backgroundColor: '#10b981',
+          borderColor: '#10b981',
+          fill: chartType === 'bar',
+        },
+        {
+          label: 'Aggressive',
+          data: data.map((d) => d.aggressive),
+          backgroundColor: '#f59e0b',
+          borderColor: '#f59e0b',
+          fill: chartType === 'bar',
+        },
+      ],
+    }),
+    [data, chartType],
+  );
 
   const options = {
     responsive: true,
@@ -63,7 +66,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({ title, data, chartType }) =
   return (
     <div className="w-full p-8">
       <h3 className="text-xl font-semibold mb-8 text-center">{title}</h3>
-      <div style={{ width: '100%', height: '400px' }}>
+      <div style={{ width: '100%', height: '400px', backgroundColor: 'white' }}>
         {chartType === 'line' ? (
           <LinePlot data={chartData} options={options} style={{ width: '100%', height: '100%' }} />
         ) : (
@@ -103,14 +106,13 @@ const FiscalSustainabilityModel: React.FC = () => {
 
   return (
     <Suspense fallback={<LoadingSpinner />}>
-      <Container fluid className="py-12">
+      <Container fluid className="py-12 mt-5">
         <h2 className="text-3xl font-bold text-center mb-12">
           Fiscal Sustainability Model
         </h2>
 
-        {/* Toggle switch row */}
-        <Row className="mb-6 d-flex align-items-center">
-          <Col md={12} className="d-flex align-items-center">
+        <Row className="d-flex justify-content-center align-items-center mb-6">
+          <Col md="auto" className="d-flex align-items-center mt-3 mb-5">
             <Form.Check
               type="switch"
               id="chartTypeToggle"
@@ -122,7 +124,6 @@ const FiscalSustainabilityModel: React.FC = () => {
           </Col>
         </Row>
 
-        {/* Charts Section */}
         <Row className="justify-content-around g-8">
           <Col md={3} className="mx-6">
             <ChartSection title="Income Forecast" data={incomeData} chartType={chartType} />
