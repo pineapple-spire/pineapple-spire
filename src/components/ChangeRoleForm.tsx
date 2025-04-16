@@ -102,18 +102,19 @@ const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
     defaultValues: { id: user.id, email: user.email, role: user.role },
   });
 
+  const router = useRouter();
+
   const handleFormSubmit = async (data: UserRoleProps) => {
     if (dirtyFields.role) {
       await onSubmit(data);
       reset(data);
+      router.push('/admin');
     } else {
       swal('No Changes Detected', 'You did not change the role.', 'info', {
         timer: 2000,
       });
     }
   };
-
-  const router = useRouter();
 
   const goBack = async () => {
     router.push('/admin');
