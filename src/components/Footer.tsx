@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 /** The Footer appears at the bottom of every page. Rendered by the App Layout component. */
 const Footer = () => (
-  <footer className="mt-auto py-3 footer">
+  <footer className="mt-auto py-3 footer" style={{ zIndex: 2 }}>
     <Container>
       <Row>
         {/* TODO: Update this to have link to disclaimer. */}

@@ -48,6 +48,7 @@ const CardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  z-index: 1;
   gap: 30px;
 `;
 
@@ -64,6 +65,7 @@ const Card = styled.div`
   align-items: center;
   text-align: center;
   cursor: pointer;
+  z-index: 1;
   transition: transform 0.3s, box-shadow 0.3s;
 
   &:hover {
@@ -79,8 +81,8 @@ const CardTitle = styled.h2`
 `;
 
 const Message = styled.p`
-  color: #777;
   margin-top: 20px;
+  font-size: 20px;
 `;
 
 const Home: React.FC = () => {
