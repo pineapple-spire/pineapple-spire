@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { adminProtectedPage } from '@/lib/page-protection';
 import authOptions from '@/lib/authOptions';
+import DeleteUserButton from '@/components/DeleteUserButton';
 
 const styles = {
   container: {
@@ -77,6 +78,7 @@ const AdminPage = async () => {
                           <Link href={`/change-role/user/${user.id}`} style={styles.actionLink}>
                             Change Role
                           </Link>
+                          <DeleteUserButton userID={user.id} />
                         </td>
                       </tr>
                     ))}
