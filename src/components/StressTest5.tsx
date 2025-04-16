@@ -2,7 +2,7 @@
 
 import { useState, useMemo, ChangeEvent } from 'react';
 import { Col, Container, Form, Row, Table, Card } from 'react-bootstrap';
-import { formatCurrency } from '@/lib/mathUtils';
+import { calculateResidualEffects, formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 import LinePlot from '@/components/LinePlot';
 
@@ -48,27 +48,28 @@ const StressTest5 = () => {
     return rows;
   };
 
-  // Calculate table data for Residual Effects (using formatted values)
-  const calculateResidualEffectsData = (initialValue: number) => {
-    let balance = presentValue ?? 0;
-    let cumulativeInterest = 0;
-    const rate = (interestRate ?? 0) / 100;
-    const rows = [];
+  const generatePrincipals = (initialPrincipal: number, years: number, growthRate: number): number[] => {
+    const principals = [];
+    let currentPrincipal = initialPrincipal;
 
-    for (let year = 1; year <= (term ?? 0); year++) {
-      const interestEarned = parseFloat((balance * rate).toFixed(2));
-      balance = parseFloat((balance + interestEarned).toFixed(2));
-      cumulativeInterest += interestEarned;
-
-      rows.push({
-        year,
-        principal: initialValue,
-        annualReturnRate: `${(interestRate ?? 0).toFixed(2)}%`,
-        lostEarningsForPrincipalCum: cumulativeInterest,
-        totalInterestLostCum: cumulativeInterest,
-      });
+    for (let year = 1; year <= years; year++) {
+      principals.push(parseFloat(currentPrincipal.toFixed(2)));
+      currentPrincipal += currentPrincipal * (growthRate / 100); // Increase principal by the growth rate
     }
-    return rows;
+
+    return principals;
+  };
+
+  // Calculate table data for Residual Effects (using formatted values)
+  const calculateResidualEffectsData = () => {
+    if (presentValue === null || interestRate === null || term === null) {
+      return [];
+    }
+
+    // Dynamically generate the principals array
+    const principals = generatePrincipals(215, term, 6.02); // Initial principal: 215, growth rate: 6.02%
+
+    return calculateResidualEffects(principals, 6.02, interestRate, term);
   };
 
   // Compute raw data for charting in Stress Effects tab (for balance & annual interest)
@@ -290,18 +291,22 @@ const StressTest5 = () => {
                     <th>Year</th>
                     <th>Principal</th>
                     <th>Annual Return Rate</th>
-                    <th>Lost Earnings for Principal (Cumulative)</th>
-                    <th>Total Interest Lost (Cumulative)</th>
+                    <th>Lost Earnings</th>
+                    <th>Cumulative Lost Earnings</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {calculateResidualEffectsData(presentValue ?? 0).map((row) => (
+                  {calculateResidualEffectsData().map((row) => (
                     <tr key={row.year}>
                       <td>{row.year}</td>
                       <td>{formatCurrency(row.principal)}</td>
-                      <td>{row.annualReturnRate}</td>
-                      <td>{formatCurrency(row.lostEarningsForPrincipalCum)}</td>
-                      <td>{formatCurrency(row.totalInterestLostCum)}</td>
+                      <td>
+                        6.02% →
+                        {interestRate?.toFixed(2)}
+                        %
+                      </td>
+                      <td>{formatCurrency(row.lostEarnings)}</td>
+                      <td>{formatCurrency(row.cumulativeLostEarnings)}</td>
                     </tr>
                   ))}
                 </tbody>

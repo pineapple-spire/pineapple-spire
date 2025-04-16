@@ -302,3 +302,59 @@ export function calculateTableData(
 
   return rows;
 }
+
+/**
+ * Calculates the residual effects of stress test 5 by computing
+ * the total interest lost due to a decrease in bond return rate.
+ *
+ * @param principal - The initial principal amount.
+ * @param originalRate - The original annual return rate (e.g., 6.02 for 6.02%).
+ * @param reducedRate - The reduced annual return rate (e.g., 1.7 for 1.7%).
+ * @param years - The number of years to calculate.
+ * @returns An array of objects containing year, lost earnings, and cumulative lost earnings.
+ */
+export function calculateResidualEffects(
+  principals: number[], // Array of principals for each year
+  originalRate: number,
+  reducedRate: number,
+  years: number,
+): {
+    year: number;
+    principal: number;
+    lostEarnings: number;
+    cumulativeLostEarnings: number;
+  }[] {
+  const results = [];
+  let cumulativeLostEarnings = 0;
+
+  for (let year = 1; year <= years; year++) {
+    const principal = principals[year - 1]; // Get the principal for the current year
+
+    // Check if the principal is undefined
+    if (principal === undefined) {
+      throw new Error(`Principal value is missing for year ${year}.`);
+    }
+
+    // Calculate earnings at the original rate
+    const originalEarnings = principal * (1 + originalRate / 100) - principal;
+
+    // Calculate earnings at the reduced rate
+    const reducedEarnings = principal * (1 + reducedRate / 100) - principal;
+
+    // Calculate the lost earnings for the year
+    const lostEarnings = originalEarnings - reducedEarnings;
+
+    // Update cumulative lost earnings
+    cumulativeLostEarnings += lostEarnings;
+
+    // Push the result for the current year
+    results.push({
+      year,
+      principal: parseFloat(principal.toFixed(2)),
+      lostEarnings: parseFloat(lostEarnings.toFixed(2)),
+      cumulativeLostEarnings: parseFloat(cumulativeLostEarnings.toFixed(2)),
+    });
+  }
+
+  return results;
+}
