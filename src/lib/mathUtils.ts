@@ -299,6 +299,7 @@ export function calculateResidualEffects(
   originalRate: number,
   reducedRate: number,
   years: number,
+  fullyFunded: boolean[], // Array indicating if each year's principal is fully funded
 ): {
     year: number;
     principal: number;
@@ -316,11 +317,14 @@ export function calculateResidualEffects(
       throw new Error(`Principal value is missing for year ${year}.`);
     }
 
+    // Check if the principal is fully funded
+    const adjustedPrincipal = fullyFunded[year - 1] ? principal : 0; // If not fully funded, set to 0
+
     // Calculate earnings at the original rate
-    const originalEarnings = principal * (1 + originalRate / 100) - principal;
+    const originalEarnings = adjustedPrincipal * (1 + originalRate / 100) - adjustedPrincipal;
 
     // Calculate earnings at the reduced rate
-    const reducedEarnings = principal * (1 + reducedRate / 100) - principal;
+    const reducedEarnings = adjustedPrincipal * (1 + reducedRate / 100) - adjustedPrincipal;
 
     // Calculate the lost earnings for the year
     const lostEarnings = originalEarnings - reducedEarnings;
@@ -331,7 +335,7 @@ export function calculateResidualEffects(
     // Push the result for the current year
     results.push({
       year,
-      principal: parseFloat(principal.toFixed(2)),
+      principal: parseFloat(adjustedPrincipal.toFixed(2)),
       lostEarnings: parseFloat(lostEarnings.toFixed(2)),
       cumulativeLostEarnings: parseFloat(cumulativeLostEarnings.toFixed(2)),
     });
