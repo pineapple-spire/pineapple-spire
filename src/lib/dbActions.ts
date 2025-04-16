@@ -25,6 +25,14 @@ export async function createUser(credentials: { email: string; password: string 
   });
 }
 
+export async function deleteUser(userID: number) {
+  await prisma.user.delete({
+    where: {
+      id: userID,
+    },
+  });
+}
+
 /**
  * Changes the password of an existing user in the database.
  * @param credentials, an object with the following properties:

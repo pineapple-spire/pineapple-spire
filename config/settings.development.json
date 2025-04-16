@@ -4,7 +4,9 @@
     { "email": "john@foo.com", "password": "changeme" },
     { "email": "auditor@foo.com", "password": "changeme", "role": "AUDITOR" },
     { "email": "analyst@foo.com", "password": "changeme", "role": "ANALYST" },
-    { "email": "viewer@foo.com", "password": "changeme", "role": "VIEWER" }
+    { "email": "executive@foo.com", "password": "changeme", "role": "EXECUTIVE" },
+    { "email": "viewer@foo.com", "password": "changeme", "role": "VIEWER" },
+    { "email": "removableUser@foo.com", "password": "changeme", "role": "USER" }
   ],
 
   "defaultScenarios": [
