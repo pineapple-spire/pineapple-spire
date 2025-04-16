@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth';
-import { loggedInProtectedPage } from '@/lib/page-protection';
+import { auditorProtectedPage } from '@/lib/page-protection';
 import authOptions from '@/lib/authOptions';
 import React from 'react';
 import { Container, Col, Row } from 'react-bootstrap';
@@ -7,7 +7,7 @@ import AuditDataForm from '@/components/AuditDataForm';
 
 export default async function AuditDataPage() {
   const session = await getServerSession(authOptions);
-  loggedInProtectedPage(
+  auditorProtectedPage(
     session as {
       user: { email: string; id: string; randomKey: string };
     } | null,
