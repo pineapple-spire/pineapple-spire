@@ -2,7 +2,7 @@
 
 import { useState, useMemo, ChangeEvent } from 'react';
 import { Col, Container, Form, Row, Table, Card } from 'react-bootstrap';
-import { formatCurrency } from '@/lib/mathUtils';
+import { calculateResidualEffects, formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 import LinePlot from '@/components/LinePlot';
 
@@ -12,6 +12,7 @@ const StressTest5 = () => {
   const [presentValue, setPresentValue] = useState<number | null>(5000);
   const [interestRate, setInterestRate] = useState<number | null>(6.0); // Starts at 6% (user can change)
   const [term, setTerm] = useState<number | null>(30);
+  const [fullyFunded, setFullyFunded] = useState<number | null>(100); // Default to 100%
 
   // Track active tab
   const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>('stressEffects');
@@ -19,7 +20,14 @@ const StressTest5 = () => {
   // Handle input changes
   const handleChange = (setter: (value: number | null) => void) => (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    setter(value === '' ? null : parseFloat(value));
+    const numericValue = value === '' ? null : parseFloat(value);
+
+    // Prevent negative values
+    if (numericValue !== null && numericValue < 0) {
+      return; // Do nothing if the value is negative
+    }
+
+    setter(numericValue);
   };
 
   // Calculate table data for Stress Effects (using formatted values)
@@ -48,27 +56,32 @@ const StressTest5 = () => {
     return rows;
   };
 
-  // Calculate table data for Residual Effects (using formatted values)
-  const calculateResidualEffectsData = (initialValue: number) => {
-    let balance = presentValue ?? 0;
-    let cumulativeInterest = 0;
-    const rate = (interestRate ?? 0) / 100;
-    const rows = [];
+  const generatePrincipals = (initialPrincipal: number, years: number, growthRate: number): number[] => {
+    const principals = [];
+    let currentPrincipal = initialPrincipal;
 
-    for (let year = 1; year <= (term ?? 0); year++) {
-      const interestEarned = parseFloat((balance * rate).toFixed(2));
-      balance = parseFloat((balance + interestEarned).toFixed(2));
-      cumulativeInterest += interestEarned;
-
-      rows.push({
-        year,
-        principal: initialValue,
-        annualReturnRate: `${(interestRate ?? 0).toFixed(2)}%`,
-        lostEarningsForPrincipalCum: cumulativeInterest,
-        totalInterestLostCum: cumulativeInterest,
-      });
+    for (let year = 1; year <= years; year++) {
+      principals.push(parseFloat(currentPrincipal.toFixed(2)));
+      currentPrincipal += currentPrincipal * (growthRate / 100); // Increase principal by the growth rate
     }
-    return rows;
+
+    return principals;
+  };
+
+  // Calculate table data for Residual Effects (using formatted values)
+  const calculateResidualEffectsData = () => {
+    if (presentValue === null || interestRate === null || term === null || fullyFunded === null) {
+      return [];
+    }
+
+    // Dynamically generate the principals array
+    const principals = generatePrincipals(215, term, 6.02); // Initial principal: 215, growth rate: 6.02%
+
+    // Generate the fully funded boolean array based on the percentage
+    const fullyFundedArray = Array(term).fill(fullyFunded === 100);
+
+    // Pass the fully funded array to the calculateResidualEffects function
+    return calculateResidualEffects(principals, 6.02, interestRate, term, fullyFundedArray);
   };
 
   // Compute raw data for charting in Stress Effects tab (for balance & annual interest)
@@ -109,18 +122,24 @@ const StressTest5 = () => {
 
   // Compute raw data for charting in Residual Effects tab (cumulative interest)
   const residualEffectsRawData = useMemo(() => {
-    let balance = presentValue ?? 0;
-    let cumulativeInterest = 0;
-    const rate = (interestRate ?? 0) / 100;
-    const result = [];
-    for (let year = 1; year <= (term ?? 0); year++) {
-      const interestEarned = balance * rate;
-      balance += interestEarned;
-      cumulativeInterest += interestEarned;
-      result.push({ year, cumulativeInterest });
+    if (presentValue === null || interestRate === null || term === null || fullyFunded === null) {
+      return [];
     }
-    return result;
-  }, [presentValue, interestRate, term]);
+
+    // Dynamically generate the principals array
+    const principals = generatePrincipals(215, term, 6.02); // Initial principal: 215, growth rate: 6.02%
+
+    // Generate the fully funded boolean array based on the percentage
+    const fullyFundedArray = Array(term).fill(fullyFunded === 100);
+
+    // Calculate residual effects
+    const residualEffects = calculateResidualEffects(principals, 6.02, interestRate, term, fullyFundedArray);
+
+    return residualEffects.map(({ year, cumulativeLostEarnings }) => ({
+      year,
+      cumulativeInterest: cumulativeLostEarnings,
+    }));
+  }, [presentValue, interestRate, term, fullyFunded]);
 
   // Prepare chart data for the Residual Effects tab
   const residualEffectsChartData = useMemo(() => ({
@@ -186,7 +205,95 @@ const StressTest5 = () => {
         onTabChange={(tab) => setActiveTab(tab === 'residualEffects' ? 'residualEffects' : 'stressEffects')}
       />
 
-      {activeTab === 'stressEffects' ? (
+      {activeTab === 'residualEffects' ? (
+        <>
+          {/* Input Form for Residual Effects */}
+          <Row className="mb-3 justify-content-center">
+            <Col md={6}>
+              <Form>
+                <Row>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Fully Funded</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={fullyFunded === null ? '' : fullyFunded}
+                        onChange={handleChange(setFullyFunded)}
+                        placeholder="Enter as a percentage (e.g., 100)"
+                        min="0" // Prevents negative values in the UI
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form>
+            </Col>
+          </Row>
+
+          {/* Line Chart for Residual Effects */}
+          <Row className="mb-3">
+            <Col md={{ span: 8, offset: 2 }}>
+              <Card>
+                <Card.Body>
+                  <Card.Title className="text-center">Cumulative Lost Earnings</Card.Title>
+                  <LinePlot
+                    data={residualEffectsChartData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                          display: true,
+                          text: 'Residual Effects: Cumulative Lost Earnings',
+                        },
+                      },
+                      layout: { padding: 10 },
+                      scales: {
+                        x: { title: { display: true, text: 'Year' } },
+                        y: { title: { display: true, text: 'Amount ($)' } },
+                      },
+                    }}
+                    style={{ minHeight: '450px', maxHeight: '650px' }}
+                  />
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Residual Effects Table */}
+          <Row className="mb-3">
+            <Col>
+              <h3>Residual Effects Table</h3>
+              <Table striped bordered hover className="mt-4">
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Principal</th>
+                    <th>Annual Return Rate</th>
+                    <th>Lost Earnings</th>
+                    <th>Cumulative Lost Earnings</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {calculateResidualEffectsData().map((row) => (
+                    <tr key={row.year}>
+                      <td>{row.year}</td>
+                      <td>{formatCurrency(row.principal)}</td>
+                      <td>
+                        6.02% →
+                        {interestRate?.toFixed(2)}
+                        %
+                      </td>
+                      <td>{formatCurrency(row.lostEarnings)}</td>
+                      <td>{formatCurrency(row.cumulativeLostEarnings)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Col>
+          </Row>
+        </>
+      ) : (
         <>
           {/* Line Chart for Stress Effects */}
           <Row className="mb-3">
@@ -240,68 +347,6 @@ const StressTest5 = () => {
                       <td>{row.contribution}</td>
                       <td>{row.interest}</td>
                       <td>{row.total}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
-          </Row>
-        </>
-      ) : (
-        <>
-          {/* Line Chart for Residual Effects */}
-          <Row className="mb-3">
-            <Col md={{ span: 8, offset: 2 }}>
-              <Card>
-                <Card.Body>
-                  <Card.Title className="text-center">Cumulative Lost Earnings</Card.Title>
-                  <LinePlot
-                    data={residualEffectsChartData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: { position: 'top' },
-                        title: {
-                          display: true,
-                          text: 'Residual Effects: Cumulative Lost Earnings',
-                        },
-                      },
-                      layout: { padding: 10 },
-                      scales: {
-                        x: { title: { display: true, text: 'Year' } },
-                        y: { title: { display: true, text: 'Amount ($)' } },
-                      },
-                    }}
-                    style={{ minHeight: '450px', maxHeight: '650px' }}
-                  />
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Residual Effects Table */}
-          <Row className="mb-3">
-            <Col>
-              <h3>Residual Effects Table</h3>
-              <Table striped bordered hover className="mt-4">
-                <thead>
-                  <tr>
-                    <th>Year</th>
-                    <th>Principal</th>
-                    <th>Annual Return Rate</th>
-                    <th>Lost Earnings for Principal (Cumulative)</th>
-                    <th>Total Interest Lost (Cumulative)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {calculateResidualEffectsData(presentValue ?? 0).map((row) => (
-                    <tr key={row.year}>
-                      <td>{row.year}</td>
-                      <td>{formatCurrency(row.principal)}</td>
-                      <td>{row.annualReturnRate}</td>
-                      <td>{formatCurrency(row.lostEarningsForPrincipalCum)}</td>
-                      <td>{formatCurrency(row.totalInterestLostCum)}</td>
                     </tr>
                   ))}
                 </tbody>
