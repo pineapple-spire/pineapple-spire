@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { Col, Container, Row, Table, Form } from 'react-bootstrap';
 import MultiplierInput from '@/components/MultiplierInput';
 import ForecastTypeDropdown from '@/components/ForecastTypeDropdown';
-import { computeMultiplier, computeAverage } from '@/lib/mathUtils';
+import { computeMultiplier, computeAverage, calculateFinancialData } from '@/lib/mathUtils';
+import { FinancialDataValues } from '@/lib/dbActions';
 
+// Years to forecast (Default: Starting from 2025)
 const years = Array.from({ length: 12 }, (_, i) => 2025 + i);
 
 // Categories for the financial data
@@ -19,6 +21,19 @@ const goodsCategories = [
   'Cost of Goods Sold',
   'Gross Profit',
   'Gross Margin %',
+];
+const otherIncomeCategories = [
+  'Interest Income',
+  'Interest Expense',
+  'Gain (loss) on Disposal of Assets',
+  'Other Income (expense)',
+  'Total Other Income (expense)',
+  'Total Other Income (expense) %',
+  'Income (loss) before Income Taxes',
+  'Pre-tax Income %',
+  'Income Taxes',
+  'Net Income (loss)',
+  'Net Income (loss) %',
 ];
 const operatingCategories = [
   'Salaries & Benefits',
@@ -55,15 +70,6 @@ const liabilitiesCategories = [
   'Total Liabilities & Equity',
 ];
 
-// Applies the multiplier repeatedly for each successive year.
-const getForecastValueForYear = (baseValue: number, yearIndex: number, multiplier: number): number => {
-  let value = baseValue;
-  for (let i = 0; i < yearIndex; i++) {
-    value = computeMultiplier(multiplier, value);
-  }
-  return value;
-};
-
 // Updated heatmap style function that accepts the row's maximum value.
 const getHeatmapStyle = (value: number | string, rowMax: number) => {
   if (typeof value !== 'number' || rowMax === 0) return {};
@@ -78,50 +84,16 @@ const getHeatmapStyle = (value: number | string, rowMax: number) => {
 
 // @ts-ignore
 const FinancialCompilationClient = ({ initialData }) => {
-  const [auditedData, setAuditedData] = useState(initialData || []);
-  const auditDataLength = auditedData.length - 1;
-  const lastAuditRecord = auditedData[auditDataLength] || {};
+  const [heatmapOn, setHeatmapOn] = useState<'true' | 'false'>('true');
 
-  // Map the audited data to categories
-  const categoryDataMap: Record<string, number | string> = {
-    Revenue: lastAuditRecord.revenue ?? 0,
-    'Net Sales': lastAuditRecord.netSales,
-    'Cost of Contracting': lastAuditRecord.costContracting,
-    Overhead: lastAuditRecord.overhead,
-    'Cost of Goods Sold': lastAuditRecord.costGoodsSold,
-    'Gross Profit': lastAuditRecord.grossProfit,
-    'Gross Margin %': lastAuditRecord.grossMarginPercent,
-    'Salaries & Benefits': lastAuditRecord.salariesAndBenefits,
-    'Rent & Overhead': lastAuditRecord.rentAndOverhead,
-    'Depreciation & Amortization': lastAuditRecord.depreciationAndAmortization,
-    Interest: lastAuditRecord.interest,
-    'Total Operating Expenses': lastAuditRecord.totalOperatingExpenses,
-    'Operating Expenses %': lastAuditRecord.operatingExpensesPercent,
-    'Profit (loss) from Operations': lastAuditRecord.profitFromOperations,
-    'Profit (loss) from Operations %': lastAuditRecord.profitFromOperationsPercent,
-    'Cash & Cash Equivalents': lastAuditRecord.cashAndEquivalents,
-    'Accounts Receivable': lastAuditRecord.accountsReceivable,
-    Inventory: lastAuditRecord.inventory,
-    'Total Current Assets': lastAuditRecord.totalCurrentAssets,
-    'Property, Plant, & Equipment': lastAuditRecord.propertyPlantAndEquipment,
-    Investment: lastAuditRecord.investment,
-    'Total Long Term Assets': lastAuditRecord.totalLongTermAssets,
-    'Total Assets': lastAuditRecord.totalAssets,
-    'Accounts Payable': lastAuditRecord.accountsPayable,
-    'Current Debt Service': lastAuditRecord.currentDebtService,
-    'Taxes Payable': lastAuditRecord.taxesPayable,
-    'Total Current Liabilities': lastAuditRecord.totalCurrentLiabilities,
-    'Long Term Debt Service': lastAuditRecord.longTermDebtService,
-    'Loans Payable': lastAuditRecord.loansPayable,
-    'Total Long Term Liabilities': lastAuditRecord.totalLongTermLiabilities,
-    'Total Liabilities': lastAuditRecord.totalLiabilities,
-    'Equity Capital': lastAuditRecord.equityCapital,
-    'Retained Earnings': lastAuditRecord.retainedEarnings,
-    'Total Stockholder Equity': lastAuditRecord.totalStockholdersEquity,
-    'Total Liabilities & Equity': lastAuditRecord.totalLiabilitiesAndEquity,
-  };
+  const forecastedData = initialData.map((item: FinancialDataValues) => {
+    const base = calculateFinancialData(item);
+    return base;
+  });
 
-  const auditedDataKeyMap: Record<string, string> = {
+  const baseAuditRecord = forecastedData[forecastedData.length - 1] || {};
+
+  const auditedDataKeyMap: Record<string, keyof typeof baseAuditRecord> = {
     Revenue: 'revenue',
     'Net Sales': 'netSales',
     'Cost of Contracting': 'costContracting',
@@ -129,6 +101,16 @@ const FinancialCompilationClient = ({ initialData }) => {
     'Cost of Goods Sold': 'costGoodsSold',
     'Gross Profit': 'grossProfit',
     'Gross Margin %': 'grossMarginPercent',
+    'Interest Income': 'interestIncome',
+    'Interest Expense': 'interestExpense',
+    'Gain (loss) on Disposal of Assets': 'gainOnDisposalAssets',
+    'Other Income (expense)': 'otherIncome',
+    'Total Other Income (expense)': 'totalOtherIncome',
+    'Total Other Income (expense) %': 'operatingExpensesPercent',
+    'Income (loss) before Income Taxes': 'incomeBeforeIncomeTaxes',
+    'Pre-tax Income %': 'preTaxIncomePercent',
+    'Income Taxes': 'incomeTaxes',
+    'Net Income (loss)': 'netIncome',
     'Salaries & Benefits': 'salariesAndBenefits',
     'Rent & Overhead': 'rentAndOverhead',
     'Depreciation & Amortization': 'depreciationAndAmortization',
@@ -159,14 +141,37 @@ const FinancialCompilationClient = ({ initialData }) => {
     'Total Liabilities & Equity': 'totalLiabilitiesAndEquity',
   };
 
+  // Applies the forecast type repeatedly for each successive year.
+  const getForecastValueForYear = (
+    baseValue: number,
+    yearIndex: number,
+    multiplier: number,
+    forecastType: string,
+    name: string,
+  ): number => {
+    let value = baseValue;
+
+    if (forecastType === 'Multiplier') {
+      for (let i = 0; i < yearIndex; i++) {
+        value = computeMultiplier(multiplier, value);
+      }
+    } else if (forecastType === 'Average') {
+      value = computeAverage(auditedDataKeyMap, name, initialData);
+    }
+    return value;
+  };
+
   const [showIncome, setShowIncome] = useState(true);
   const [showGoods, setShowGoods] = useState(true);
+  const [showOtherIncome, setShowOtherIncome] = useState(true);
   const [showOperating, setShowOperating] = useState(true);
   const [showAssets, setShowAssets] = useState(true);
   const [showLiabilities, setShowLiabilities] = useState(true);
+
   const [multiplier, setMultiplier] = useState(1);
 
   const [forecastTypes, setForecastTypes] = useState<Record<string, string>>({});
+
   const handleForecastTypeChange = (category: string, newForecastType: string) => {
     setForecastTypes((prev) => ({
       ...prev,
@@ -176,35 +181,33 @@ const FinancialCompilationClient = ({ initialData }) => {
 
   const handleMultiplierChange = (newMultiplier: number) => {
     setMultiplier(newMultiplier);
+  };
 
-    setAuditedData((prevData: any) => {
-      if (!prevData.length) return prevData; // Ensure there is data
+  const valuesForYear: Record<number, any> = {};
 
-      // Clone the last audit record and apply multiplier updates
-      const updatedLastAuditRecord = { ...prevData[prevData.length - 1] };
+  const priorRecords: any[] = [...forecastedData];
 
-      for (const name in categoryDataMap) {
-        if (forecastTypes[name] === 'Multiplier') {
-          const baseValue = categoryDataMap[name];
-          updatedLastAuditRecord[name] = computeMultiplier(newMultiplier, Number(baseValue) || 0);
-        }
+  years.forEach((_, index) => {
+    const newRecord: any = {};
+
+    for (const [label, key] of Object.entries(auditedDataKeyMap)) {
+      const type = forecastTypes[label];
+      let value: number;
+
+      if (type === 'Average') {
+        value = computeAverage(auditedDataKeyMap, label, priorRecords);
+      } else {
+        const baseValue = forecastedData[0][key] ?? 0;
+        value = getForecastValueForYear(Number(baseValue), index + 1, multiplier, type, label);
       }
 
-      // Replace the last record in the array
-      return [...prevData.slice(0, -1), updatedLastAuditRecord];
-    });
-  };
+      newRecord[key] = value;
+    }
 
-  const getCategoryData = (name: string) => {
-    const baseValue = categoryDataMap[name] ?? 'N/A';
-    if (forecastTypes[name] === 'Multiplier') {
-      return computeMultiplier(multiplier, baseValue);
-    }
-    if (forecastTypes[name] === 'Average') {
-      return computeAverage(auditedDataKeyMap, name, auditedData);
-    }
-    return baseValue;
-  };
+    const calculated = calculateFinancialData(newRecord);
+    valuesForYear[index] = calculated;
+    priorRecords.push(calculated); // Add to history for next year's average
+  });
 
   const renderTable = (categories: string[]) => (
     <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
@@ -220,34 +223,40 @@ const FinancialCompilationClient = ({ initialData }) => {
         </thead>
         <tbody>
           {categories.map((name) => {
-            const rowValues = years.map((year, index) => {
-              const baseValue = Number(getCategoryData(name));
-              return getForecastValueForYear(baseValue, index, multiplier);
-            });
-            const rowMax = Math.max(...rowValues.map((val) => Math.abs(val)), 0);
+            const rowValues = years.map((_, index) => valuesForYear[index][auditedDataKeyMap[name]]);
+
+            const rowMax = Math.max(...rowValues.map((val) => Math.abs(Number(val))), 0);
             return (
               <tr key={name}>
                 <td>
-                  {!(
-                    name === 'Net Sales'
-                    || name.includes('Goods')
-                    || name.includes('Gross')
-                    || name.includes('%')
-                    || name.includes('Total')
-                    || name.includes('Profit')
+                  {!(name === 'Net Sales'
+                  || name.includes('Goods')
+                  || name.includes('Gross')
+                  || name.includes('%')
+                  || name.includes('Total')
+                  || name.includes('Profit')
+                  || name.includes('Income (loss) before Income Taxes')
+                  || name.includes('Net Income (loss)')
                   ) && (
-                    <ForecastTypeDropdown
-                      onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                    />
+                  <ForecastTypeDropdown
+                    onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
+                  />
                   )}
                 </td>
-
                 <td>{name}</td>
-                {rowValues.map((value, index) => (
-                  <td key={`${name}-${years[index]}`} style={getHeatmapStyle(value, rowMax)}>
-                    {value}
-                  </td>
-                ))}
+                {heatmapOn === 'true' ? (
+                  rowValues.map((value, index) => (
+                    <td key={`${name}-${years[index]}`} style={getHeatmapStyle(value, rowMax)}>
+                      {value}
+                    </td>
+                  ))
+                ) : (
+                  rowValues.map((value, index) => (
+                    <td key={`${name}-${years[index]}`}>
+                      {value}
+                    </td>
+                  ))
+                )}
               </tr>
             );
           })}
@@ -264,6 +273,19 @@ const FinancialCompilationClient = ({ initialData }) => {
           <p className="text-muted" style={{ fontSize: '1rem' }}>
             Analyze the different types of financial data and their forecast.
           </p>
+          {/* Toggle switch row */}
+          <Row className="mb-6 d-flex align-items-center">
+            <Col md={12} className="d-flex align-items-center">
+              <Form.Check
+                type="switch"
+                id="heatmapOnToggle"
+                className="me-2"
+                checked={heatmapOn === 'false'}
+                onChange={() => setHeatmapOn(heatmapOn === 'true' ? 'false' : 'true')}
+              />
+              <span>{heatmapOn === 'false' ? 'Show Heatmap' : 'Hide Heatmap'}</span>
+            </Col>
+          </Row>
         </Col>
         <Col>
           <MultiplierInput onMultiplierChange={handleMultiplierChange} />
@@ -285,6 +307,14 @@ const FinancialCompilationClient = ({ initialData }) => {
             label="Costs of Goods"
             checked={showGoods}
             onChange={() => setShowGoods((prev) => !prev)}
+          />
+        </Col>
+        <Col>
+          <Form.Check
+            type="checkbox"
+            label="Other Income"
+            checked={showOtherIncome}
+            onChange={() => setShowOtherIncome((prev) => !prev)}
           />
         </Col>
         <Col>
@@ -315,6 +345,7 @@ const FinancialCompilationClient = ({ initialData }) => {
 
       {showIncome && renderTable(incomeCategories)}
       {showGoods && renderTable(goodsCategories)}
+      {showOtherIncome && renderTable(otherIncomeCategories)}
       {showOperating && renderTable(operatingCategories)}
       {showAssets && renderTable(assetsCategories)}
       {showLiabilities && renderTable(liabilitiesCategories)}

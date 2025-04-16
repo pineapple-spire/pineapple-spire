@@ -4,15 +4,14 @@ import { prisma } from '@/lib/prisma';
 // eslint-disable-next-line import/prefer-default-export
 export async function POST(request: Request) {
   try {
-    const { name, email, message } = await request.json();
+    const { email, message } = await request.json();
 
-    if (!name || !email || !message) {
+    if (!email || !message) {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
     }
 
     await prisma.contactUsData.create({
       data: {
-        name,
         email,
         message,
       },

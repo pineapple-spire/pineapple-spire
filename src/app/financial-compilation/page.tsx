@@ -1,4 +1,3 @@
-// page.tsx
 import { getServerSession } from 'next-auth';
 import { loggedInProtectedPage } from '@/lib/page-protection';
 import authOptions from '@/lib/authOptions';
@@ -12,6 +11,5 @@ export default async function FinancialCompilationPage() {
   } | null);
 
   const auditedData = await getAuditData();
-  console.log('Fetched Audit Data:', auditedData);
   return <FinancialCompilationClient initialData={auditedData} />;
 }

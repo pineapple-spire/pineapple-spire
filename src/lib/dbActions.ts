@@ -1,9 +1,15 @@
 'use server';
 
 import { Role } from '@prisma/client';
-import { hash } from 'bcrypt';
+import { hash, compare } from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { prisma } from './prisma';
+
+export type ChangePasswordCredentials = {
+  email: string;
+  oldPassword: string;
+  password: string;
+};
 
 /**
  * Creates a new user in the database.
@@ -21,16 +27,31 @@ export async function createUser(credentials: { email: string; password: string 
 
 /**
  * Changes the password of an existing user in the database.
- * @param credentials, an object with the following properties: email, password.
+ * @param credentials, an object with the following properties:
+ *    email, old password, current password.
  */
-export async function changePassword(credentials: { email: string; password: string }) {
-  const password = await hash(credentials.password, 10);
+export async function changePassword({
+  email,
+  oldPassword,
+  password,
+}: ChangePasswordCredentials): Promise<{ success: boolean }> {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new Error('User not found.');
+  }
+
+  const isValid = await compare(oldPassword, user.password);
+  if (!isValid) {
+    throw new Error('Incorrect old password.');
+  }
+
+  const newHashedPassword = await hash(password, 10);
   await prisma.user.update({
-    where: { email: credentials.email },
-    data: {
-      password,
-    },
+    where: { email },
+    data: { password: newHashedPassword },
   });
+
+  return { success: true };
 }
 
 /**

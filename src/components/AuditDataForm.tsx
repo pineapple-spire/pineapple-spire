@@ -74,7 +74,12 @@ const financialFields = [
 ];
 
 const AuditDataForm: React.FC = () => {
-  const { control, handleSubmit, reset } = useForm<AuditDataValues>({ defaultValues });
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<AuditDataValues>({ defaultValues });
   const [finData, setFinData] = useState<AuditDataValues>(defaultValues);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -116,7 +121,6 @@ const AuditDataForm: React.FC = () => {
       console.log('Sanitized data:', sanitizedData);
       await submitAuditData(sanitizedData);
       swal('Success', 'Audit Data submitted successfully', 'success', { timer: 2000 });
-      // Re-fetch the latest data from DB after submission.
       await fetchData();
     } catch (error) {
       console.error('Error submitting audit data:', error);
@@ -145,12 +149,15 @@ const AuditDataForm: React.FC = () => {
               <td>{label}</td>
               {finData.map((data, idx) => (
                 <td key={`cell-${key}-${idx}`}>
-                  {(key in data ? ( // Set up for adding more fields to financialFields that are not a part of the form
+                  {key in data ? (
                     <Controller
                       name={`${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`}
                       control={control}
-                      defaultValue={data[key as keyof FinancialDataValues] !== undefined
-                        ? data[key as keyof FinancialDataValues] : 0}
+                      defaultValue={
+                        data[key as keyof FinancialDataValues] !== undefined
+                          ? data[key as keyof FinancialDataValues]
+                          : 0
+                      }
                       render={({ field }) => (
                         <Form.Control
                           type="number"
@@ -158,27 +165,21 @@ const AuditDataForm: React.FC = () => {
                           value={field.value}
                           onChange={(e) => {
                             const value = parseFloat(e.target.value) || 0;
-                            // console.log('Changed value:', value);
                             field.onChange(value);
-                            // console.log('data value:', data[key as keyof FinancialDataValues]);
                           }}
                         />
                       )}
                     />
                   ) : (
-                    <span>
-                      {
-                        data[key as keyof FinancialDataValues] ?? 'N/A'
-                      }
-                    </span>
-                  ))}
+                    <span>{data[key as keyof FinancialDataValues] ?? 'N/A'}</span>
+                  )}
                 </td>
               ))}
             </tr>
           ))}
         </tbody>
       </Table>
-      <Button type="submit" className="mb-3">
+      <Button type="submit" className="mb-3" disabled={isSubmitting}>
         Submit Data
       </Button>
     </Form>
