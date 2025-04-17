@@ -37,9 +37,13 @@ const NavBar: React.FC = () => {
             </Nav.Link>
             {currentUser ? (
               <NavDropdown id="tools-dropdown" title="Browse Tools">
-                <NavDropdown.Item id="tools-dropdown-financial-compilation" href="/financial-compilation">
-                  Financial Compilation
-                </NavDropdown.Item>
+                { role !== 'USER' ? (
+                  <NavDropdown.Item id="tools-dropdown-financial-compilation" href="/financial-compilation">
+                    Financial Compilation
+                  </NavDropdown.Item>
+                ) : (
+                  ''
+                )}
                 <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
                   Stress Test Tool
                 </NavDropdown.Item>
