@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSession } from 'next-auth/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
+import { ChangePasswordUserSchema } from '@/lib/validationSchemas';
 import swal from 'sweetalert';
 import { Card, Button, Form } from 'react-bootstrap';
 import { changePassword } from '@/lib/dbActions';
@@ -16,18 +16,6 @@ type ChangePasswordForm = {
   password: string;
   confirmPassword: string;
 };
-
-const validationSchema = Yup.object().shape({
-  oldPassword: Yup.string().required('Old Password is required'),
-  password: Yup.string()
-    .required('New Password is required')
-    .min(6, 'Password must be at least 6 characters')
-    .max(40, 'Password must not exceed 40 characters')
-    .notOneOf([Yup.ref('oldPassword')], 'New password must be different from old password'),
-  confirmPassword: Yup.string()
-    .required('Confirm Password is required')
-    .oneOf([Yup.ref('password')], 'Confirm Password does not match'),
-});
 
 const ChangePassword = () => {
   const { data: session, status } = useSession();
@@ -41,7 +29,7 @@ const ChangePassword = () => {
     setError,
     formState: { errors },
   } = useForm<ChangePasswordForm>({
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(ChangePasswordUserSchema),
   });
 
   const onSubmit = async (data: ChangePasswordForm) => {

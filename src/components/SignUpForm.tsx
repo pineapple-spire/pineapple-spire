@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
+import { SignUpUserSchema } from '@/lib/validationSchemas';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -61,27 +61,13 @@ interface SignUpFormProps {
 }
 
 export default function SignUpForm({ onSubmit }: SignUpFormProps) {
-  const validationSchema = Yup.object().shape({
-    firstName: Yup.string().required('First name is required'),
-    lastName: Yup.string().required('Last name is required'),
-    email: Yup.string().required('Email is required').email('Email is invalid'),
-    username: Yup.string().required('Username is required'),
-    password: Yup.string()
-      .required('Password is required')
-      .min(6, 'Password must be at least 6 characters')
-      .max(40, 'Password must not exceed 40 characters'),
-    confirmPassword: Yup.string()
-      .required('Confirm Password is required')
-      .oneOf([Yup.ref('password'), ''], 'Confirm Password does not match'),
-  });
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<SignUpFormData>({
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(SignUpUserSchema),
   });
 
   return (
