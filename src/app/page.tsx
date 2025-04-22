@@ -4,7 +4,7 @@ import React from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import styled from 'styled-components';
-import { FaChartLine, FaCalculator, FaBalanceScale } from 'react-icons/fa';
+import { FaChartLine, FaCalculator, FaBalanceScale, FaPenSquare } from 'react-icons/fa';
 
 const Container = styled.div`
   min-height: 50vh;
@@ -88,6 +88,9 @@ const Message = styled.p`
 const Home: React.FC = () => {
   const { data: session } = useSession();
 
+  const userWithRole = session?.user as { email: string; randomKey: string };
+  const role = userWithRole?.randomKey;
+
   return (
     <Container>
       <Header>
@@ -102,18 +105,32 @@ const Home: React.FC = () => {
               <CardTitle>Fiscal Sustainability Model</CardTitle>
             </Card>
           </Link>
-          <Link href="/financial-compilation">
-            <Card>
-              <FaCalculator size={40} color="#7ed321" />
-              <CardTitle>Financial Compilations</CardTitle>
-            </Card>
-          </Link>
+          { role !== 'USER' ? (
+            <Link href="/financial-compilation">
+              <Card>
+                <FaCalculator size={40} color="#7ed321" />
+                <CardTitle>Financial Compilations</CardTitle>
+              </Card>
+            </Link>
+          ) : (
+            ''
+          )}
           <Link href="/stress-test-tool">
             <Card>
               <FaChartLine size={40} color="#d0021b" />
               <CardTitle>Stress Test Tool</CardTitle>
             </Card>
           </Link>
+          { role === 'AUDITOR' ? (
+            <Link href="/audit-data">
+              <Card>
+                <FaPenSquare size={40} color="#4a90e2" />
+                <CardTitle>Audit Data</CardTitle>
+              </Card>
+            </Link>
+          ) : (
+            ''
+          )}
         </CardContainer>
       ) : (
         <Message>Please log in to access the financial modeling tools.</Message>
