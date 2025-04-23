@@ -1,23 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 
-// ForecastTypeDropdown component
-const ForecastTypeDropdown = ({ onChange }: { onChange: (type: string) => void }) => {
-  const [selectedOption, setSelectedOption] = useState('Select');
+type ForecastType = 'Average' | 'Multiplier';
 
-  const handleSelect = (eventKey: string | null) => {
-    if (eventKey) {
-      setSelectedOption(eventKey);
-      onChange(eventKey); // Call the parent onChange function with the selected option
-    }
+interface ForecastTypeDropdownProps {
+  onChange: (type: ForecastType) => void;
+}
+
+const ForecastTypeDropdown: React.FC<ForecastTypeDropdownProps> = ({ onChange }) => {
+  const [selectedOption, setSelectedOption] = useState<ForecastType>('Average');
+  const options: ForecastType[] = ['Average', 'Multiplier'];
+
+  const handleSelect = (eventKey: string | null): void => {
+    if (!eventKey) return;
+    const key = eventKey as ForecastType;
+    setSelectedOption(key);
+    onChange(key);
   };
 
   return (
-    <DropdownButton size="sm" title={selectedOption} onSelect={handleSelect}>
-      <Dropdown.Item eventKey="Average">Average</Dropdown.Item>
-      <Dropdown.Item eventKey="Multiplier">Multiplier</Dropdown.Item>
+    <DropdownButton
+      size="sm"
+      title={selectedOption}
+      onSelect={handleSelect}
+    >
+      {options
+        .filter(opt => opt !== selectedOption)
+        .map(opt => (
+          <Dropdown.Item key={opt} eventKey={opt}>
+            {opt}
+          </Dropdown.Item>
+        ))}
     </DropdownButton>
   );
 };

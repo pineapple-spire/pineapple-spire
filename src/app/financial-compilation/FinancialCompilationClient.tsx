@@ -8,7 +8,7 @@ import { computeMultiplier, computeAverage, calculateFinancialData } from '@/lib
 import { FinancialDataValues } from '@/lib/dbActions';
 
 // Years to forecast (Default: Starting from 2025)
-const years = Array.from({ length: 12 }, (_, i) => 2025 + i);
+const years = Array.from({ length: 10 }, (_, i) => 2025 + i);
 
 // Categories for the financial data
 const incomeCategories = [
@@ -70,16 +70,33 @@ const liabilitiesCategories = [
   'Total Liabilities & Equity',
 ];
 
+const formatForecastCell = (value: number | string, name: string) => {
+  if (typeof value !== 'number') {
+    return value;
+  }
+  if (name.includes('%')) {
+    return `${(value * 100).toFixed(1)}%`;
+  }
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value);
+};
+
 // Updated heatmap style function that accepts the row's maximum value.
 const getHeatmapStyle = (value: number | string, rowMax: number) => {
   if (typeof value !== 'number' || rowMax === 0) return {};
 
-  if (value >= 0) {
-    const intensity = Math.min(value / rowMax, 1);
-    return { backgroundColor: `rgba(0, 128, 0, ${intensity})` };
-  }
   const intensity = Math.min(Math.abs(value) / rowMax, 1);
-  return { backgroundColor: `rgba(128, 0, 0, ${intensity})` };
+  const baseColor = value >= 0 ? '0, 128, 0' : '128, 0, 0';
+
+  return {
+    backgroundColor: `rgba(${baseColor}, ${intensity})`,
+    color: intensity > 0.4 ? 'white' : 'black',
+    textShadow: intensity > 0.4 ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
+  };
 };
 
 // @ts-ignore
@@ -141,24 +158,23 @@ const FinancialCompilationClient = ({ initialData }) => {
     'Total Liabilities & Equity': 'totalLiabilitiesAndEquity',
   };
 
-  // Applies the forecast type repeatedly for each successive year.
+  // Applies the forecast: "Average" uses average; everything else (including undefined) uses multiplier
   const getForecastValueForYear = (
     baseValue: number,
     yearIndex: number,
     multiplier: number,
-    forecastType: string,
+    forecastType: string | undefined,
     name: string,
   ): number => {
-    let value = baseValue;
-
     if (forecastType === 'Multiplier') {
+      let value = baseValue;
       for (let i = 0; i < yearIndex; i++) {
         value = computeMultiplier(multiplier, value);
       }
-    } else if (forecastType === 'Average') {
-      value = computeAverage(auditedDataKeyMap, name, initialData);
+      return value;
     }
-    return value;
+    // default or "Average"
+    return computeAverage(auditedDataKeyMap, name, initialData);
   };
 
   const [showIncome, setShowIncome] = useState(true);
@@ -183,35 +199,51 @@ const FinancialCompilationClient = ({ initialData }) => {
     setMultiplier(newMultiplier);
   };
 
-  const valuesForYear: Record<number, any> = {};
+  const getForecastedValues = () => {
+    const values: Record<number, any> = {};
+    const prior: any[] = [...forecastedData];
 
-  const priorRecords: any[] = [...forecastedData];
+    years.forEach((_, index) => {
+      const newRecord: any = {};
 
-  years.forEach((_, index) => {
-    const newRecord: any = {};
+      for (const [label, key] of Object.entries(auditedDataKeyMap)) {
+        const type = forecastTypes[label];
+        let value: number;
 
-    for (const [label, key] of Object.entries(auditedDataKeyMap)) {
-      const type = forecastTypes[label];
-      let value: number;
+        if (type === 'Average') {
+          value = computeAverage(auditedDataKeyMap, label, prior);
+        } else {
+          const baseValue = forecastedData[0][key] ?? 0;
+          value = getForecastValueForYear(Number(baseValue), index + 1, multiplier, type, label);
+        }
 
-      if (type === 'Average') {
-        value = computeAverage(auditedDataKeyMap, label, priorRecords);
-      } else {
-        const baseValue = forecastedData[0][key] ?? 0;
-        value = getForecastValueForYear(Number(baseValue), index + 1, multiplier, type, label);
+        newRecord[key] = value;
       }
 
-      newRecord[key] = value;
-    }
+      const calculated = calculateFinancialData(newRecord);
+      values[index] = calculated;
+      prior.push(calculated);
+    });
 
-    const calculated = calculateFinancialData(newRecord);
-    valuesForYear[index] = calculated;
-    priorRecords.push(calculated); // Add to history for next year's average
-  });
+    return values;
+  };
+
+  const valuesForYear = getForecastedValues();
 
   const renderTable = (categories: string[]) => (
     <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
-      <Table striped bordered>
+      <Table
+        striped
+        bordered
+        hover
+        style={{
+          borderRadius: '12px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          fontSize: '0.9rem',
+        }}
+        className="table-modern"
+      >
         <thead>
           <tr>
             <th>Select Forecast Type</th>
@@ -246,14 +278,25 @@ const FinancialCompilationClient = ({ initialData }) => {
                 <td>{name}</td>
                 {heatmapOn === 'true' ? (
                   rowValues.map((value, index) => (
-                    <td key={`${name}-${years[index]}`} style={getHeatmapStyle(value, rowMax)}>
-                      {value}
+                    <td
+                      key={`${name}-${years[index]}`}
+                      style={{
+                        ...getHeatmapStyle(value, rowMax),
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      {formatForecastCell(value, name)}
                     </td>
                   ))
                 ) : (
                   rowValues.map((value, index) => (
-                    <td key={`${name}-${years[index]}`}>
-                      {value}
+                    <td
+                      key={`${name}-${years[index]}`}
+                      style={{
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      {formatForecastCell(value, name)}
                     </td>
                   ))
                 )}
