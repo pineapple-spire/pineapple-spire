@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Col, Container, Row, Table, Form } from 'react-bootstrap';
+import { Col, Container, Row, Table, Form, ButtonGroup, ToggleButton } from 'react-bootstrap';
 import MultiplierInput from '@/components/MultiplierInput';
 import ForecastTypeDropdown from '@/components/ForecastTypeDropdown';
+import LinePlot from '@/components/LinePlot';
 import { computeMultiplier, computeAverage, calculateFinancialData } from '@/lib/mathUtils';
 import { FinancialDataValues } from '@/lib/dbActions';
 
@@ -70,6 +71,17 @@ const liabilitiesCategories = [
   'Total Liabilities & Equity',
 ];
 
+const palette = [
+  '#4e73df', // blue
+  '#1cc88a', // green
+  '#36b9cc', // cyan
+  '#f6c23e', // yellow
+  '#e74a3b', // red
+  '#858796', // gray
+  '#fd7e14', // orange
+  '#6f42c1', // purple
+];
+
 const formatForecastCell = (value: number | string, name: string) => {
   if (typeof value !== 'number') {
     return value;
@@ -85,13 +97,10 @@ const formatForecastCell = (value: number | string, name: string) => {
   }).format(value);
 };
 
-// Updated heatmap style function that accepts the row's maximum value.
 const getHeatmapStyle = (value: number | string, rowMax: number) => {
   if (typeof value !== 'number' || rowMax === 0) return {};
-
   const intensity = Math.min(Math.abs(value) / rowMax, 1);
   const baseColor = value >= 0 ? '0, 128, 0' : '128, 0, 0';
-
   return {
     backgroundColor: `rgba(${baseColor}, ${intensity})`,
     color: intensity > 0.4 ? 'white' : 'black',
@@ -99,16 +108,12 @@ const getHeatmapStyle = (value: number | string, rowMax: number) => {
   };
 };
 
-// @ts-ignore
-const FinancialCompilationClient = ({ initialData }) => {
+const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] }> = ({ initialData }) => {
   const [heatmapOn, setHeatmapOn] = useState<'true' | 'false'>('true');
+  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
 
-  const forecastedData = initialData.map((item: FinancialDataValues) => {
-    const base = calculateFinancialData(item);
-    return base;
-  });
-
-  const baseAuditRecord = forecastedData[forecastedData.length - 1] || {};
+  const forecastedData = initialData.map(item => calculateFinancialData(item));
+  const baseAuditRecord = forecastedData.slice(-1)[0] || {};
 
   const auditedDataKeyMap: Record<string, keyof typeof baseAuditRecord> = {
     Revenue: 'revenue',
@@ -158,7 +163,6 @@ const FinancialCompilationClient = ({ initialData }) => {
     'Total Liabilities & Equity': 'totalLiabilitiesAndEquity',
   };
 
-  // Applies the forecast: "Average" uses average; everything else (including undefined) uses multiplier
   const getForecastValueForYear = (
     baseValue: number,
     yearIndex: number,
@@ -167,13 +171,12 @@ const FinancialCompilationClient = ({ initialData }) => {
     name: string,
   ): number => {
     if (forecastType === 'Multiplier') {
-      let value = baseValue;
+      let val = baseValue;
       for (let i = 0; i < yearIndex; i++) {
-        value = computeMultiplier(multiplier, value);
+        val = computeMultiplier(multiplier, val);
       }
-      return value;
+      return val;
     }
-    // default or "Average"
     return computeAverage(auditedDataKeyMap, name, initialData);
   };
 
@@ -183,48 +186,30 @@ const FinancialCompilationClient = ({ initialData }) => {
   const [showOperating, setShowOperating] = useState(true);
   const [showAssets, setShowAssets] = useState(true);
   const [showLiabilities, setShowLiabilities] = useState(true);
-
   const [multiplier, setMultiplier] = useState(1);
-
   const [forecastTypes, setForecastTypes] = useState<Record<string, string>>({});
 
-  const handleForecastTypeChange = (category: string, newForecastType: string) => {
-    setForecastTypes((prev) => ({
-      ...prev,
-      [category]: newForecastType,
-    }));
+  const handleForecastTypeChange = (category: string, newType: string) => {
+    setForecastTypes(prev => ({ ...prev, [category]: newType }));
   };
-
-  const handleMultiplierChange = (newMultiplier: number) => {
-    setMultiplier(newMultiplier);
-  };
+  const handleMultiplierChange = (m: number) => setMultiplier(m);
 
   const getForecastedValues = () => {
     const values: Record<number, any> = {};
-    const prior: any[] = [...forecastedData];
-
-    years.forEach((_, index) => {
-      const newRecord: any = {};
-
-      for (const [label, key] of Object.entries(auditedDataKeyMap)) {
+    const prior = [...forecastedData];
+    years.forEach((_, idx) => {
+      const record: any = {};
+      Object.entries(auditedDataKeyMap).forEach(([label, key]) => {
         const type = forecastTypes[label];
-        let value: number;
-
-        if (type === 'Average') {
-          value = computeAverage(auditedDataKeyMap, label, prior);
-        } else {
-          const baseValue = forecastedData[0][key] ?? 0;
-          value = getForecastValueForYear(Number(baseValue), index + 1, multiplier, type, label);
-        }
-
-        newRecord[key] = value;
-      }
-
-      const calculated = calculateFinancialData(newRecord);
-      values[index] = calculated;
-      prior.push(calculated);
+        const baseVal = forecastedData[0][key] ?? 0;
+        record[key] = type === 'Average'
+          ? computeAverage(auditedDataKeyMap, label, prior)
+          : getForecastValueForYear(Number(baseVal), idx + 1, multiplier, type, label);
+      });
+      const calc = calculateFinancialData(record);
+      values[idx] = calc;
+      prior.push(calc);
     });
-
     return values;
   };
 
@@ -236,70 +221,37 @@ const FinancialCompilationClient = ({ initialData }) => {
         striped
         bordered
         hover
-        style={{
-          borderRadius: '12px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          fontSize: '0.9rem',
-        }}
         className="table-modern"
+        style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '0.9rem' }}
       >
         <thead>
           <tr>
             <th>Select Forecast Type</th>
             <th>Name</th>
-            {years.map((year) => (
-              <th key={year}>{year}</th>
-            ))}
+            {years.map(y => <th key={y}>{y}</th>)}
           </tr>
         </thead>
         <tbody>
-          {categories.map((name) => {
-            const rowValues = years.map((_, index) => valuesForYear[index][auditedDataKeyMap[name]]);
-
-            const rowMax = Math.max(...rowValues.map((val) => Math.abs(Number(val))), 0);
+          {categories.map(name => {
+            const rowVals = years.map((_, i) => valuesForYear[i][auditedDataKeyMap[name]]);
+            const rowMax = Math.max(...rowVals.map(v => Math.abs(Number(v))), 0);
             return (
               <tr key={name}>
                 <td>
-                  {!(name === 'Net Sales'
-                  || name.includes('Goods')
-                  || name.includes('Gross')
-                  || name.includes('%')
-                  || name.includes('Total')
-                  || name.includes('Profit')
-                  || name.includes('Income (loss) before Income Taxes')
-                  || name.includes('Net Income (loss)')
-                  ) && (
-                  <ForecastTypeDropdown
-                    onChange={(newForecastType) => handleForecastTypeChange(name, newForecastType)}
-                  />
+                  {!['Net Sales'].includes(name) && !name.includes('%') && !name.includes('Total') && (
+                    <ForecastTypeDropdown onChange={type => handleForecastTypeChange(name, type)} />
                   )}
                 </td>
                 <td>{name}</td>
-                {heatmapOn === 'true' ? (
-                  rowValues.map((value, index) => (
-                    <td
-                      key={`${name}-${years[index]}`}
-                      style={{
-                        ...getHeatmapStyle(value, rowMax),
-                        fontSize: '0.75rem',
-                      }}
-                    >
-                      {formatForecastCell(value, name)}
-                    </td>
-                  ))
-                ) : (
-                  rowValues.map((value, index) => (
-                    <td
-                      key={`${name}-${years[index]}`}
-                      style={{
-                        fontSize: '0.75rem',
-                      }}
-                    >
-                      {formatForecastCell(value, name)}
-                    </td>
-                  ))
-                )}
+                {rowVals.map((val, i) => (
+                  <td
+                    key={i}
+                    style={heatmapOn === 'true'
+                      ? { ...getHeatmapStyle(val, rowMax), fontSize: '0.75rem' } : { fontSize: '0.75rem' }}
+                  >
+                    {formatForecastCell(val, name)}
+                  </td>
+                ))}
               </tr>
             );
           })}
@@ -308,40 +260,101 @@ const FinancialCompilationClient = ({ initialData }) => {
     </div>
   );
 
+  const renderChart = (cats: string[]) => {
+    const datasets = cats.map((name, idx) => ({
+      label: name,
+      data: years.map((_, i) => valuesForYear[i][auditedDataKeyMap[name]]),
+      borderColor: palette[idx % palette.length],
+      backgroundColor: palette[idx % palette.length],
+      tension: 0.3,
+      pointRadius: 3,
+    }));
+    const data = { labels: years.map(String), datasets };
+    const options = {
+      responsive: true,
+      layout: { padding: 20 },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8 } },
+        title: { display: true, text: `${cats[0]} – ${cats[cats.length - 1]}`, font: { size: 18, weight: '600' } },
+        tooltip: { mode: 'index', intersect: false, padding: 10 },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#333', font: { size: 12 } } },
+        y: { grid: { color: '#ddd' }, ticks: { color: '#333', font: { size: 12 }, callback: (v: any) => `$${v}` } },
+      },
+    };
+
+    return (
+      <div
+        className="my-4 p-4"
+        style={{ backgroundColor: '#fff',
+          borderRadius: 12,
+          boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }}
+      >
+        <LinePlot data={data} options={options} style={{}} />
+      </div>
+    );
+  };
+
   return (
     <Container>
-      <Row className="m-3">
+      <Row className="m-3 align-items-center">
         <Col>
-          <h3 style={{ fontWeight: '600', color: '#4e73df' }}>Financial Compilation</h3>
+          <h3 style={{ fontWeight: 600, color: '#4e73df' }}>Financial Compilation</h3>
           <p className="text-muted" style={{ fontSize: '1rem' }}>
             Analyze the different types of financial data and their forecast.
           </p>
-          {/* Toggle switch row */}
-          <Row className="mb-6 d-flex align-items-center">
-            <Col md={12} className="d-flex align-items-center">
-              <Form.Check
-                type="switch"
-                id="heatmapOnToggle"
-                className="me-2"
-                checked={heatmapOn === 'false'}
-                onChange={() => setHeatmapOn(heatmapOn === 'true' ? 'false' : 'true')}
-              />
-              <span>{heatmapOn === 'false' ? 'Show Heatmap' : 'Hide Heatmap'}</span>
-            </Col>
-          </Row>
-        </Col>
-        <Col>
-          <MultiplierInput onMultiplierChange={handleMultiplierChange} />
         </Col>
       </Row>
+      {/* View mode toggle */}
+      <Row className="mb-3">
+        <Col>
+          <ButtonGroup>
+            <ToggleButton
+              id="view-table"
+              type="radio"
+              variant="outline-primary"
+              name="viewMode"
+              value="table"
+              checked={viewMode === 'table'}
+              onChange={() => setViewMode('table')}
+            >
+              Table
+            </ToggleButton>
+            <ToggleButton
+              id="view-chart"
+              type="radio"
+              variant="outline-primary"
+              name="viewMode"
+              value="chart"
+              checked={viewMode === 'chart'}
+              onChange={() => setViewMode('chart')}
+            >
+              Charts
+            </ToggleButton>
+          </ButtonGroup>
+        </Col>
+        <Col>
+          {viewMode === 'table' && (
+          <Form.Check
+            type="switch"
+            id="heatmap-switch"
+            checked={heatmapOn === 'true'}
+            onChange={() => setHeatmapOn(heatmapOn === 'true' ? 'false' : 'true')}
+            label={heatmapOn === 'true' ? 'Hide Heatmap' : 'Show Heatmap'}
+          />
+          )}
+        </Col>
+        <Col><MultiplierInput onMultiplierChange={handleMultiplierChange} /></Col>
+      </Row>
 
-      <Row>
+      <Row className="mb-3">
         <Col>
           <Form.Check
             type="checkbox"
             label="Income Statement"
             checked={showIncome}
-            onChange={() => setShowIncome((prev) => !prev)}
+            onChange={() => setShowIncome(s => !s)}
           />
         </Col>
         <Col>
@@ -349,7 +362,7 @@ const FinancialCompilationClient = ({ initialData }) => {
             type="checkbox"
             label="Costs of Goods"
             checked={showGoods}
-            onChange={() => setShowGoods((prev) => !prev)}
+            onChange={() => setShowGoods(s => !s)}
           />
         </Col>
         <Col>
@@ -357,7 +370,7 @@ const FinancialCompilationClient = ({ initialData }) => {
             type="checkbox"
             label="Other Income"
             checked={showOtherIncome}
-            onChange={() => setShowOtherIncome((prev) => !prev)}
+            onChange={() => setShowOtherIncome(s => !s)}
           />
         </Col>
         <Col>
@@ -365,7 +378,7 @@ const FinancialCompilationClient = ({ initialData }) => {
             type="checkbox"
             label="Operating Expenses"
             checked={showOperating}
-            onChange={() => setShowOperating((prev) => !prev)}
+            onChange={() => setShowOperating(s => !s)}
           />
         </Col>
         <Col>
@@ -373,7 +386,7 @@ const FinancialCompilationClient = ({ initialData }) => {
             type="checkbox"
             label="Assets"
             checked={showAssets}
-            onChange={() => setShowAssets((prev) => !prev)}
+            onChange={() => setShowAssets(s => !s)}
           />
         </Col>
         <Col>
@@ -381,17 +394,31 @@ const FinancialCompilationClient = ({ initialData }) => {
             type="checkbox"
             label="Liabilities & Equity"
             checked={showLiabilities}
-            onChange={() => setShowLiabilities((prev) => !prev)}
+            onChange={() => setShowLiabilities(s => !s)}
           />
         </Col>
       </Row>
 
-      {showIncome && renderTable(incomeCategories)}
-      {showGoods && renderTable(goodsCategories)}
-      {showOtherIncome && renderTable(otherIncomeCategories)}
-      {showOperating && renderTable(operatingCategories)}
-      {showAssets && renderTable(assetsCategories)}
-      {showLiabilities && renderTable(liabilitiesCategories)}
+      {viewMode === 'table' && (
+        <>
+          {showIncome && renderTable(incomeCategories)}
+          {showGoods && renderTable(goodsCategories)}
+          {showOtherIncome && renderTable(otherIncomeCategories)}
+          {showOperating && renderTable(operatingCategories)}
+          {showAssets && renderTable(assetsCategories)}
+          {showLiabilities && renderTable(liabilitiesCategories)}
+        </>
+      )}
+      {viewMode === 'chart' && (
+        <>
+          {showIncome && renderChart(incomeCategories)}
+          {showGoods && renderChart(goodsCategories)}
+          {showOtherIncome && renderChart(otherIncomeCategories)}
+          {showOperating && renderChart(operatingCategories)}
+          {showAssets && renderChart(assetsCategories)}
+          {showLiabilities && renderChart(liabilitiesCategories)}
+        </>
+      )}
     </Container>
   );
 };
