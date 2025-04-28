@@ -27,11 +27,13 @@ interface LinePlotProps {
   data: any;
   options: any;
   style: React.CSSProperties;
+  // eslint-disable-next-line react/require-default-props
+  redraw?: boolean;
 }
 
-const LinePlot: React.FC<LinePlotProps> = ({ data, options = {}, style = {} }) => (
+const LinePlot: React.FC<LinePlotProps> = ({ data, options = {}, style = {}, redraw = false }) => (
   <div style={style}>
-    <Line data={data} options={options} />
+    <Line data={data} options={options} redraw={redraw} />
   </div>
 );
 

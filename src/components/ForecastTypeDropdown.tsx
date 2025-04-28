@@ -1,33 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { DropdownButton, Dropdown } from 'react-bootstrap';
 
-type ForecastType = 'Average' | 'Multiplier';
+export type ForecastType = 'Average' | 'Multiplier';
 
 interface ForecastTypeDropdownProps {
+  value: ForecastType;
   onChange: (type: ForecastType) => void;
 }
 
-const ForecastTypeDropdown: React.FC<ForecastTypeDropdownProps> = ({ onChange }) => {
-  const [selectedOption, setSelectedOption] = useState<ForecastType>('Average');
+const ForecastTypeDropdown: React.FC<ForecastTypeDropdownProps> = ({ value, onChange }) => {
   const options: ForecastType[] = ['Average', 'Multiplier'];
 
   const handleSelect = (eventKey: string | null): void => {
     if (!eventKey) return;
-    const key = eventKey as ForecastType;
-    setSelectedOption(key);
-    onChange(key);
+    onChange(eventKey as ForecastType);
   };
 
   return (
     <DropdownButton
       size="sm"
-      title={selectedOption}
+      title={value}
       onSelect={handleSelect}
     >
       {options
-        .filter(opt => opt !== selectedOption)
+        .filter(opt => opt !== value)
         .map(opt => (
           <Dropdown.Item key={opt} eventKey={opt}>
             {opt}

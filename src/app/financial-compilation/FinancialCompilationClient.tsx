@@ -1,21 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { Col, Container, Row, Table, Form, ButtonGroup, ToggleButton } from 'react-bootstrap';
-import MultiplierInput from '@/components/MultiplierInput';
+import React, { useState } from 'react';
+import {
+  Col,
+  Container,
+  Row,
+  Table,
+  Form,
+  ButtonGroup,
+  ToggleButton,
+  InputGroup,
+} from 'react-bootstrap';
 import ForecastTypeDropdown from '@/components/ForecastTypeDropdown';
 import LinePlot from '@/components/LinePlot';
-import { computeMultiplier, computeAverage, calculateFinancialData } from '@/lib/mathUtils';
+import {
+  computeMultiplier,
+  computeAverage,
+  calculateFinancialData,
+} from '@/lib/mathUtils';
 import { FinancialDataValues } from '@/lib/dbActions';
 
-// Years to forecast (Default: Starting from 2025)
 const years = Array.from({ length: 10 }, (_, i) => 2025 + i);
 
-// Categories for the financial data
-const incomeCategories = [
-  'Revenue',
-  'Net Sales',
-];
+const incomeCategories = ['Revenue', 'Net Sales'];
 const goodsCategories = [
   'Cost of Contracting',
   'Overhead',
@@ -47,7 +54,7 @@ const operatingCategories = [
   'Profit (loss) from Operations %',
 ];
 const assetsCategories = [
-  'Cash & Cash Equivalents',
+  'Cash and Equivalents',
   'Accounts Receivable',
   'Inventory',
   'Total Current Assets',
@@ -71,51 +78,35 @@ const liabilitiesCategories = [
   'Total Liabilities & Equity',
 ];
 
-const palette = [
-  '#4e73df', // blue
-  '#1cc88a', // green
-  '#36b9cc', // cyan
-  '#f6c23e', // yellow
-  '#e74a3b', // red
-  '#858796', // gray
-  '#fd7e14', // orange
-  '#6f42c1', // purple
+const allCategories = [
+  ...incomeCategories,
+  ...goodsCategories,
+  ...otherIncomeCategories,
+  ...operatingCategories,
+  ...assetsCategories,
+  ...liabilitiesCategories,
 ];
 
-const formatForecastCell = (value: number | string, name: string) => {
-  if (typeof value !== 'number') {
-    return value;
-  }
-  if (name.includes('%')) {
-    return `${(value * 100).toFixed(1)}%`;
-  }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  }).format(value);
-};
+const excluded = [
+  'Net Sales',
+  'Cost of Goods Sold',
+  'Gross Profit',
+  'Income (loss) before Income Taxes',
+  'Net Income (loss)',
+];
+const canForecast = (label: string) => !excluded.includes(label)
+  && !label.includes('%')
+  && !label.includes('Total')
+  && !label.startsWith('Profit (loss)');
 
-const getHeatmapStyle = (value: number | string, rowMax: number) => {
-  if (typeof value !== 'number' || rowMax === 0) return {};
-  const intensity = Math.min(Math.abs(value) / rowMax, 1);
-  const baseColor = value >= 0 ? '0, 128, 0' : '128, 0, 0';
-  return {
-    backgroundColor: `rgba(${baseColor}, ${intensity})`,
-    color: intensity > 0.4 ? 'white' : 'black',
-    textShadow: intensity > 0.4 ? '0 0 3px rgba(0,0,0,0.5)' : 'none',
-  };
-};
-
-const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] }> = ({ initialData }) => {
-  const [heatmapOn, setHeatmapOn] = useState<'true' | 'false'>('true');
-  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
-
-  const forecastedData = initialData.map(item => calculateFinancialData(item));
-  const baseAuditRecord = forecastedData.slice(-1)[0] || {};
-
-  const auditedDataKeyMap: Record<string, keyof typeof baseAuditRecord> = {
+export default function FinancialCompilationClient({
+  initialData,
+}: {
+  initialData: FinancialDataValues[];
+}) {
+  const forecastedData = initialData.map((row) => calculateFinancialData(row));
+  const baseAuditRecord = forecastedData[forecastedData.length - 1] || {};
+  const keyMap: Record<string, keyof typeof baseAuditRecord> = {
     Revenue: 'revenue',
     'Net Sales': 'netSales',
     'Cost of Contracting': 'costContracting',
@@ -128,11 +119,12 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
     'Gain (loss) on Disposal of Assets': 'gainOnDisposalAssets',
     'Other Income (expense)': 'otherIncome',
     'Total Other Income (expense)': 'totalOtherIncome',
-    'Total Other Income (expense) %': 'operatingExpensesPercent',
+    'Total Other Income (expense) %': 'totalOtherIncomePercent',
     'Income (loss) before Income Taxes': 'incomeBeforeIncomeTaxes',
     'Pre-tax Income %': 'preTaxIncomePercent',
     'Income Taxes': 'incomeTaxes',
     'Net Income (loss)': 'netIncome',
+    'Net Income (loss) %': 'netIncomePercent',
     'Salaries & Benefits': 'salariesAndBenefits',
     'Rent & Overhead': 'rentAndOverhead',
     'Depreciation & Amortization': 'depreciationAndAmortization',
@@ -141,7 +133,7 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
     'Operating Expenses %': 'operatingExpensesPercent',
     'Profit (loss) from Operations': 'profitFromOperations',
     'Profit (loss) from Operations %': 'profitFromOperationsPercent',
-    'Cash & Cash Equivalents': 'cashAndEquivalents',
+    'Cash and Equivalents': 'cashAndEquivalents',
     'Accounts Receivable': 'accountsReceivable',
     Inventory: 'inventory',
     'Total Current Assets': 'totalCurrentAssets',
@@ -163,97 +155,176 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
     'Total Liabilities & Equity': 'totalLiabilitiesAndEquity',
   };
 
-  const getForecastValueForYear = (
-    baseValue: number,
-    yearIndex: number,
-    multiplier: number,
-    forecastType: string | undefined,
-    name: string,
-  ): number => {
-    if (forecastType === 'Multiplier') {
-      let val = baseValue;
-      for (let i = 0; i < yearIndex; i++) {
-        val = computeMultiplier(multiplier, val);
-      }
-      return val;
-    }
-    return computeAverage(auditedDataKeyMap, name, initialData);
+  const forecastableLabels = allCategories.filter(canForecast);
+
+  const [heatmapOn, setHeatmapOn] = useState(true);
+  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
+
+  const [forecastTypes, setForecastTypes] = useState<
+  Record<string, 'Multiplier' | 'Average'>
+  >(
+    () => Object.fromEntries(
+      forecastableLabels.map((label) => [label, 'Average']),
+    ) as Record<string, 'Multiplier' | 'Average'>,
+  );
+  const [forecastMultipliers, setForecastMultipliers] = useState<
+  Record<string, number>
+  >(
+    () => Object.fromEntries(
+      forecastableLabels.map((label) => [label, 5]),
+    ) as Record<string, number>,
+  );
+
+  const [showIncome] = useState(true);
+  const [showGoods] = useState(true);
+  const [showOtherIncome] = useState(true);
+  const [showOperating] = useState(true);
+  const [showAssets] = useState(true);
+  const [showLiabilities] = useState(true);
+
+  const formatForecastCell = (value: number | string, name: string) => {
+    if (typeof value !== 'number') return value;
+    if (name.includes('%')) return `${(value * 100).toFixed(1)}%`;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(value);
+  };
+  const getHeatmapStyle = (value: number | string, rowMax: number) => {
+    if (typeof value !== 'number' || rowMax === 0) return {};
+    const intensity = Math.min(Math.abs(value) / rowMax, 1);
+    const baseColor = value >= 0 ? '0, 128, 0' : '128, 0, 0';
+    return {
+      backgroundColor: `rgba(${baseColor}, ${intensity})`,
+      color: intensity > 0.4 ? 'white' : 'black',
+      textShadow: intensity > 0.4
+        ? '0 0 3px rgba(0,0,0,0.5)'
+        : 'none',
+    };
   };
 
-  const [showIncome, setShowIncome] = useState(true);
-  const [showGoods, setShowGoods] = useState(true);
-  const [showOtherIncome, setShowOtherIncome] = useState(true);
-  const [showOperating, setShowOperating] = useState(true);
-  const [showAssets, setShowAssets] = useState(true);
-  const [showLiabilities, setShowLiabilities] = useState(true);
-  const [multiplier, setMultiplier] = useState(1);
-  const [forecastTypes, setForecastTypes] = useState<Record<string, string>>({});
+  const valuesForYear: Record<number, any> = (() => {
+    const out: Record<number, any> = {};
+    const prior: any[] = [...forecastedData];
 
-  const handleForecastTypeChange = (category: string, newType: string) => {
-    setForecastTypes(prev => ({ ...prev, [category]: newType }));
-  };
-  const handleMultiplierChange = (m: number) => setMultiplier(m);
-
-  const getForecastedValues = () => {
-    const values: Record<number, any> = {};
-    const prior = [...forecastedData];
     years.forEach((_, idx) => {
-      const record: any = {};
-      Object.entries(auditedDataKeyMap).forEach(([label, key]) => {
+      const rec: any = {};
+
+      Object.entries(keyMap).forEach(([label, key]) => {
         const type = forecastTypes[label];
-        const baseVal = forecastedData[0][key] ?? 0;
-        record[key] = type === 'Average'
-          ? computeAverage(auditedDataKeyMap, label, prior)
-          : getForecastValueForYear(Number(baseVal), idx + 1, multiplier, type, label);
+        if (type === 'Average') {
+          rec[key] = computeAverage(keyMap, label, prior);
+        } else {
+          let val = Number(forecastedData[0][key] ?? 0);
+          const m = forecastMultipliers[label] ?? 1;
+          for (let i = 0; i < idx + 1; i++) {
+            val = computeMultiplier(m, val);
+          }
+          rec[key] = val;
+        }
       });
-      const calc = calculateFinancialData(record);
-      values[idx] = calc;
+
+      const calc = calculateFinancialData(rec);
+      out[idx] = calc;
       prior.push(calc);
     });
-    return values;
+
+    return out;
+  })();
+
+  const palette = [
+    '#673ab7',
+    '#3f51b5',
+    '#2196f3',
+    '#009688',
+    '#4caf50',
+    '#cddc39',
+    '#ffeb3b',
+    '#ff9800',
+    '#ff5722',
+  ];
+
+  const renderTableRow = (label: string, rowVals: number[]) => {
+    const rowMax = Math.max(...rowVals.map((v) => Math.abs(v)), 0);
+    const type = forecastTypes[label];
+
+    return (
+      <tr key={label}>
+        <td style={{ width: 200 }}>
+          {canForecast(label) && (
+            <InputGroup size="sm">
+              <ForecastTypeDropdown
+                value={type}
+                onChange={(t) => setForecastTypes((prev) => ({ ...prev, [label]: t as any }))}
+              />
+              {type === 'Average' && (
+                <InputGroup.Text>Avg</InputGroup.Text>
+              )}
+              {type === 'Multiplier' && (
+                <>
+                  <InputGroup.Text>x</InputGroup.Text>
+                  <Form.Control
+                    type="number"
+                    size="sm"
+                    step="0.1"
+                    min="-100"
+                    max="100"
+                    value={forecastMultipliers[label]}
+                    onChange={(e) => {
+                      const num = parseFloat(e.target.value) || 0;
+                      setForecastMultipliers((prev) => ({ ...prev, [label]: num }));
+                    }}
+                  />
+                </>
+              )}
+            </InputGroup>
+          )}
+        </td>
+        <td>{label}</td>
+        {rowVals.map((v, i) => (
+          <td
+            key={i}
+            style={
+              heatmapOn
+                ? { ...getHeatmapStyle(v, rowMax), fontSize: '0.75rem' }
+                : { fontSize: '0.75rem' }
+            }
+          >
+            {formatForecastCell(v, label)}
+          </td>
+        ))}
+      </tr>
+    );
   };
 
-  const valuesForYear = getForecastedValues();
-
-  const renderTable = (categories: string[]) => (
-    <div className="my-3" style={{ overflowX: 'auto', width: '100%' }}>
+  const renderTable = (cats: string[]) => (
+    <div className="my-3" style={{ overflowX: 'auto' }}>
       <Table
         striped
         bordered
         hover
         className="table-modern"
-        style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '0.9rem' }}
+        style={{
+          borderRadius: 12,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          fontSize: '0.9rem',
+        }}
       >
         <thead>
           <tr>
-            <th>Select Forecast Type</th>
+            <th>Type & Value</th>
             <th>Name</th>
-            {years.map(y => <th key={y}>{y}</th>)}
+            {years.map((y) => (
+              <th key={y}>{y}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {categories.map(name => {
-            const rowVals = years.map((_, i) => valuesForYear[i][auditedDataKeyMap[name]]);
-            const rowMax = Math.max(...rowVals.map(v => Math.abs(Number(v))), 0);
-            return (
-              <tr key={name}>
-                <td>
-                  {!['Net Sales'].includes(name) && !name.includes('%') && !name.includes('Total') && (
-                    <ForecastTypeDropdown onChange={type => handleForecastTypeChange(name, type)} />
-                  )}
-                </td>
-                <td>{name}</td>
-                {rowVals.map((val, i) => (
-                  <td
-                    key={i}
-                    style={heatmapOn === 'true'
-                      ? { ...getHeatmapStyle(val, rowMax), fontSize: '0.75rem' } : { fontSize: '0.75rem' }}
-                  >
-                    {formatForecastCell(val, name)}
-                  </td>
-                ))}
-              </tr>
-            );
+          {cats.map((label) => {
+            const row = years.map((_, i) => valuesForYear[i][keyMap[label]]);
+            return renderTableRow(label, row);
           })}
         </tbody>
       </Table>
@@ -261,9 +332,9 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
   );
 
   const renderChart = (cats: string[]) => {
-    const datasets = cats.map((name, idx) => ({
-      label: name,
-      data: years.map((_, i) => valuesForYear[i][auditedDataKeyMap[name]]),
+    const datasets = cats.map((label, idx) => ({
+      label,
+      data: years.map((_, i) => valuesForYear[i][keyMap[label]]),
       borderColor: palette[idx % palette.length],
       backgroundColor: palette[idx % palette.length],
       tension: 0.3,
@@ -275,23 +346,36 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
       layout: { padding: 20 },
       plugins: {
         legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8 } },
-        title: { display: true, text: `${cats[0]} – ${cats[cats.length - 1]}`, font: { size: 18, weight: '600' } },
+        title: {
+          display: true,
+          text: `${cats[0]} – ${cats[cats.length - 1]}`,
+          font: { size: 18, weight: '600' },
+        },
         tooltip: { mode: 'index', intersect: false, padding: 10 },
       },
       scales: {
         x: { grid: { display: false }, ticks: { color: '#333', font: { size: 12 } } },
-        y: { grid: { color: '#ddd' }, ticks: { color: '#333', font: { size: 12 }, callback: (v: any) => `$${v}` } },
+        y: {
+          grid: { color: '#ddd' },
+          ticks: {
+            color: '#333',
+            font: { size: 12 },
+            callback: (v: string | number) => `$${v}`,
+          },
+        },
       },
     };
-
     return (
       <div
+        key={cats.join('-')}
         className="my-4 p-4"
-        style={{ backgroundColor: '#fff',
+        style={{
+          backgroundColor: '#fff',
           borderRadius: 12,
-          boxShadow: '0 6px 18px rgba(0,0,0,0.1)' }}
+          boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
+        }}
       >
-        <LinePlot data={data} options={options} style={{}} />
+        <LinePlot data={data} options={options} style={{}} redraw />
       </div>
     );
   };
@@ -302,11 +386,11 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
         <Col>
           <h3 style={{ fontWeight: 600, color: '#4e73df' }}>Financial Compilation</h3>
           <p className="text-muted" style={{ fontSize: '1rem' }}>
-            Analyze the different types of financial data and their forecast.
+            Analyze different categories and forecast your data.
           </p>
         </Col>
       </Row>
-      {/* View mode toggle */}
+
       <Row className="mb-3">
         <Col>
           <ButtonGroup>
@@ -334,72 +418,20 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
             </ToggleButton>
           </ButtonGroup>
         </Col>
-        <Col>
-          {viewMode === 'table' && (
-          <Form.Check
-            type="switch"
-            id="heatmap-switch"
-            checked={heatmapOn === 'true'}
-            onChange={() => setHeatmapOn(heatmapOn === 'true' ? 'false' : 'true')}
-            label={heatmapOn === 'true' ? 'Hide Heatmap' : 'Show Heatmap'}
-          />
-          )}
-        </Col>
-        <Col><MultiplierInput onMultiplierChange={handleMultiplierChange} /></Col>
+        {viewMode === 'table' && (
+          <Col>
+            <Form.Check
+              type="switch"
+              id="heatmap-switch"
+              label={heatmapOn ? 'Hide Heatmap' : 'Show Heatmap'}
+              checked={heatmapOn}
+              onChange={() => setHeatmapOn((h) => !h)}
+            />
+          </Col>
+        )}
       </Row>
 
-      <Row className="mb-3">
-        <Col>
-          <Form.Check
-            type="checkbox"
-            label="Income Statement"
-            checked={showIncome}
-            onChange={() => setShowIncome(s => !s)}
-          />
-        </Col>
-        <Col>
-          <Form.Check
-            type="checkbox"
-            label="Costs of Goods"
-            checked={showGoods}
-            onChange={() => setShowGoods(s => !s)}
-          />
-        </Col>
-        <Col>
-          <Form.Check
-            type="checkbox"
-            label="Other Income"
-            checked={showOtherIncome}
-            onChange={() => setShowOtherIncome(s => !s)}
-          />
-        </Col>
-        <Col>
-          <Form.Check
-            type="checkbox"
-            label="Operating Expenses"
-            checked={showOperating}
-            onChange={() => setShowOperating(s => !s)}
-          />
-        </Col>
-        <Col>
-          <Form.Check
-            type="checkbox"
-            label="Assets"
-            checked={showAssets}
-            onChange={() => setShowAssets(s => !s)}
-          />
-        </Col>
-        <Col>
-          <Form.Check
-            type="checkbox"
-            label="Liabilities & Equity"
-            checked={showLiabilities}
-            onChange={() => setShowLiabilities(s => !s)}
-          />
-        </Col>
-      </Row>
-
-      {viewMode === 'table' && (
+      {viewMode === 'table' ? (
         <>
           {showIncome && renderTable(incomeCategories)}
           {showGoods && renderTable(goodsCategories)}
@@ -408,8 +440,7 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
           {showAssets && renderTable(assetsCategories)}
           {showLiabilities && renderTable(liabilitiesCategories)}
         </>
-      )}
-      {viewMode === 'chart' && (
+      ) : (
         <>
           {showIncome && renderChart(incomeCategories)}
           {showGoods && renderChart(goodsCategories)}
@@ -421,6 +452,4 @@ const FinancialCompilationClient: React.FC<{ initialData: FinancialDataValues[] 
       )}
     </Container>
   );
-};
-
-export default FinancialCompilationClient;
+}
