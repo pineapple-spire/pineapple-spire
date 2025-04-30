@@ -97,3 +97,47 @@ model FinancialData {
   equityCapital               Float
   retainedEarnings            Float
 }
+
+model ForecastData {
+  year                        Int      @id
+
+  // Revenue and Net Sales
+  revenue                     Float
+
+  // Cost of Goods Sold Section
+  costContracting             Float
+  overhead                    Float
+
+  // Operating Expenses Section
+  salariesAndBenefits         Float
+  rentAndOverhead             Float
+  depreciationAndAmortization Float
+  interest                    Float
+
+  // Other Income Section
+  interestIncome              Float
+  interestExpense             Float
+  gainOnDisposalAssets        Float
+  otherIncome                 Float
+  incomeTaxes                 Float
+
+  // Assets Section
+  cashAndEquivalents          Float
+  accountsReceivable          Float
+  inventory                   Float
+  propertyPlantAndEquipment   Float
+  investment                  Float
+
+  // Current Liabilities Section
+  accountsPayable             Float
+  currentDebtService          Float
+  taxesPayable                Float
+
+  // Long-term Liabilities Section
+  longTermDebtService         Float
+  loansPayable                Float
+
+  // Stockholders Equity Section
+  equityCapital               Float
+  retainedEarnings            Float
+}
