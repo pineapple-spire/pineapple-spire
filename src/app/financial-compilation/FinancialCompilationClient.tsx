@@ -97,7 +97,7 @@ const excluded = [
 const canForecast = (label: string) => !excluded.includes(label)
   && !label.includes('%')
   && !label.includes('Total')
-  && !label.startsWith('Profit (loss)');
+  && !label.includes('Profit (loss)');
 
 export default function FinancialCompilationClient({
   initialData,
@@ -299,8 +299,9 @@ export default function FinancialCompilationClient({
     );
   };
 
-  const renderTable = (cats: string[]) => (
+  const renderTable = (cats: string[], title: string = '') => (
     <div className="my-3" style={{ overflowX: 'auto' }}>
+      <h4 style={{ textDecoration: 'underline' }}>{title}</h4>
       <Table
         striped
         bordered
@@ -331,7 +332,7 @@ export default function FinancialCompilationClient({
     </div>
   );
 
-  const renderChart = (cats: string[]) => {
+  const renderChart = (cats: string[], title: string = '') => {
     const datasets = cats.map((label, idx) => ({
       label,
       data: years.map((_, i) => valuesForYear[i][keyMap[label]]),
@@ -348,7 +349,7 @@ export default function FinancialCompilationClient({
         legend: { position: 'bottom', labels: { boxWidth: 12, padding: 8 } },
         title: {
           display: true,
-          text: `${cats[0]} – ${cats[cats.length - 1]}`,
+          text: `${title}`,
           font: { size: 18, weight: '600' },
         },
         tooltip: { mode: 'index', intersect: false, padding: 10 },
@@ -386,12 +387,12 @@ export default function FinancialCompilationClient({
         <Col>
           <h3 style={{ fontWeight: 600, color: '#4e73df' }}>Financial Compilation</h3>
           <p className="text-muted" style={{ fontSize: '1rem' }}>
-            Analyze different categories and forecast your data.
+            Analyze different categories and forecast the business data.
           </p>
         </Col>
       </Row>
 
-      <Row className="mb-3">
+      <Row className="mb-3 align-items-center">
         <Col>
           <ButtonGroup>
             <ToggleButton
@@ -419,13 +420,13 @@ export default function FinancialCompilationClient({
           </ButtonGroup>
         </Col>
         {viewMode === 'table' && (
-          <Col>
+          <Col xs="auto">
             <Form.Check
               type="switch"
               id="heatmap-switch"
               label={heatmapOn ? 'Hide Heatmap' : 'Show Heatmap'}
               checked={heatmapOn}
-              onChange={() => setHeatmapOn((h) => !h)}
+              onChange={() => setHeatmapOn(h => !h)}
             />
           </Col>
         )}
@@ -433,21 +434,25 @@ export default function FinancialCompilationClient({
 
       {viewMode === 'table' ? (
         <>
-          {showIncome && renderTable(incomeCategories)}
-          {showGoods && renderTable(goodsCategories)}
-          {showOtherIncome && renderTable(otherIncomeCategories)}
-          {showOperating && renderTable(operatingCategories)}
-          {showAssets && renderTable(assetsCategories)}
-          {showLiabilities && renderTable(liabilitiesCategories)}
+          <h3 style={{ textAlign: 'center', textDecoration: 'underline' }}>INCOME STATEMENT</h3>
+          {showIncome && renderTable(incomeCategories, 'Net Sales')}
+          {showGoods && renderTable(goodsCategories, 'Cost of Goods Sold')}
+          {showOperating && renderTable(operatingCategories, 'Operating Expenses')}
+          {showOtherIncome && renderTable(otherIncomeCategories, 'Other Income (Expenses)')}
+          <h3 style={{ textAlign: 'center', textDecoration: 'underline' }}>BALANCE SHEET</h3>
+          {showAssets && renderTable(assetsCategories, 'Assets')}
+          {showLiabilities && renderTable(liabilitiesCategories, 'Liabilities and Equity')}
         </>
       ) : (
         <>
-          {showIncome && renderChart(incomeCategories)}
-          {showGoods && renderChart(goodsCategories)}
-          {showOtherIncome && renderChart(otherIncomeCategories)}
-          {showOperating && renderChart(operatingCategories)}
-          {showAssets && renderChart(assetsCategories)}
-          {showLiabilities && renderChart(liabilitiesCategories)}
+          <h3 style={{ textAlign: 'center', textDecoration: 'underline' }}>INCOME STATEMENT</h3>
+          {showIncome && renderChart(incomeCategories, 'Net Sales')}
+          {showGoods && renderChart(goodsCategories, 'Cost of Goods Sold')}
+          {showOperating && renderChart(operatingCategories, 'Operating Expenses')}
+          {showOtherIncome && renderChart(otherIncomeCategories, 'Other Income (Expenses)')}
+          <h3 style={{ textAlign: 'center', textDecoration: 'underline' }}>BALANCE SHEET</h3>
+          {showAssets && renderChart(assetsCategories, 'Assets')}
+          {showLiabilities && renderChart(liabilitiesCategories, 'Liabilities and Equity')}
         </>
       )}
     </Container>
