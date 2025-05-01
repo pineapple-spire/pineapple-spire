@@ -10,6 +10,7 @@ import {
   ButtonGroup,
   ToggleButton,
   InputGroup,
+  Button,
 } from 'react-bootstrap';
 import ForecastTypeDropdown from '@/components/ForecastTypeDropdown';
 import LinePlot from '@/components/LinePlot';
@@ -416,6 +417,43 @@ export default function FinancialCompilationClient({
             >
               Charts
             </ToggleButton>
+            <Button
+              variant="success"
+              onClick={async () => {
+                const startYear = 2025;
+                const forecastRecords = Object.entries(valuesForYear).map(
+                  ([index, data]) => ({
+                    year: startYear + Number(index),
+                    ...data,
+                  }),
+                );
+
+                const res = await fetch('/api/saveForecastData', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ records: forecastRecords }),
+                });
+                // Use .text() first to avoid json parsing errors
+                const text = await res.text();
+                console.log('API raw response:', text);
+                let result;
+                try {
+                  result = JSON.parse(text);
+                } catch (err) {
+                  console.error('JSON parsing failed:', err);
+                  alert('Invalid server response');
+                  return;
+                }
+                if (result.success) {
+                  alert('Forecast data saved!');
+                } else {
+                  alert(`Failed to save forecast data: ${result.error ?? 'Unknown error'}`);
+                }
+              }}
+            >
+              Save Forecast to Database
+            </Button>
+
           </ButtonGroup>
         </Col>
         {viewMode === 'table' && (

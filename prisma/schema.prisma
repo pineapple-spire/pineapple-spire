@@ -103,41 +103,63 @@ model ForecastData {
 
   // Revenue and Net Sales
   revenue                     Float
+  netSales                    Float
 
   // Cost of Goods Sold Section
   costContracting             Float
   overhead                    Float
+  costGoodsSold               Float
+  grossProfit                 Float
+  grossMarginPercent          Float
 
   // Operating Expenses Section
   salariesAndBenefits         Float
   rentAndOverhead             Float
   depreciationAndAmortization Float
   interest                    Float
+  totalOperatingExpenses      Float
+  operatingExpensesPercent    Float
+  profitFromOperations        Float
+  profitFromOperationsPercent Float
 
   // Other Income Section
   interestIncome              Float
   interestExpense             Float
   gainOnDisposalAssets        Float
   otherIncome                 Float
+  totalOtherIncome            Float
+  totalOtherIncomePercent     Float
+  incomeBeforeIncomeTaxes     Float
+  preTaxIncomePercent         Float
   incomeTaxes                 Float
+  netIncome                   Float
+  netIncomePercent            Float
 
   // Assets Section
   cashAndEquivalents          Float
   accountsReceivable          Float
   inventory                   Float
+  totalCurrentAssets         Float
   propertyPlantAndEquipment   Float
   investment                  Float
+  totalLongTermAssets         Float
+  totalAssets                 Float
 
   // Current Liabilities Section
   accountsPayable             Float
   currentDebtService          Float
   taxesPayable                Float
+  totalCurrentLiabilities     Float
 
   // Long-term Liabilities Section
   longTermDebtService         Float
   loansPayable                Float
+  totalLongTermLiabilities    Float
+  totalLiabilities            Float
 
   // Stockholders Equity Section
   equityCapital               Float
   retainedEarnings            Float
+  totalStockholdersEquity     Float
+  totalLiabilitiesAndEquity   Float
 }
