@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form } from 'react-bootstrap';
-import { useForm, Controller } from 'react-hook-form';
+import { Table, Button, Form, InputGroup } from 'react-bootstrap';
+import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import swal from 'sweetalert';
 import {
   submitAuditData,
@@ -11,6 +11,59 @@ import {
   AuditDataValues,
 } from '@/lib/dbActions';
 import LoadingSpinner from '@/components/LoadingSpinner';
+
+const isPercentField = (key: string) => key.toLowerCase().includes('percent')
+  || key.toLowerCase().includes('margin')
+  || key.toLowerCase().includes('rate');
+
+type NumericField = Pick<ControllerRenderProps<any, any>, 'value' | 'onChange'>;
+interface NumericInputProps {
+  field: NumericField;
+  isPercent: boolean;
+}
+
+const NumericInput: React.FC<NumericInputProps> = ({ field, isPercent }) => {
+  const [focused, setFocused] = useState(false);
+
+  const formatted = Number(field.value)
+    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const [display, setDisplay] = useState(formatted);
+
+  useEffect(() => {
+    if (!focused) {
+      setDisplay(formatted);
+    }
+  }, [formatted, focused]);
+
+  return (
+    <InputGroup size="sm">
+      {!isPercent && <InputGroup.Text>$</InputGroup.Text>}
+
+      <Form.Control
+        type="text"
+        value={display}
+        onFocus={() => {
+          setFocused(true);
+          setDisplay(String(field.value));
+        }}
+        onChange={e => {
+          setDisplay(e.target.value);
+        }}
+        onBlur={() => {
+          const raw = display.replace(/,/g, '');
+          const num = parseFloat(raw) || 0;
+          field.onChange(num);
+          setFocused(false);
+          setDisplay(
+            num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          );
+        }}
+      />
+
+      {isPercent && <InputGroup.Text>%</InputGroup.Text>}
+    </InputGroup>
+  );
+};
 
 const defaultFinancialModel: FinancialDataValues = {
   year: 0,
@@ -46,7 +99,10 @@ const defaultValues: AuditDataValues = [
   { ...defaultFinancialModel },
 ];
 
-const financialFields = [
+const financialFields: Array<{
+  key: keyof FinancialDataValues
+  label: string
+}> = [
   { key: 'revenue', label: 'Revenue' },
   { key: 'costContracting', label: 'Cost Contracting' },
   { key: 'overhead', label: 'Overhead' },
@@ -81,18 +137,15 @@ const AuditDataForm: React.FC = () => {
     formState: { isSubmitting },
   } = useForm<AuditDataValues>({ defaultValues });
   const [finData, setFinData] = useState<AuditDataValues>(defaultValues);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Fetch the latest data from the DB
   const fetchData = async () => {
-    setLoading(true);
     try {
       const data = (await getAuditData()) as AuditDataValues;
-      console.log('Fetched data:', data);
       setFinData(data);
       reset(data);
-    } catch (error) {
-      console.error('Error fetching audit data:', error);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -103,85 +156,60 @@ const AuditDataForm: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reset]);
 
-  // Sanitize each record so that every expected field is defined.
-  const sanitizeRecord = (record: FinancialDataValues): FinancialDataValues => {
-    const sanitized: FinancialDataValues = { ...defaultFinancialModel };
-    for (const key of Object.keys(defaultFinancialModel) as (keyof FinancialDataValues)[]) {
-      if (record[key] !== undefined && record[key] !== null) {
-        sanitized[key] = record[key];
-      }
+  const sanitizeRecord = (record: FinancialDataValues) => {
+    const sanitized = { ...defaultFinancialModel };
+    for (const k of Object.keys(defaultFinancialModel) as (keyof FinancialDataValues)[]) {
+      if (record[k] != null) sanitized[k] = record[k];
     }
     return sanitized;
   };
 
   const onSubmit = async (data: AuditDataValues) => {
-    console.log('Final form data before sanitize:', data);
     try {
-      const sanitizedData = data.map(sanitizeRecord) as AuditDataValues;
-      console.log('Sanitized data:', sanitizedData);
-      await submitAuditData(sanitizedData);
+      await submitAuditData(data.map(sanitizeRecord) as AuditDataValues);
       swal('Success', 'Audit Data submitted successfully', 'success', { timer: 2000 });
       await fetchData();
-    } catch (error) {
-      console.error('Error submitting audit data:', error);
+    } catch (err) {
+      console.error(err);
       swal('Error', 'Failed to submit Audit Data', 'error', { timer: 2000 });
     }
   };
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  if (loading) return <LoadingSpinner />;
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
-      <Table striped bordered responsive>
+      <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>Category</th>
-            {finData.map((data, idx) => (
-              <th key={`header-${data.year}-${idx}`}>{data.year}</th>
-            ))}
+            {finData.map((row, i) => <th key={i}>{row.year}</th>)}
           </tr>
         </thead>
         <tbody>
           {financialFields.map(({ key, label }) => (
-            <tr key={`row-${key}`}>
+            <tr key={key}>
               <td>{label}</td>
-              {finData.map((data, idx) => (
-                <td key={`cell-${key}-${idx}`}>
-                  {key in data ? (
-                    <Controller
-                      name={`${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`}
-                      control={control}
-                      defaultValue={
-                        data[key as keyof FinancialDataValues] !== undefined
-                          ? data[key as keyof FinancialDataValues]
-                          : 0
-                      }
-                      render={({ field }) => (
-                        <Form.Control
-                          type="number"
-                          step="0.01"
-                          value={field.value}
-                          onChange={(e) => {
-                            const value = parseFloat(e.target.value) || 0;
-                            field.onChange(value);
-                          }}
-                        />
-                      )}
-                    />
-                  ) : (
-                    <span>{data[key as keyof FinancialDataValues] ?? 'N/A'}</span>
-                  )}
+              {finData.map((_, idx) => (
+                <td key={idx}>
+                  <Controller
+                    name={`${idx}.${key}` as `${0 | 1 | 2}.${keyof FinancialDataValues}`}
+                    control={control}
+                    defaultValue={finData[idx][key]}
+                    render={({ field }) => (
+                      <NumericInput
+                        field={field}
+                        isPercent={isPercentField(key)}
+                      />
+                    )}
+                  />
                 </td>
               ))}
             </tr>
           ))}
         </tbody>
       </Table>
-      <Button type="submit" className="mb-3" disabled={isSubmitting}>
-        Submit Data
-      </Button>
+      <Button type="submit" disabled={isSubmitting}>Submit Data</Button>
     </Form>
   );
 };
