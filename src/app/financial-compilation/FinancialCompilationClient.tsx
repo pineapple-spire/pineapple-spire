@@ -19,6 +19,7 @@ import {
   computeAverage,
   calculateFinancialData,
 } from '@/lib/mathUtils';
+import swal from 'sweetalert';
 import { FinancialDataValues } from '@/lib/dbActions';
 
 const years = Array.from({ length: 10 }, (_, i) => 2025 + i);
@@ -442,13 +443,13 @@ export default function FinancialCompilationClient({
                   result = JSON.parse(text);
                 } catch (err) {
                   console.error('JSON parsing failed:', err);
-                  alert('Invalid server response');
+                  swal('Error', 'Failed to parse response', 'error', { timer: 2000 });
                   return;
                 }
                 if (result.success) {
-                  alert('Forecast data saved!');
+                  swal('Success', 'Forecast data saved!', 'success', { timer: 2000 });
                 } else {
-                  alert(`Failed to save forecast data: ${result.error ?? 'Unknown error'}`);
+                  swal('Error', result.error || 'Failed to save data', 'error', { timer: 2000 });
                 }
               }}
             >

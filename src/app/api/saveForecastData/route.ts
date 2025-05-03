@@ -10,6 +10,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Missing or invalid records' }, { status: 400 });
     }
 
+    await prisma.forecastData.deleteMany(); // Clear existing data
+
+    // Insert new records into forecastData
     await prisma.forecastData.createMany({
       data: body.records,
     });
