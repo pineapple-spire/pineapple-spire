@@ -10,6 +10,7 @@ import {
   ButtonGroup,
   ToggleButton,
   InputGroup,
+  Button,
 } from 'react-bootstrap';
 import ForecastTypeDropdown from '@/components/ForecastTypeDropdown';
 import LinePlot from '@/components/LinePlot';
@@ -18,6 +19,7 @@ import {
   computeAverage,
   calculateFinancialData,
 } from '@/lib/mathUtils';
+import swal from 'sweetalert';
 import { FinancialDataValues } from '@/lib/dbActions';
 
 const years = Array.from({ length: 10 }, (_, i) => 2025 + i);
@@ -417,6 +419,43 @@ export default function FinancialCompilationClient({
             >
               Charts
             </ToggleButton>
+            <Button
+              variant="success"
+              onClick={async () => {
+                const startYear = 2025;
+                const forecastRecords = Object.entries(valuesForYear).map(
+                  ([index, data]) => ({
+                    year: startYear + Number(index),
+                    ...data,
+                  }),
+                );
+
+                const res = await fetch('/api/saveForecastData', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ records: forecastRecords }),
+                });
+                // Use .text() first to avoid json parsing errors
+                const text = await res.text();
+                console.log('API raw response:', text);
+                let result;
+                try {
+                  result = JSON.parse(text);
+                } catch (err) {
+                  console.error('JSON parsing failed:', err);
+                  swal('Error', 'Failed to parse response', 'error', { timer: 2000 });
+                  return;
+                }
+                if (result.success) {
+                  swal('Success', 'Forecast data saved!', 'success', { timer: 2000 });
+                } else {
+                  swal('Error', result.error || 'Failed to save data', 'error', { timer: 2000 });
+                }
+              }}
+            >
+              Save Forecast to Database
+            </Button>
+
           </ButtonGroup>
         </Col>
         {viewMode === 'table' && (
