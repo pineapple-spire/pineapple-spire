@@ -40,18 +40,30 @@ model StressScenario {
   excelWorkbookUrl String
 }
 
+enum RequestStatus {
+  ACTIVE
+  RESOLVED
+  ARCHIVED
+}
+
 model ContactUsData {
-  id              Int      @id @default(autoincrement())
-  createdAt       DateTime @default(now())
-  email           String
-  message         String
+  id         Int           @id @default(autoincrement())
+  createdAt  DateTime      @default(now())
+  email      String
+  message    String
+  status     RequestStatus @default(ACTIVE)
+
+  @@map("contact_us_data")
 }
 
 model ReportPageData {
-  id              Int      @id @default(autoincrement())
-  createdAt       DateTime @default(now())
-  email           String
-  problem         String
+  id         Int           @id @default(autoincrement())
+  createdAt  DateTime      @default(now())
+  email      String
+  problem    String
+  status     RequestStatus @default(ACTIVE)
+
+  @@map("report_page_data")
 }
 
 model FinancialData {

@@ -65,6 +65,18 @@ const NavBar: React.FC = () => {
             ) : (
               ''
             )}
+            {currentUser && (role === 'ADMIN' || role === 'ANALYST') ? (
+              <Nav.Link
+                id="requests-nav"
+                href="/support-requests"
+                key="requests"
+                active={pathName === '/support-requests'}
+              >
+                Support Requests
+              </Nav.Link>
+            ) : (
+              ''
+            )}
           </Nav>
           <Nav>
             {session ? (
