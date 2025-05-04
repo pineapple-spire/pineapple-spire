@@ -32,6 +32,32 @@ async function main() {
     });
   });
 
+  console.log('Ingesting Contact Us messages...');
+  config.defaultContactUsMsgs.forEach(async (data) => {
+    await prisma.contactUsData.upsert({
+      where: { id: data.id },
+      update: {},
+      create: {
+        id: data.id,
+        email: data.email,
+        message: data.message,
+      },
+    });
+  });
+
+  console.log('Ingesting Report a Problem messages...');
+  config.defaultReportAProblemMsgs.forEach(async (data) => {
+    await prisma.reportPageData.upsert({
+      where: { id: data.id },
+      update: {},
+      create: {
+        id: data.id,
+        email: data.email,
+        problem: data.problem,
+      },
+    });
+  });
+
   config.defaultData.forEach(async (data) => {
     console.log(`  Creating base data: ${data.year}`);
     await prisma.financialData.upsert({

@@ -9,27 +9,101 @@
     { "email": "removableUser@foo.com", "password": "changeme", "role": "USER" }
   ],
 
+  "defaultContactUsMsgs": [
+    { "id": 1, "email": "john@foo.com", "message": "I don't really understand the FSM page. Can an analyst give me a call?" },
+    { "id": 2, "email": "mike@foo.com", "message": "I need a larger team of consultants. Let's discuss." }
+  ],
+
+  "defaultReportAProblemMsgs": [
+    { "id": 1, "email": "john@foo.com", "problem": "I am having graph loading latency issues. This started last night." },
+    { "id": 2, "email": "sam@foo.com", "problem": "The heatmap is not turning off for me on the FC page." }
+  ],
+
   "defaultScenarios": [
     { "id": 1, "title": "Stress Scenario #1", "description": "This is a base stress scenario.", "excelWorkbookUrl": "https://example.com/file.xlsx" }
   ],
 
   "defaultData": [
-    { "year": 2022, "revenue": 131345, "costContracting": 48456, "overhead": 667, "salariesAndBenefits": 23872,
-    "rentAndOverhead": 10087, "depreciationAndAmortization": 17205, "interest": 1500, "interestIncome": 0, "interestExpense": 0,
-    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 8483, "cashAndEquivalents": 183715, "accountsReceivable": 6567,
-    "inventory": 9825, "propertyPlantAndEquipment": 40145, "investment": 0, "accountsPayable": 4912, "currentDebtService": 5000,
-    "taxesPayable": 4265, "longTermDebtService": 15000, "loansPayable": 20000, "equityCapital": 170000, "retainedEarnings": 21075 },
-    { "year": 2023, "revenue": 142341, "costContracting": 52587, "overhead": 667, "salariesAndBenefits": 23002,
-    "rentAndOverhead": 11020, "depreciationAndAmortization": 16544, "interest": 900, "interestIncome": 0, "interestExpense": 0,
-    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 10908, "cashAndEquivalents": 191069, "accountsReceivable": 7117,
-    "inventory": 10531, "propertyPlantAndEquipment": 38602, "investment": 20000, "accountsPayable": 5265, "currentDebtService": 5000,
-    "taxesPayable": 5341, "longTermDebtService": 15000, "loansPayable": 40000, "equityCapital": 170000, "retainedEarnings": 26713 },
-    { "year": 2024, "revenue": 150772, "costContracting": 56643, "overhead": 667, "salariesAndBenefits": 25245,
-    "rentAndOverhead": 11412, "depreciationAndAmortization": 16080, "interest": 900, "interestIncome": 0, "interestExpense": 0,
-    "gainOnDisposalAssets": 0, "otherIncome": 0, "incomeTaxes": 11598, "cashAndEquivalents": 189550, "accountsReceivable": 7539,
-    "inventory": 11342, "propertyPlantAndEquipment": 37521, "investment": 50000, "accountsPayable": 5671, "currentDebtService": 5000,
-    "taxesPayable": 2054, "longTermDebtService": 15000, "loansPayable": 70000, "equityCapital": 170000, "retainedEarnings": 28227 } 
-
- 
+    {
+      "year": 2022,
+      "revenue": 5200000,
+      "costContracting": 3120000,
+      "overhead": 450000,
+      "salariesAndBenefits": 900000,
+      "rentAndOverhead": 200000,
+      "depreciationAndAmortization": 120000,
+      "interest": 150000,
+      "interestIncome": 20000,
+      "interestExpense": 170000,
+      "gainOnDisposalAssets": 100000,
+      "otherIncome": 25000,
+      "incomeTaxes": 92400,
+      "cashAndEquivalents": 500000,
+      "accountsReceivable": 300000,
+      "inventory": 10000000,
+      "propertyPlantAndEquipment": 1500000,
+      "investment": 100000,
+      "accountsPayable": 400000,
+      "currentDebtService": 1000000,
+      "taxesPayable": 120000,
+      "longTermDebtService": 10000000,
+      "loansPayable": 12000000,
+      "equityCapital": 15000000,
+      "retainedEarnings": 792600
+    },
+    {
+      "year": 2023,
+      "revenue": 5980000,
+      "costContracting": 3588000,
+      "overhead": 475000,
+      "salariesAndBenefits": 950000,
+      "rentAndOverhead": 210000,
+      "depreciationAndAmortization": 130000,
+      "interest": 180000,
+      "interestIncome": 25000,
+      "interestExpense": 205000,
+      "gainOnDisposalAssets": 150000,
+      "otherIncome": 30000,
+      "incomeTaxes": 150000,
+      "cashAndEquivalents": 600000,
+      "accountsReceivable": 350000,
+      "inventory": 12000000,
+      "propertyPlantAndEquipment": 1600000,
+      "investment": 100000,
+      "accountsPayable": 450000,
+      "currentDebtService": 1200000,
+      "taxesPayable": 150000,
+      "longTermDebtService": 9000000,
+      "loansPayable": 11000000,
+      "equityCapital": 15000000,
+      "retainedEarnings": 1269600
+    },
+    {
+      "year": 2024,
+      "revenue": 6578000,
+      "costContracting": 3946800,
+      "overhead": 500000,
+      "salariesAndBenefits": 1000000,
+      "rentAndOverhead": 220000,
+      "depreciationAndAmortization": 140000,
+      "interest": 210000,
+      "interestIncome": 30000,
+      "interestExpense": 240000,
+      "gainOnDisposalAssets": 200000,
+      "otherIncome": 35000,
+      "incomeTaxes": 190800,
+      "cashAndEquivalents": 700000,
+      "accountsReceivable": 400000,
+      "inventory": 15000000,
+      "propertyPlantAndEquipment": 1700000,
+      "investment": 200000,
+      "accountsPayable": 500000,
+      "currentDebtService": 1300000,
+      "taxesPayable": 180000,
+      "longTermDebtService": 8000000,
+      "loansPayable": 10000000,
+      "equityCapital": 15000000,
+      "retainedEarnings": 1873800
+    }
   ]
 }
