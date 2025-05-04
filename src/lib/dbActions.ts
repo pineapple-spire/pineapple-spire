@@ -1,9 +1,43 @@
 'use server';
 
-import { Role } from '@prisma/client';
+import { Role, ContactUsData, ReportPageData } from '@prisma/client';
 import { hash, compare } from 'bcrypt';
 import { redirect } from 'next/navigation';
 import { prisma } from './prisma';
+
+export interface FinancialDataValues {
+  year: number;
+  revenue: number;
+  costContracting: number;
+  overhead: number;
+  salariesAndBenefits: number;
+  rentAndOverhead: number;
+  depreciationAndAmortization: number;
+  interest: number;
+  interestIncome: number;
+  interestExpense: number;
+  gainOnDisposalAssets: number;
+  otherIncome: number;
+  incomeTaxes: number;
+  cashAndEquivalents: number;
+  accountsReceivable: number;
+  inventory: number;
+  propertyPlantAndEquipment: number;
+  investment: number;
+  accountsPayable: number;
+  currentDebtService: number;
+  taxesPayable: number;
+  longTermDebtService: number;
+  loansPayable: number;
+  equityCapital: number;
+  retainedEarnings: number;
+}
+
+export type AuditDataValues = [
+  FinancialDataValues,
+  FinancialDataValues,
+  FinancialDataValues,
+];
 
 export type ChangePasswordCredentials = {
   email: string;
@@ -25,6 +59,10 @@ export async function createUser(credentials: { email: string; password: string 
   });
 }
 
+/**
+ * Deletes a user from the database.
+ * @param userID, a number representing the user ID.
+ */
 export async function deleteUser(userID: number) {
   await prisma.user.delete({
     where: {
@@ -74,40 +112,6 @@ export async function changeRole(credentials: { email: string; role: Role }) {
     },
   });
 }
-
-export interface FinancialDataValues {
-  year: number;
-  revenue: number;
-  costContracting: number;
-  overhead: number;
-  salariesAndBenefits: number;
-  rentAndOverhead: number;
-  depreciationAndAmortization: number;
-  interest: number;
-  interestIncome: number;
-  interestExpense: number;
-  gainOnDisposalAssets: number;
-  otherIncome: number;
-  incomeTaxes: number;
-  cashAndEquivalents: number;
-  accountsReceivable: number;
-  inventory: number;
-  propertyPlantAndEquipment: number;
-  investment: number;
-  accountsPayable: number;
-  currentDebtService: number;
-  taxesPayable: number;
-  longTermDebtService: number;
-  loansPayable: number;
-  equityCapital: number;
-  retainedEarnings: number;
-}
-
-export type AuditDataValues = [
-  FinancialDataValues,
-  FinancialDataValues,
-  FinancialDataValues,
-];
 
 /**
  * Upserts an audit data record. Audit data is the baseline.
@@ -169,4 +173,20 @@ export async function getAuditData(): Promise<AuditDataValues> {
   }) as AuditDataValues;
 
   return results;
+}
+
+/**
+ * Retrieves the Contact Us page data.
+ */
+export async function getContactUsData(): Promise<ContactUsData[]> {
+  const records = await prisma.contactUsData.findMany({});
+  return records;
+}
+
+/**
+ * Retrieves the Report A Problem page data.
+ */
+export async function getReportData(): Promise<ReportPageData[]> {
+  const records = await prisma.reportPageData.findMany({});
+  return records;
 }
