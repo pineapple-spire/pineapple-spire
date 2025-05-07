@@ -38,6 +38,7 @@ const styles = {
     padding: '0.5rem 1rem',
     textDecoration: 'none',
     fontWeight: 'bold' as const,
+	marginRight: '0.5rem',
   },
 };
 
