@@ -40,10 +40,10 @@ export default function StressTest5() {
   const [term, setTerm] = useState<number>(30);
   const [fullyFunded, setFullyFunded] = useState<number>(100);
 
-  const [contributions, setContributions] = useState<Contribution[]>(
+  const [contributions] = useState<Contribution[]>(
     () => Array.from({ length: term }, (_, i) => ({
       year: START_YEAR + i,
-      contribution: 0,
+      contribution: 0, // Contributions are always 0
     })),
   );
 
@@ -58,11 +58,6 @@ export default function StressTest5() {
     if (!Number.isNaN(v) && v >= 0) setter(v);
   };
 
-  const handleContributionChange = (year: number) => (e: ChangeEvent<HTMLInputElement>) => {
-    const v = parseFloat(e.target.value) || 0;
-    setContributions((cs) => cs.map((c) => (c.year === year ? { ...c, contribution: v } : c)));
-  };
-
   // 1) build our stress‐effect rows
   const stressRows: StressRow[] = useMemo(() => {
     const rows: StressRow[] = [];
@@ -70,18 +65,16 @@ export default function StressTest5() {
 
     for (let i = 0; i < term; i++) {
       const year = START_YEAR + i;
-      const contrib = contributions.find((c) => c.year === year)?.contribution ?? 0;
-      const interest = parseFloat(
-        (balance * (interestRate / 100)).toFixed(2),
-      );
-      const total = parseFloat((balance + interest + contrib).toFixed(2));
+      const interest = parseFloat((balance * (interestRate / 100)).toFixed(2));
+      const total = parseFloat((balance + interest).toFixed(2)); // Total includes interest
+      rows.push({ year, balance, contribution: 0, interest, total });
 
-      rows.push({ year, balance, contribution: contrib, interest, total });
-      balance = total;
+      // Update balance for the next year by subtracting the interest
+      balance = parseFloat((balance - interest).toFixed(2));
     }
 
     return rows;
-  }, [presentValue, interestRate, term, contributions]);
+  }, [presentValue, interestRate, term]);
 
   // 2) chart data for stress effects
   const stressChartData = useMemo(
@@ -295,13 +288,7 @@ export default function StressTest5() {
                   <tr key={r.year}>
                     <td>{r.year}</td>
                     <td>{formatCurrency(r.balance)}</td>
-                    <td>
-                      <Form.Control
-                        type="number"
-                        value={r.contribution}
-                        onChange={handleContributionChange(r.year)}
-                      />
-                    </td>
+                    <td>{formatCurrency(r.contribution)}</td>
                     <td>{formatCurrency(r.interest)}</td>
                     <td>{formatCurrency(r.total)}</td>
                   </tr>
