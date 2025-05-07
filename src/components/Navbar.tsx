@@ -57,6 +57,13 @@ const NavBar: React.FC = () => {
                 ) : (
                   ''
                 )}
+                { role === 'ANALYST' || role === 'EXECUTIVE' ? (
+                  <NavDropdown.Item id="tools-dropdown-view-audited-data" href="/view-audited-data">
+                    View Audited Data
+                  </NavDropdown.Item>
+                ) : (
+                  ''
+                )}
               </NavDropdown>
             ) : (
               ''
