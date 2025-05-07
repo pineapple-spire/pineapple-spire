@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Update path as needed
+import { prisma } from '@/lib/prisma';
 
 // eslint-disable-next-line import/prefer-default-export
 export async function POST(req: Request) {
@@ -10,9 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Missing or invalid records' }, { status: 400 });
     }
 
-    await prisma.forecastData.deleteMany(); // Clear existing data
-
-    // Insert new records into forecastData
+    await prisma.forecastData.deleteMany();
     await prisma.forecastData.createMany({
       data: body.records,
     });

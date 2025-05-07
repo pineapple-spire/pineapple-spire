@@ -22,7 +22,7 @@ const StressScenarioCard: React.FC<StressScenarioProps> = ({ id, title, descript
       onClick={handleCardClick}
       className="shadow-sm"
       style={{
-        width: '200%',
+        width: '100%',
         cursor: 'pointer',
         border: '1px solid #ddd',
         backgroundColor: '#f8f9fa',

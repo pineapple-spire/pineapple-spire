@@ -23,9 +23,10 @@ const DeleteUserButton = ({ userID }: { userID: number; }) => {
       onClick={handleDelete}
       style={{
         display: 'inline-block',
-        backgroundColor: '#e80000',
+        backgroundColor: '#FF474C',
         color: 'black',
         borderRadius: '9999px',
+        border: 'none',
         padding: '0.5rem 1rem',
         textDecoration: 'none',
         fontWeight: 'bold' as const,

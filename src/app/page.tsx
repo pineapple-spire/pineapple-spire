@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import styled from 'styled-components';
 import { FaChartLine, FaCalculator, FaBalanceScale, FaPenSquare } from 'react-icons/fa';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Container = styled.div`
   min-height: 50vh;
@@ -86,8 +87,13 @@ const Message = styled.p`
 `;
 
 const Home: React.FC = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
+  if (status === 'loading') {
+    return (
+      <LoadingSpinner />
+    );
+  }
   const userWithRole = session?.user as { email: string; randomKey: string };
   const role = userWithRole?.randomKey;
 
@@ -102,14 +108,14 @@ const Home: React.FC = () => {
           <Link href="/fiscal-sustainability-model">
             <Card>
               <FaBalanceScale size={40} color="#4a90e2" />
-              <CardTitle>Fiscal Sustainability Model</CardTitle>
+              <CardTitle>Sustainability Model</CardTitle>
             </Card>
           </Link>
           { role !== 'USER' ? (
             <Link href="/financial-compilation">
               <Card>
                 <FaCalculator size={40} color="#7ed321" />
-                <CardTitle>Financial Compilations</CardTitle>
+                <CardTitle>Financial Compilation</CardTitle>
               </Card>
             </Link>
           ) : (
@@ -118,7 +124,7 @@ const Home: React.FC = () => {
           <Link href="/stress-test-tool">
             <Card>
               <FaChartLine size={40} color="#d0021b" />
-              <CardTitle>Stress Test Tool</CardTitle>
+              <CardTitle>Stress Tests Editor</CardTitle>
             </Card>
           </Link>
           { role === 'AUDITOR' ? (

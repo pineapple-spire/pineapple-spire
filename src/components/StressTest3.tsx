@@ -1,93 +1,97 @@
 'use client';
 
 import React, { useState, ChangeEvent } from 'react';
+import swal from 'sweetalert';
 import {
-  Container, Form, Row, Table, Card, Col,
+  Container,
+  Row,
+  Col,
+  Form,
+  Table,
+  Card,
+  Button,
+  Spinner,
 } from 'react-bootstrap';
-import { calculateCompoundInterest, formatCurrency } from '@/lib/mathUtils';
+import {
+  calculateCompoundInterest,
+  formatCurrency,
+} from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 import LinePlot from '@/components/LinePlot';
 
-/**
- * This stress test calculates the financial impact of a one-time expense
- * and tracks the associated loss in earnings over multiple fiscal years.
- */
-const StressTest3 = () => {
-  const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>('stressEffects');
+interface YearData {
+  amount: number;
+  lost: number;
+}
 
-  const [annualRate, setAnnualRate] = useState(6.02);
-  const [oneTimeEvent] = useState(50000);
+const StressTest3: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<
+  'stressEffects' | 'residualEffects'
+  >('stressEffects');
 
-  // Initialize data for years 2025 through 2025 + 11 (12 total years)
-  const [data, setData] = useState<{
-    [year: number]: { amount: number; lost: number };
-  }>(() => {
-    const obj: { [year: number]: { amount: number; lost: number } } = {};
-    for (let y = 2025; y < 2025 + 12; y++) {
+  // Annual return rate (%) input
+  const [annualRate, setAnnualRate] = useState<number>(6.02);
+
+  // Initialize years 2025–2036 with amount=0, lost=0
+  const [data, setData] = useState<Record<number, YearData>>(() => {
+    const obj: Record<number, YearData> = {};
+    for (let y = 2025; y <= 2036; y++) {
       obj[y] = { amount: 0, lost: 0 };
     }
     return obj;
   });
 
-  /**
-   * Handle input changes for either the annual rate or the "amount" for each year.
-   */
+  const [isSaving, setIsSaving] = useState(false);
   const handleInputUpdate = (
     year?: number,
     value?: string,
     isRateChange?: boolean,
   ) => {
-    // Make a copy of our data
     const newData = { ...data };
 
-    // If user changed the annual rate
     if (isRateChange && value !== undefined) {
-      const newRate = parseFloat(value) || 0;
-      setAnnualRate(newRate);
+      setAnnualRate(parseFloat(value) || 0);
     } else if (year !== undefined && value !== undefined) {
-      newData[year].amount = parseInt(value, 10) || 0;
+      newData[year].amount = parseFloat(value) || 0;
     }
 
-    // Reset lost earnings before recalculating
+    // reset lost
     Object.keys(newData).forEach((y) => {
-      newData[Number(y)].lost = 0;
+      newData[+y].lost = 0;
     });
 
-    // Recalculate lost earnings
-    const sortedYears = Object.keys(newData).map(Number).sort((a, b) => a - b);
+    const years = Object.keys(newData)
+      .map(Number)
+      .sort((a, b) => a - b);
 
-    sortedYears.forEach((startYear) => {
+    // For each event year, propagate compound interest loss forward
+    years.forEach((startYear) => {
       const principal = newData[startYear].amount;
-
-      // For each subsequent year, compound from startYear's amount
-      for (let i = 0; i < sortedYears.length; i++) {
-        const futureYear = startYear + i;
-        if (newData[futureYear]) {
-          // Use updated rate if user just changed it, else use current annualRate
-          const rateUsed = isRateChange ? parseFloat(value || '0') || annualRate : annualRate;
-          const totalAmount = calculateCompoundInterest(principal, rateUsed, i + 1);
-          // Accumulate lost earnings in that futureYear
-          newData[futureYear].lost += parseInt(totalAmount.toFixed(0), 10);
+      years.forEach((_, idx) => {
+        const future = startYear + idx;
+        if (newData[future]) {
+          const rate = isRateChange
+            ? parseFloat(value || '') || annualRate
+            : annualRate;
+          const total = calculateCompoundInterest(principal, rate, idx + 1);
+          newData[future].lost += Math.round(total);
         }
-      }
+      });
     });
 
     setData(newData);
   };
 
-  // Prepare an array of sorted years
-  const sortedYears = Object.keys(data).map(Number).sort((a, b) => a - b);
+  const sortedYears = Object.keys(data)
+    .map(Number)
+    .sort((a, b) => a - b);
 
-  /**
-   * Prepare chart data for the "Stress Effects" tab:
-   * Plot the year vs. data[year].amount
-   */
   const stressChartData = {
-    labels: sortedYears.map((year) => year.toString()),
+    labels: sortedYears.map((y) => y.toString()),
     datasets: [
       {
-        label: 'Increased Expenses',
-        data: sortedYears.map((year) => data[year].amount),
+        label: 'One-Time Expense',
+        data: sortedYears.map((y) => data[y].amount),
         borderColor: 'red',
         fill: false,
         tension: 0.1,
@@ -95,16 +99,12 @@ const StressTest3 = () => {
     ],
   };
 
-  /**
-   * Prepare chart data for the "Residual Effects" tab:
-   * Plot the year vs. data[year].lost
-   */
   const residualChartData = {
-    labels: sortedYears.map((year) => year.toString()),
+    labels: sortedYears.map((y) => y.toString()),
     datasets: [
       {
         label: 'Lost Earnings',
-        data: sortedYears.map((year) => data[year].lost),
+        data: sortedYears.map((y) => data[y].lost),
         borderColor: 'blue',
         fill: false,
         tension: 0.1,
@@ -112,18 +112,58 @@ const StressTest3 = () => {
     ],
   };
 
+  // Save to DB
+  const handleSave = async () => {
+    const title = (await swal({
+      text: 'Enter a title for this scenario (this will be used for version selection):',
+      content: {
+        element: 'input',
+        attributes: {
+          placeholder: 'My Scenario Title',
+          type: 'text',
+        },
+      },
+      buttons: ['Cancel', 'Save'],
+    })) as string;
+    if (!title) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/stress-test/3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          annualRate,
+          events: sortedYears.map((y) => ({
+            year: y,
+            amount: data[y].amount,
+          })),
+        }),
+      });
+      if (!res.ok) throw new Error();
+      await res.json();
+      swal('Saved!', 'Scenario saved successfully.', 'success');
+    } catch (err) {
+      console.error(err);
+      swal('Error', 'Failed to save scenario.', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Container className="my-4">
-      <Row className="mb-3">
-        <h3>
-          One-time &quot;X&quot; Event of $
-          {oneTimeEvent}
-        </h3>
-        <Row md={6}>
-          <Form.Group controlId="returnRate">
+      <Row className="align-items-end mb-3">
+        <Col>
+          <h3>One-Time Event Impact</h3>
+        </Col>
+        <Col md={3}>
+          <Form.Group controlId="annualRate">
             <Form.Label>Annual Return Rate (%)</Form.Label>
             <Form.Control
               type="number"
+              step="0.01"
               value={annualRate}
               onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputUpdate(undefined, e.target.value, true)}
               onBlur={(e) => {
@@ -131,26 +171,49 @@ const StressTest3 = () => {
                   handleInputUpdate(undefined, '6.02', true);
                 }
               }}
-              placeholder="Enter annual return rate"
             />
           </Form.Group>
-        </Row>
+        </Col>
       </Row>
 
       <CommonTabs
         defaultTab="stressEffects"
-        onTabChange={(tab) => setActiveTab(tab === 'residualEffects' ? 'residualEffects' : 'stressEffects')}
+        onTabChange={(tab) => setActiveTab(
+          tab === 'residualEffects' ? 'residualEffects' : 'stressEffects',
+        )}
       />
+
+      {/* Save button */}
+      <Row className="mb-3 mt-3">
+        <Col xs={12}>
+          <Button
+            variant="success"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-100"
+          >
+            {isSaving
+              ? (
+                <>
+                  <Spinner size="sm" className="me-2" />
+                  {' '}
+                  Saving...
+                </>
+              )
+              : 'Save Scenario'}
+          </Button>
+        </Col>
+      </Row>
 
       {activeTab === 'stressEffects' ? (
         <>
-          {/* Line Chart for Stress Effects (Increased Expenses) */}
+          {/* Chart */}
           <Row className="mb-4">
             <Col md={{ span: 8, offset: 2 }}>
               <Card>
                 <Card.Body>
                   <Card.Title className="text-center">
-                    Increased Expenses Over Time
+                    One-Time Expenses by Year
                   </Card.Title>
                   <LinePlot
                     data={stressChartData}
@@ -161,25 +224,12 @@ const StressTest3 = () => {
                         legend: { position: 'top' },
                         title: {
                           display: true,
-                          text: 'Yearly Increased Expenses',
+                          text: 'Annual One-Time Expenses',
                         },
-                      },
-                      layout: {
-                        padding: 10,
                       },
                       scales: {
-                        x: {
-                          title: {
-                            display: true,
-                            text: 'Year',
-                          },
-                        },
-                        y: {
-                          title: {
-                            display: true,
-                            text: 'Expenses ($)',
-                          },
-                        },
+                        x: { title: { display: true, text: 'Year' } },
+                        y: { title: { display: true, text: 'Amount ($)' } },
                       },
                     }}
                     style={{ minHeight: '450px', maxHeight: '650px' }}
@@ -189,13 +239,13 @@ const StressTest3 = () => {
             </Col>
           </Row>
 
-          {/* Table for Stress Effects */}
+          {/* Editable table of events */}
           <Row>
             <Table striped bordered>
               <thead>
                 <tr>
                   <th>Fiscal Year</th>
-                  <th>Increase in Expenses ($)</th>
+                  <th>Expense ($)</th>
                 </tr>
               </thead>
               <tbody>
@@ -212,7 +262,6 @@ const StressTest3 = () => {
                             handleInputUpdate(year, '0');
                           }
                         }}
-                        placeholder="Enter $ amount"
                       />
                     </td>
                   </tr>
@@ -223,7 +272,7 @@ const StressTest3 = () => {
         </>
       ) : (
         <>
-          {/* Line Chart for Residual Effects (Lost Earnings) */}
+          {/* Residual effects chart */}
           <Row className="mb-4">
             <Col md={{ span: 8, offset: 2 }}>
               <Card>
@@ -240,25 +289,12 @@ const StressTest3 = () => {
                         legend: { position: 'top' },
                         title: {
                           display: true,
-                          text: 'Yearly Lost Earnings',
+                          text: 'Cumulative Lost Earnings',
                         },
-                      },
-                      layout: {
-                        padding: 10,
                       },
                       scales: {
-                        x: {
-                          title: {
-                            display: true,
-                            text: 'Year',
-                          },
-                        },
-                        y: {
-                          title: {
-                            display: true,
-                            text: 'Lost Earnings ($)',
-                          },
-                        },
+                        x: { title: { display: true, text: 'Year' } },
+                        y: { title: { display: true, text: 'Lost ($)' } },
                       },
                     }}
                     style={{ minHeight: '450px', maxHeight: '650px' }}
@@ -268,14 +304,14 @@ const StressTest3 = () => {
             </Col>
           </Row>
 
-          {/* Table for Residual Effects */}
+          {/* Residual effects table */}
           <Row>
             <Table striped bordered>
               <thead>
                 <tr>
                   <th>Fiscal Year</th>
-                  <th>Principal</th>
-                  <th>Lost Earnings</th>
+                  <th>Expense ($)</th>
+                  <th>Lost Earnings ($)</th>
                 </tr>
               </thead>
               <tbody>

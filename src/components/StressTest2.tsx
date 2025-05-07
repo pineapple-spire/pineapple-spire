@@ -1,13 +1,23 @@
 'use client';
 
-import { useState, ChangeEvent } from 'react';
-import { Container, Row, Col, Form, Table, Card } from 'react-bootstrap';
+import React, { useState, ChangeEvent } from 'react';
+import swal from 'sweetalert';
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Table,
+  Card,
+  Button,
+  Spinner,
+} from 'react-bootstrap';
 import { formatCurrency } from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 import LinePlot from '@/components/LinePlot';
 
 /**
- * Calculates the revenue rows for a given scenario.
+ * Calculates yearly revenue and drop.
  */
 function getRevenueBreakdown(
   baseRevenue: number,
@@ -20,18 +30,16 @@ function getRevenueBreakdown(
     const year = startYear + i;
     const totalRevenue = baseRevenue * (1 + growthRate) ** i;
     const revenueDrop = totalRevenue * (dropPercent / 100);
-    return {
-      year,
-      totalRevenue,
-      revenueDrop,
-    };
+    return { year, totalRevenue, revenueDrop };
   });
 }
 
 /**
- * Computes residual/lost revenue effects year by year.
+ * Computes residual lost revenue cumulative.
  */
-function getResidualEffects(revenueData: Array<any>) {
+function getResidualEffects(
+  revenueData: { year: number; totalRevenue: number; revenueDrop: number }[],
+) {
   let cumulativeLost = 0;
   return revenueData.map((row) => {
     cumulativeLost += row.revenueDrop;
@@ -43,27 +51,28 @@ function getResidualEffects(revenueData: Array<any>) {
   });
 }
 
-/**
- * StressTest2 calculates and displays a revenue drop scenario.
- */
-const StressTest2 = () => {
-  // Default values
+const StressTest2: React.FC = () => {
+  // Input states (strings to allow empty/invalid)
   const [initialPercent, setInitialPercent] = useState<string>('2.25');
   const [baseRevenue, setBaseRevenue] = useState<string>('153034');
   const [growthRate, setGrowthRate] = useState<string>('0.015');
   const [startYear, setStartYear] = useState<string>('2025');
   const [totalYears, setTotalYears] = useState<string>('5');
 
-  const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>('stressEffects');
+  // Tab saving state
+  const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>(
+    'stressEffects',
+  );
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Convert inputs to numbers
+  // Parse numbers
   const dropPercent = Number(initialPercent) || 0;
   const baseRevenueNum = Number(baseRevenue) || 0;
   const growthRateNum = Number(growthRate) || 0;
   const startYearNum = Number(startYear) || 0;
   const totalYearsNum = Number(totalYears) || 0;
 
-  // Compute data arrays
+  // Data arrays
   const revenueData = getRevenueBreakdown(
     baseRevenueNum,
     growthRateNum,
@@ -73,41 +82,39 @@ const StressTest2 = () => {
   );
   const residualData = getResidualEffects(revenueData);
 
-  // Prepare line chart data for "stressEffects" tab
+  // Chart configs
   const chartData = {
-    labels: revenueData.map((row) => row.year.toString()),
+    labels: revenueData.map((r) => r.year.toString()),
     datasets: [
       {
         label: 'Total Revenue',
-        data: revenueData.map((row) => row.totalRevenue),
+        data: revenueData.map((r) => r.totalRevenue),
         borderColor: 'green',
         fill: false,
         tension: 0.1,
       },
       {
         label: 'Revenue Drop',
-        data: revenueData.map((row) => row.revenueDrop),
+        data: revenueData.map((r) => r.revenueDrop),
         borderColor: 'red',
         fill: false,
         tension: 0.1,
       },
     ],
   };
-
-  // Prepare line chart data for "residualEffects" tab
   const residualChartData = {
-    labels: residualData.map((row) => row.year.toString()),
+    labels: residualData.map((r) => r.year.toString()),
     datasets: [
       {
         label: 'Lost This Year',
-        data: residualData.map((row) => row.lostThisYear),
+        data: residualData.map((r) => r.lostThisYear),
         borderColor: 'blue',
         fill: false,
         tension: 0.1,
       },
       {
         label: 'Cumulative Lost',
-        data: residualData.map((row) => row.cumulativeLost),
+        data: residualData.map((r) => r.cumulativeLost),
         borderColor: 'orange',
         fill: false,
         tension: 0.1,
@@ -115,101 +122,141 @@ const StressTest2 = () => {
     ],
   };
 
-  // Helper for onChange
-  const handleChange = (setter: (value: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
-    setter(e.target.value);
+  const onChange = (setter: (v: string) => void) => (e: ChangeEvent<HTMLInputElement>) => setter(e.target.value);
+  const handleSave = async () => {
+    const title = await swal({
+      text: 'Enter a title for this scenario (this will be used for version selection):',
+      content: {
+        element: 'input',
+      },
+      buttons: ['Cancel', 'Save'],
+    });
+    if (!title) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/stress-test/2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          initialPercent: dropPercent,
+          baseRevenue: baseRevenueNum,
+          growthRate: growthRateNum,
+          startYear: startYearNum,
+          totalYears: totalYearsNum,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      await res.json();
+      swal('Saved', 'Scenario saved successfully!', 'success', { timer: 2000 });
+    } catch {
+      swal('Error', 'Failed to save scenario.', 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <Container>
+    <Container className="my-4">
       <h2 className="mb-4">Model Revenue Drop over Desired Period</h2>
 
-      <Row className="my-3">
-        <Col md={12}>
-          <Form>
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-2" controlId="initialPercent">
-                  <Form.Label>Initial Percent Drop (%)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={initialPercent}
-                    onChange={handleChange(setInitialPercent)}
-                    placeholder="e.g., 2.25"
-                  />
-                </Form.Group>
-              </Col>
+      {/* Input form */}
+      <Form>
+        <Row className="g-3 mb-3">
+          <Col md={4}>
+            <Form.Group controlId="initialPercent">
+              <Form.Label>Initial Percent Drop (%)</Form.Label>
+              <Form.Control
+                type="number"
+                value={initialPercent}
+                onChange={onChange(setInitialPercent)}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group controlId="baseRevenue">
+              <Form.Label>Base Revenue ($)</Form.Label>
+              <Form.Control
+                type="number"
+                value={baseRevenue}
+                onChange={onChange(setBaseRevenue)}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={4}>
+            <Form.Group controlId="growthRate">
+              <Form.Label>Growth Rate (%)</Form.Label>
+              <Form.Control
+                type="number"
+                step="0.001"
+                value={growthRate}
+                onChange={onChange(setGrowthRate)}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="g-3 mb-4">
+          <Col md={6}>
+            <Form.Group controlId="startYear">
+              <Form.Label>Start Year</Form.Label>
+              <Form.Control
+                type="number"
+                value={startYear}
+                onChange={onChange(setStartYear)}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group controlId="totalYears">
+              <Form.Label>Total Years</Form.Label>
+              <Form.Control
+                type="number"
+                value={totalYears}
+                onChange={onChange(setTotalYears)}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+      </Form>
 
-              <Col md={4}>
-                <Form.Group className="mb-2" controlId="baseRevenue">
-                  <Form.Label>Base Revenue ($)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={baseRevenue}
-                    onChange={handleChange(setBaseRevenue)}
-                    placeholder="e.g., 153034"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={4}>
-                <Form.Group className="mb-2" controlId="growthRate">
-                  <Form.Label>Growth Rate (%)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    step="0.001"
-                    value={growthRate}
-                    onChange={handleChange(setGrowthRate)}
-                    placeholder="e.g., 1.5"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-2" controlId="startYear">
-                  <Form.Label>Start Year</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={startYear}
-                    onChange={handleChange(setStartYear)}
-                    placeholder="e.g., 2025"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group className="mb-2" controlId="totalYears">
-                  <Form.Label>Total Years</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={totalYears}
-                    onChange={handleChange(setTotalYears)}
-                    placeholder="e.g., 5"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-          </Form>
-        </Col>
-      </Row>
-
+      {/* Tabs */}
       <CommonTabs
         defaultTab="stressEffects"
         onTabChange={(tab) => setActiveTab(tab === 'residualEffects' ? 'residualEffects' : 'stressEffects')}
       />
 
+      {/* Save button */}
+      <Row className="mb-3 mt-3">
+        <Col xs={12}>
+          <Button
+            variant="success"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-100"
+          >
+            {isSaving
+              ? (
+                <>
+                  <Spinner size="sm" className="me-2" />
+                  {' '}
+                  Saving...
+                </>
+              )
+              : 'Save Scenario'}
+          </Button>
+        </Col>
+      </Row>
+
+      {/* Content */}
       {activeTab === 'stressEffects' ? (
         <>
-          {/* Line Chart for Revenue Comparison */}
+          {/* Chart */}
           <Row className="mb-4">
             <Col md={{ span: 8, offset: 2 }}>
               <Card>
                 <Card.Body>
-                  <Card.Title className="text-center">
-                    Revenue Comparison
-                  </Card.Title>
+                  <Card.Title className="text-center">Revenue Comparison</Card.Title>
                   <LinePlot
                     data={chartData}
                     options={{
@@ -217,27 +264,11 @@ const StressTest2 = () => {
                       maintainAspectRatio: false,
                       plugins: {
                         legend: { position: 'top' },
-                        title: {
-                          display: true,
-                          text: 'Yearly Revenue vs. Drop',
-                        },
-                      },
-                      layout: {
-                        padding: 10,
+                        title: { display: true, text: 'Yearly Revenue vs. Drop' },
                       },
                       scales: {
-                        x: {
-                          title: {
-                            display: true,
-                            text: 'Year',
-                          },
-                        },
-                        y: {
-                          title: {
-                            display: true,
-                            text: 'Revenue ($)',
-                          },
-                        },
+                        x: { title: { display: true, text: 'Year' } },
+                        y: { title: { display: true, text: 'Revenue ($)' } },
                       },
                     }}
                     style={{ minHeight: '450px', maxHeight: '650px' }}
@@ -247,23 +278,23 @@ const StressTest2 = () => {
             </Col>
           </Row>
 
-          {/* Table for Stress Effects */}
-          <Row className="my-3">
+          {/* Table */}
+          <Row className="mb-4">
             <Col>
               <Table striped bordered>
                 <thead>
                   <tr>
-                    <th>Fiscal Year</th>
-                    <th>Total Revenues</th>
-                    <th>Decrease in Revenues</th>
+                    <th>Year</th>
+                    <th>Total Revenue</th>
+                    <th>Drop This Year</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {revenueData.map((row) => (
-                    <tr key={row.year}>
-                      <td>{row.year}</td>
-                      <td>{formatCurrency(row.totalRevenue)}</td>
-                      <td>{formatCurrency(row.revenueDrop)}</td>
+                  {revenueData.map((r) => (
+                    <tr key={r.year}>
+                      <td>{r.year}</td>
+                      <td>{formatCurrency(r.totalRevenue)}</td>
+                      <td>{formatCurrency(r.revenueDrop)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -273,7 +304,7 @@ const StressTest2 = () => {
         </>
       ) : (
         <>
-          {/* Line Chart for Residual Effects */}
+          {/* Residual Chart */}
           <Row className="mb-4">
             <Col md={{ span: 8, offset: 2 }}>
               <Card>
@@ -290,25 +321,12 @@ const StressTest2 = () => {
                         legend: { position: 'top' },
                         title: {
                           display: true,
-                          text: 'Yearly Lost Revenue (This Year vs. Cumulative)',
+                          text: 'Yearly Lost Revenue & Cumulative',
                         },
-                      },
-                      layout: {
-                        padding: 10,
                       },
                       scales: {
-                        x: {
-                          title: {
-                            display: true,
-                            text: 'Year',
-                          },
-                        },
-                        y: {
-                          title: {
-                            display: true,
-                            text: 'Revenue Lost ($)',
-                          },
-                        },
+                        x: { title: { display: true, text: 'Year' } },
+                        y: { title: { display: true, text: 'Revenue Lost ($)' } },
                       },
                     }}
                     style={{ minHeight: '450px', maxHeight: '650px' }}
@@ -318,23 +336,23 @@ const StressTest2 = () => {
             </Col>
           </Row>
 
-          {/* Table for Residual Effects */}
-          <Row className="my-3">
+          {/* Residual Table */}
+          <Row className="mb-4">
             <Col>
               <Table striped bordered>
                 <thead>
                   <tr>
-                    <th>Fiscal Year</th>
-                    <th>Revenue Lost This Year</th>
-                    <th>Cumulative Lost Revenues</th>
+                    <th>Year</th>
+                    <th>Lost This Year</th>
+                    <th>Cumulative Lost</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {residualData.map((row) => (
-                    <tr key={row.year}>
-                      <td>{row.year}</td>
-                      <td>{formatCurrency(row.lostThisYear)}</td>
-                      <td>{formatCurrency(row.cumulativeLost)}</td>
+                  {residualData.map((r) => (
+                    <tr key={r.year}>
+                      <td>{r.year}</td>
+                      <td>{formatCurrency(r.lostThisYear)}</td>
+                      <td>{formatCurrency(r.cumulativeLost)}</td>
                     </tr>
                   ))}
                 </tbody>

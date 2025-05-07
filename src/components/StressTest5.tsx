@@ -1,362 +1,370 @@
 'use client';
 
-import { useState, useMemo, ChangeEvent } from 'react';
-import { Col, Container, Form, Row, Table, Card } from 'react-bootstrap';
-import { calculateResidualEffects, formatCurrency } from '@/lib/mathUtils';
+import React, { useState, useMemo, ChangeEvent } from 'react';
+import swal from 'sweetalert';
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Table,
+  Card,
+  Button,
+  Spinner,
+} from 'react-bootstrap';
+import {
+  calculateResidualEffects,
+  formatCurrency,
+} from '@/lib/mathUtils';
 import CommonTabs from '@/components/CommonTabs';
 import LinePlot from '@/components/LinePlot';
 
-/* Stress Test 5 Component */
-const StressTest5 = () => {
-  // Default values matching Excel sheet
-  const [presentValue, setPresentValue] = useState<number | null>(5000);
-  const [interestRate, setInterestRate] = useState<number | null>(6.0); // Starts at 6% (user can change)
-  const [term, setTerm] = useState<number | null>(30);
-  const [fullyFunded, setFullyFunded] = useState<number | null>(100); // Default to 100%
+interface StressRow {
+  year: number
+  balance: number
+  contribution: number
+  interest: number
+  total: number
+}
 
-  // Track active tab
-  const [activeTab, setActiveTab] = useState<'stressEffects' | 'residualEffects'>('stressEffects');
+interface Contribution {
+  year: number
+  contribution: number
+}
 
-  // Handle input changes
-  const handleChange = (setter: (value: number | null) => void) => (e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    const numericValue = value === '' ? null : parseFloat(value);
+const START_YEAR = 2025;
 
-    // Prevent negative values
-    if (numericValue !== null && numericValue < 0) {
-      return; // Do nothing if the value is negative
-    }
+export default function StressTest5() {
+  const [presentValue, setPresentValue] = useState<number>(5000);
+  const [interestRate, setInterestRate] = useState<number>(6.0);
+  const [term, setTerm] = useState<number>(30);
+  const [fullyFunded, setFullyFunded] = useState<number>(100);
 
-    setter(numericValue);
+  const [contributions, setContributions] = useState<Contribution[]>(
+    () => Array.from({ length: term }, (_, i) => ({
+      year: START_YEAR + i,
+      contribution: 0,
+    })),
+  );
+
+  // UI state
+  const [activeTab, setActiveTab] = useState<
+  'stressEffects' | 'residualEffects'
+  >('stressEffects');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleNumber = (setter: (v: number) => void) => (e: ChangeEvent<HTMLInputElement>) => {
+    const v = parseFloat(e.target.value);
+    if (!Number.isNaN(v) && v >= 0) setter(v);
   };
 
-  // Calculate table data for Stress Effects (using formatted values)
-  const calculateTableData = () => {
-    if (presentValue === null || interestRate === null || term === null) {
-      return []; // Return an empty array if any input is invalid
-    }
+  const handleContributionChange = (year: number) => (e: ChangeEvent<HTMLInputElement>) => {
+    const v = parseFloat(e.target.value) || 0;
+    setContributions((cs) => cs.map((c) => (c.year === year ? { ...c, contribution: v } : c)));
+  };
 
-    const rate = interestRate / 100;
+  // 1) build our stress‐effect rows
+  const stressRows: StressRow[] = useMemo(() => {
+    const rows: StressRow[] = [];
     let balance = presentValue;
-    const rows = [];
 
-    for (let year = 1; year <= term; year++) {
-      const interestEarned = parseFloat((balance * rate).toFixed(2));
-      const total = parseFloat((balance + interestEarned).toFixed(2));
-      rows.push({
-        year,
-        balance: formatCurrency(balance),
-        contribution: '$-',
-        interest: formatCurrency(interestEarned),
-        total: formatCurrency(total),
-      });
-      balance = parseFloat((balance - interestEarned).toFixed(2));
+    for (let i = 0; i < term; i++) {
+      const year = START_YEAR + i;
+      const contrib = contributions.find((c) => c.year === year)?.contribution ?? 0;
+      const interest = parseFloat(
+        (balance * (interestRate / 100)).toFixed(2),
+      );
+      const total = parseFloat((balance + interest + contrib).toFixed(2));
+
+      rows.push({ year, balance, contribution: contrib, interest, total });
+      balance = total;
     }
 
     return rows;
-  };
+  }, [presentValue, interestRate, term, contributions]);
 
-  const generatePrincipals = (initialPrincipal: number, years: number, growthRate: number): number[] => {
-    const principals = [];
-    let currentPrincipal = initialPrincipal;
+  // 2) chart data for stress effects
+  const stressChartData = useMemo(
+    () => ({
+      labels: stressRows.map((r) => r.year.toString()),
+      datasets: [
+        {
+          label: 'Balance',
+          data: stressRows.map((r) => r.balance),
+          borderColor: 'green',
+          fill: false,
+          tension: 0.1,
+        },
+        {
+          label: 'Interest',
+          data: stressRows.map((r) => r.interest),
+          borderColor: 'red',
+          fill: false,
+          tension: 0.1,
+        },
+      ],
+    }),
+    [stressRows],
+  );
 
-    for (let year = 1; year <= years; year++) {
-      principals.push(parseFloat(currentPrincipal.toFixed(2)));
-      currentPrincipal += currentPrincipal * (growthRate / 100); // Increase principal by the growth rate
-    }
+  // 3) feed end-of-year totals into residual‐effects
+  const residualData = useMemo(() => {
+    const principals = stressRows.map((r) => r.total);
+    const fundedFlags = Array(term).fill(fullyFunded === 100);
+    return calculateResidualEffects(
+      principals,
+      interestRate,
+      interestRate,
+      term,
+      fundedFlags,
+    );
+  }, [stressRows, interestRate, term, fullyFunded]);
 
-    return principals;
-  };
+  const residualChartData = useMemo(
+    () => ({
+      labels: residualData.map((r) => r.year.toString()),
+      datasets: [
+        {
+          label: 'Cumulative Lost Earnings',
+          data: residualData.map((r) => r.cumulativeLostEarnings),
+          borderColor: 'blue',
+          fill: false,
+          tension: 0.1,
+        },
+      ],
+    }),
+    [residualData],
+  );
 
-  // Calculate table data for Residual Effects (using formatted values)
-  const calculateResidualEffectsData = () => {
-    if (presentValue === null || interestRate === null || term === null || fullyFunded === null) {
-      return [];
-    }
-
-    // Dynamically generate the principals array
-    const principals = generatePrincipals(215, term, 6.02); // Initial principal: 215, growth rate: 6.02%
-
-    // Generate the fully funded boolean array based on the percentage
-    const fullyFundedArray = Array(term).fill(fullyFunded === 100);
-
-    // Pass the fully funded array to the calculateResidualEffects function
-    return calculateResidualEffects(principals, 6.02, interestRate, term, fullyFundedArray);
-  };
-
-  // Compute raw data for charting in Stress Effects tab (for balance & annual interest)
-  const stressEffectsRawData = useMemo(() => {
-    const rate = (interestRate ?? 0) / 100;
-    let balance = presentValue ?? 0; // Start with the initial present value
-    const result = [];
-
-    for (let year = 1; year <= (term ?? 0); year++) {
-      const interestEarned = parseFloat((balance * rate).toFixed(2)); // Calculate interest based on current balance
-      result.push({ year, balance, interestEarned }); // Push the current balance and interest earned
-      balance = parseFloat((balance - interestEarned).toFixed(2)); // Decrease balance by interest earned
-    }
-
-    return result;
-  }, [presentValue, interestRate, term]);
-
-  // Prepare chart data for the Stress Effects tab
-  const stressEffectsChartData = useMemo(() => ({
-    labels: stressEffectsRawData.map(({ year }) => year.toString()),
-    datasets: [
-      {
-        label: 'Balance',
-        data: stressEffectsRawData.map(({ balance }) => balance),
-        borderColor: 'green',
-        fill: false,
-        tension: 0.1,
+  // 4) Save the scenario
+  const handleSave = async () => {
+    const title = (await swal({
+      text: 'Enter a title for this scenario (this will be used for version selection):',
+      content: {
+        element: 'input',
+        attributes: { placeholder: 'Scenario Title', type: 'text' },
       },
-      {
-        label: 'Interest Earned',
-        data: stressEffectsRawData.map(({ interestEarned }) => interestEarned),
-        borderColor: 'red',
-        fill: false,
-        tension: 0.1,
-      },
-    ],
-  }), [stressEffectsRawData]);
+      buttons: ['Cancel', 'Save'],
+    })) as string;
+    if (!title) return;
 
-  // Compute raw data for charting in Residual Effects tab (cumulative interest)
-  const residualEffectsRawData = useMemo(() => {
-    if (presentValue === null || interestRate === null || term === null || fullyFunded === null) {
-      return [];
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/stress-test/5', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          presentValue,
+          interestRate,
+          term,
+          fullyFunded,
+          contributions,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      await res.json();
+      swal('Saved!', 'Scenario saved.', 'success');
+    } catch (err) {
+      console.error(err);
+      swal('Error', 'Save failed.', 'error');
+    } finally {
+      setIsSaving(false);
     }
-
-    // Dynamically generate the principals array
-    const principals = generatePrincipals(215, term, 6.02); // Initial principal: 215, growth rate: 6.02%
-
-    // Generate the fully funded boolean array based on the percentage
-    const fullyFundedArray = Array(term).fill(fullyFunded === 100);
-
-    // Calculate residual effects
-    const residualEffects = calculateResidualEffects(principals, 6.02, interestRate, term, fullyFundedArray);
-
-    return residualEffects.map(({ year, cumulativeLostEarnings }) => ({
-      year,
-      cumulativeInterest: cumulativeLostEarnings,
-    }));
-  }, [presentValue, interestRate, term, fullyFunded]);
-
-  // Prepare chart data for the Residual Effects tab
-  const residualEffectsChartData = useMemo(() => ({
-    labels: residualEffectsRawData.map(({ year }) => year.toString()),
-    datasets: [
-      {
-        label: 'Cumulative Interest (Lost Earnings)',
-        data: residualEffectsRawData.map(({ cumulativeInterest }) => cumulativeInterest),
-        borderColor: 'blue',
-        fill: false,
-        tension: 0.1,
-      },
-    ],
-  }), [residualEffectsRawData]);
+  };
 
   return (
     <Container className="my-4">
-      <h2>Decrease Bond Return Due to Increased Inflation</h2>
-      <Row className="mb-3">
-        <Form>
-          <Row>
-            <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Present Value</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={presentValue === null ? '' : presentValue}
-                  onChange={handleChange(setPresentValue)}
-                  placeholder="Enter present value (e.g., 5000)"
-                />
-              </Form.Group>
-            </Col>
+      <h2>Bond Return vs. Inflation</h2>
 
-            <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Interest Rate (%)</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={interestRate === null ? '' : interestRate}
-                  onChange={handleChange(setInterestRate)}
-                  placeholder="Enter interest rate (e.g., 6.0)"
-                />
-              </Form.Group>
-            </Col>
-
-            <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Term (Years)</Form.Label>
-                <Form.Control
-                  type="number"
-                  value={term === null ? '' : term}
-                  onChange={handleChange(setTerm)}
-                  placeholder="Enter term in years (e.g., 30)"
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        </Form>
+      {/* inputs + save */}
+      <Row className="align-items-end mb-3">
+        <Col md={2}>
+          <Form.Group controlId="presentValue">
+            <Form.Label>Present Value</Form.Label>
+            <Form.Control
+              type="number"
+              value={presentValue}
+              onChange={handleNumber(setPresentValue)}
+            />
+          </Form.Group>
+        </Col>
+        <Col md={2}>
+          <Form.Group controlId="interestRate">
+            <Form.Label>Interest Rate (%)</Form.Label>
+            <Form.Control
+              type="number"
+              value={interestRate}
+              onChange={handleNumber(setInterestRate)}
+            />
+          </Form.Group>
+        </Col>
+        <Col md={2}>
+          <Form.Group controlId="term">
+            <Form.Label>Term (Years)</Form.Label>
+            <Form.Control
+              type="number"
+              value={term}
+              onChange={handleNumber(setTerm)}
+            />
+          </Form.Group>
+        </Col>
+        <Col md={2}>
+          <Form.Group controlId="fullyFunded">
+            <Form.Label>Fully Funded (%)</Form.Label>
+            <Form.Control
+              type="number"
+              value={fullyFunded}
+              onChange={handleNumber(setFullyFunded)}
+            />
+          </Form.Group>
+        </Col>
+        <Row className="mb-3 mt-3">
+          <Col xs={12}>
+            <Button
+              variant="success"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-100"
+            >
+              {isSaving
+                ? (
+                  <>
+                    <Spinner size="sm" className="me-2" />
+                    {' '}
+                    Saving...
+                  </>
+                )
+                : 'Save Scenario'}
+            </Button>
+          </Col>
+        </Row>
       </Row>
 
       <CommonTabs
         defaultTab="stressEffects"
-        onTabChange={(tab) => setActiveTab(tab === 'residualEffects' ? 'residualEffects' : 'stressEffects')}
+        onTabChange={(tab) => setActiveTab(
+          tab === 'residualEffects' ? 'residualEffects' : 'stressEffects',
+        )}
       />
 
-      {activeTab === 'residualEffects' ? (
+      {activeTab === 'stressEffects' ? (
         <>
-          {/* Input Form for Residual Effects */}
-          <Row className="mb-3 justify-content-center">
-            <Col md={6}>
-              <Form>
-                <Row>
-                  <Col md={12}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Fully Funded</Form.Label>
-                      <Form.Control
-                        type="number"
-                        value={fullyFunded === null ? '' : fullyFunded}
-                        onChange={handleChange(setFullyFunded)}
-                        placeholder="Enter as a percentage (e.g., 100)"
-                        min="0" // Prevents negative values in the UI
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Form>
-            </Col>
-          </Row>
-
-          {/* Line Chart for Residual Effects */}
-          <Row className="mb-3">
+          {/* chart */}
+          <Row className="mb-4">
             <Col md={{ span: 8, offset: 2 }}>
               <Card>
                 <Card.Body>
-                  <Card.Title className="text-center">Cumulative Lost Earnings</Card.Title>
                   <LinePlot
-                    data={residualEffectsChartData}
+                    data={stressChartData}
                     options={{
                       responsive: true,
-                      maintainAspectRatio: false,
                       plugins: {
                         legend: { position: 'top' },
                         title: {
                           display: true,
-                          text: 'Residual Effects: Cumulative Lost Earnings',
+                          text: 'Balance & Interest Over Time',
                         },
                       },
-                      layout: { padding: 10 },
                       scales: {
                         x: { title: { display: true, text: 'Year' } },
-                        y: { title: { display: true, text: 'Amount ($)' } },
+                        y: { title: { display: true, text: 'Amount' } },
                       },
                     }}
-                    style={{ minHeight: '450px', maxHeight: '650px' }}
+                    style={{ minHeight: '400px' }}
                   />
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
-          {/* Residual Effects Table */}
-          <Row className="mb-3">
-            <Col>
-              <h3>Residual Effects Table</h3>
-              <Table striped bordered hover className="mt-4">
-                <thead>
-                  <tr>
-                    <th>Year</th>
-                    <th>Principal</th>
-                    <th>Annual Return Rate</th>
-                    <th>Lost Earnings</th>
-                    <th>Cumulative Lost Earnings</th>
+          {/* table */}
+          <Row>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Balance</th>
+                  <th>Contribution</th>
+                  <th>Interest</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stressRows.map((r) => (
+                  <tr key={r.year}>
+                    <td>{r.year}</td>
+                    <td>{formatCurrency(r.balance)}</td>
+                    <td>
+                      <Form.Control
+                        type="number"
+                        value={r.contribution}
+                        onChange={handleContributionChange(r.year)}
+                      />
+                    </td>
+                    <td>{formatCurrency(r.interest)}</td>
+                    <td>{formatCurrency(r.total)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {calculateResidualEffectsData().map((row) => (
-                    <tr key={row.year}>
-                      <td>{row.year}</td>
-                      <td>{formatCurrency(row.principal)}</td>
-                      <td>
-                        6.02% →
-                        {interestRate?.toFixed(2)}
-                        %
-                      </td>
-                      <td>{formatCurrency(row.lostEarnings)}</td>
-                      <td>{formatCurrency(row.cumulativeLostEarnings)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
+                ))}
+              </tbody>
+            </Table>
           </Row>
         </>
       ) : (
         <>
-          {/* Line Chart for Stress Effects */}
-          <Row className="mb-3">
+          {/* residual chart */}
+          <Row className="mb-4">
             <Col md={{ span: 8, offset: 2 }}>
               <Card>
                 <Card.Body>
-                  <Card.Title className="text-center">Yearly Balance & Interest Earned</Card.Title>
                   <LinePlot
-                    data={stressEffectsChartData}
+                    data={residualChartData}
                     options={{
                       responsive: true,
-                      maintainAspectRatio: false,
                       plugins: {
                         legend: { position: 'top' },
                         title: {
                           display: true,
-                          text: 'Stress Effects: Balance vs Interest Earned',
+                          text: 'Cumulative Lost Earnings',
                         },
                       },
-                      layout: { padding: 10 },
                       scales: {
                         x: { title: { display: true, text: 'Year' } },
-                        y: { title: { display: true, text: 'Amount ($)' } },
+                        y: { title: { display: true, text: 'Amount' } },
                       },
                     }}
-                    style={{ minHeight: '450px', maxHeight: '650px' }}
+                    style={{ minHeight: '400px' }}
                   />
                 </Card.Body>
               </Card>
             </Col>
           </Row>
 
-          {/* Stress Effects Table */}
-          <Row className="mb-3">
-            <Col>
-              <Table striped bordered hover className="mt-4">
-                <thead>
-                  <tr>
-                    <th>Year</th>
-                    <th>Balance</th>
-                    <th>Yearly Contribution</th>
-                    <th>Interest Earned</th>
-                    <th>Balance + Interest</th>
+          {/* residual table */}
+          <Row>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Principal</th>
+                  <th>Lost Earnings</th>
+                  <th>Cumulative Lost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {residualData.map((r) => (
+                  <tr key={r.year}>
+                    <td>{r.year}</td>
+                    <td>{formatCurrency(r.principal)}</td>
+                    <td>{formatCurrency(r.lostEarnings)}</td>
+                    <td>{formatCurrency(r.cumulativeLostEarnings)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {calculateTableData().map((row) => (
-                    <tr key={row.year}>
-                      <td>{row.year}</td>
-                      <td>{row.balance}</td>
-                      <td>{row.contribution}</td>
-                      <td>{row.interest}</td>
-                      <td>{row.total}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
+                ))}
+              </tbody>
+            </Table>
           </Row>
         </>
       )}
     </Container>
   );
-};
-
-export default StressTest5;
+}

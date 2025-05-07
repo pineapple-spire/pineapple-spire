@@ -2,9 +2,8 @@ import { Container, Row, Spinner } from 'react-bootstrap';
 
 const LoadingSpinner = () => (
   <Container>
-    <Row className="justify-content-md-center">
+    <Row style={{ height: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <Spinner animation="border" />
-      Getting data
     </Row>
   </Container>
 );

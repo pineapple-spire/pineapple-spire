@@ -23,7 +23,6 @@ enum Role {
   AUDITOR
   ANALYST
   EXECUTIVE
-  VIEWER
 }
 
 model User {
@@ -64,6 +63,52 @@ model ReportPageData {
   status     RequestStatus @default(ACTIVE)
 
   @@map("report_page_data")
+}
+
+model StressTest1Scenario {
+  id        Int      @id @default(autoincrement())
+  title     String
+  data      Json
+  createdAt DateTime @default(now())
+}
+
+model StressTest2Scenario {
+  id             Int      @id @default(autoincrement())
+  title          String
+  initialPercent Float
+  baseRevenue    Float
+  growthRate     Float
+  startYear      Int
+  totalYears     Int
+  createdAt      DateTime @default(now())
+}
+
+model StressTest3Scenario {
+  id         Int      @id @default(autoincrement())
+  title      String
+  annualRate Float
+  events     Json
+  createdAt  DateTime @default(now())
+}
+
+model StressTest4Scenario {
+  id             Int      @id @default(autoincrement())
+  title          String
+  initialExpense Float
+  increaseRate   Float
+  returnRate     Float
+  createdAt      DateTime @default(now())
+}
+
+model StressTest5Scenario {
+  id            Int      @id @default(autoincrement())
+  title         String
+  presentValue  Float
+  interestRate  Float
+  term          Int
+  fullyFunded   Float
+  contributions Json
+  createdAt     DateTime @default(now())
 }
 
 model FinancialData {

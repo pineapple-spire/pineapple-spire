@@ -155,7 +155,6 @@ const ChangeRoleForm: React.FC<{ user: UserRoleProps }> = ({ user }) => {
             className={errors.role ? 'is-invalid' : ''}
           >
             <option value="USER">USER</option>
-            <option value="VIEWER">VIEWER</option>
             <option value="AUDITOR">AUDITOR</option>
             <option value="ANALYST">ANALYST</option>
             <option value="EXECUTIVE">EXECUTIVE</option>

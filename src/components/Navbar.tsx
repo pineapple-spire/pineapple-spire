@@ -44,8 +44,11 @@ const NavBar: React.FC = () => {
                 ) : (
                   ''
                 )}
+                <NavDropdown.Item id="tools-dropdown-fiscal-sustainability-model" href="/fiscal-sustainability-model">
+                  Sustainability Model
+                </NavDropdown.Item>
                 <NavDropdown.Item id="tools-dropdown-stress-test-tool" href="/stress-test-tool">
-                  Stress Test Tool
+                  Stress Tests Editor
                 </NavDropdown.Item>
                 { role === 'AUDITOR' ? (
                   <NavDropdown.Item id="tools-dropdown-audit-data" href="/audit-data">
