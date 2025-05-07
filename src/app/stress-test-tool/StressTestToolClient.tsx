@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import { StressScenario } from '@prisma/client';
 import {
   Container,
-  Dropdown,
   OverlayTrigger,
   Tooltip,
+  Tabs,
+  Tab,
 } from 'react-bootstrap';
 import { FaInfoCircle } from 'react-icons/fa';
 import StressTest1 from '@/components/StressTest1';
@@ -36,11 +37,23 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({
     },
   ];
 
-  const [selected, setSelected] = useState(tests[0]);
   const [showInfo, setShowInfo] = useState(false);
 
   return (
     <Container className="py-4 text-center d-flex flex-column align-items-center">
+      {/* Inline CSS injection */}
+      <style>
+        {`
+          .nav-tabs .nav-link.active {
+            background-color: #6c757d;
+            color: white;
+          }
+          .nav-tabs .nav-link {
+            cursor: pointer;
+          }
+        `}
+      </style>
+
       <h2 className="mb-4 d-flex align-items-center gap-2">
         Stress Test Tool
         <OverlayTrigger
@@ -62,21 +75,16 @@ const StressTestToolClient: React.FC<StressTestToolClientProps> = ({
         </div>
       )}
 
-      <Dropdown className="mb-3">
-        <Dropdown.Toggle variant="primary" id="stress-test-dropdown">
-          {selected.label}
-        </Dropdown.Toggle>
-        <Dropdown.Menu>
-          {tests.map((t) => (
-            <Dropdown.Item key={t.id} onClick={() => setSelected(t)}>
-              {t.label}
-            </Dropdown.Item>
-          ))}
-        </Dropdown.Menu>
-      </Dropdown>
-      {selected.component}
+      <Tabs defaultActiveKey="stress1" className="mb-3 w-100" fill>
+        {tests.map((t) => (
+          <Tab eventKey={t.id} title={t.label} key={t.id}>
+            {t.component}
+          </Tab>
+        ))}
+      </Tabs>
     </Container>
   );
 };
 
 export default StressTestToolClient;
+
