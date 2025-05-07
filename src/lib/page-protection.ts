@@ -47,6 +47,19 @@ export const analystOrAdminProtectedPage = (
 
 /**
  * Redirects to the login page if the user is not logged in.
+ * Redirects to the not-authorized page if the user is not an analyst or executive.
+ */
+export const analystOrExecutiveProtectedPage = (
+  session: { user: { email: string; id: string; randomKey: string } } | null,
+) => {
+  loggedInProtectedPage(session);
+  if (session && session.user.randomKey !== Role.ANALYST && session.user.randomKey !== Role.EXECUTIVE) {
+    redirect('/not-authorized');
+  }
+};
+
+/**
+ * Redirects to the login page if the user is not logged in.
  * Redirects to the not-authorized page if the user has the USER role.
  */
 export const notUserProtectedPage = (session: { user: { email: string; id: string; randomKey: string } } | null) => {
